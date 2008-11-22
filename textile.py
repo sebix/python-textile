@@ -72,10 +72,10 @@ def _normalize_newlines(string):
 class _BaseHTMLProcessor(sgmllib.SGMLParser):
     elements_no_end_tag = ['area', 'base', 'basefont', 'br', 'col', 'frame', 'hr',
       'img', 'input', 'isindex', 'link', 'meta', 'param']
-    
+
     def __init__(self):
         sgmllib.SGMLParser.__init__(self)
-    
+
     def reset(self):
         self.pieces = []
         sgmllib.SGMLParser.reset(self)
@@ -85,7 +85,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
         attrs = [(k.lower(), sgmllib.charref.sub(lambda m: unichr(int(m.groups()[0])), v).strip()) for k, v in attrs]
         attrs = [(k, k in ('rel', 'type') and v.lower() or v) for k, v in attrs]
         return attrs
-    
+
     def unknown_starttag(self, tag, attrs):
         # called for each start tag
         # attrs is a list of (attr, value) tuples
@@ -95,7 +95,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
             self.pieces.append("<%(tag)s%(strattrs)s />" % locals())
         else:
             self.pieces.append("<%(tag)s%(strattrs)s>" % locals())
-        
+
     def unknown_endtag(self, tag):
         # called for each end tag, e.g. for </pre>, tag will be "pre"
         # Reconstruct the original end tag.
@@ -160,20 +160,20 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
       'rel', 'rev', 'rows', 'rowspan', 'rules', 'scope', 'selected', 'shape', 'size',
       'span', 'src', 'start', 'summary', 'tabindex', 'target', 'title', 'type',
       'usemap', 'valign', 'value', 'vspace', 'width']
-    
-    unacceptable_elements_with_end_tag = ['script', 'applet'] 
-    
+
+    unacceptable_elements_with_end_tag = ['script', 'applet']
+
     # This if for MathML.
     mathml_elements = ['math', 'mi', 'mn', 'mo', 'mrow', 'msup']
     mathml_attributes = ['mode', 'xmlns']
 
     acceptable_elements = acceptable_elements + mathml_elements
     acceptable_attributes = acceptable_attributes + mathml_attributes
-                  
+
     def reset(self):
         _BaseHTMLProcessor.reset(self)
         self.unacceptablestack = 0
-        
+
     def unknown_starttag(self, tag, attrs):
         if not tag in self.acceptable_elements:
             if tag in self.unacceptable_elements_with_end_tag:
@@ -206,7 +206,7 @@ class _HTMLSanitizer(_BaseHTMLProcessor):
 try:
     # This is mxTidy.
     from mx.Tidy import Tidy
-    
+
     def _tidy1(text):
         """mxTidy's XHTML validator.
 
@@ -234,7 +234,7 @@ except ImportError:
 
     except ImportError:
         _tidy = None
- 
+
 class Textile(object):
     hlgn = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
     vlgn = r'[\-^~]'
@@ -256,7 +256,7 @@ class Textile(object):
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
     noimage = False
     hu = ''
-    
+
     glyph_defaults = (
         ('txt_quote_single_open',  '&#8216;'),
         ('txt_quote_single_close', '&#8217;'),
@@ -273,7 +273,7 @@ class Textile(object):
         ('txt_registered',         '&#174;'),
         ('txt_copyright',          '&#169;'),
     )
-    
+
     def __init__(self, restricted=False, lite=False):
         """docstring for __init__"""
         self.restricted = restricted
@@ -282,7 +282,7 @@ class Textile(object):
         self.urlrefs = {}
         self.shelf = {}
         self.rel = ''
-        
+
     def textile(self, text, rel=None, encoding='utf8', output='utf8', validate=False, sanitize=False, head_offset='ignored'):
         """
         >>> t = Textile()
@@ -292,172 +292,172 @@ class Textile(object):
         ...
         ... Followed by another.''')
         '\\t<p>A single paragraph.</p>\\n\\n\\t<p>Followed by another.</p>'
-        
+
         >>> t.textile('''I am <b>very</b> serious.
-        ... 
+        ...
         ... <pre>
         ...  I am <b>very</b> serious.
         ... </pre>''')
         '\\t<p>I am <b>very</b> serious.</p>\\n\\n<pre>\\n I am &#38;#60;b&#38;#62;very&#38;#60;/b&#38;#62; serious.\\n</pre>'
-        
+
         >>> t.textile('''I spoke.
         ... And none replied.
         ... ''')
         '\\t<p>I spoke.<br />And none replied.</p>'
-        
+
         >>> t.textile('"Observe!"')
         '\\t<p>&#8220;Observe!&#8221;</p>'
-        
+
         >>> t.textile('Observe -- very nice!')
         '\\t<p>Observe &#8212; very nice!</p>'
-        
+
         >>> t.textile('Observe - tiny and brief.')
         '\\t<p>Observe &#8211; tiny and brief.</p>'
-        
+
         >>> t.textile('Observe...')
         '\\t<p>Observe&#8230;</p>'
-        
+
         >>> t.textile('Observe ...')
         '\\t<p>Observe &#8230;</p>'
-        
+
         >>> t.textile('Observe: 2 x 2.')
         '\\t<p>Observe: 2 &#215; 2.</p>'
-        
+
         >>> t.textile('one(TM), two(R), three(C).')
         '\\t<p>one&#8482;, two&#174;, three&#169;.</p>'
-        
+
         >>> t.textile('h1. Header 1')
         '\\t<h1>Header 1</h1>'
-        
+
         >>> t.textile('h2. Header 2')
         '\\t<h2>Header 2</h2>'
-        
+
         >>> t.textile('h3. Header 3')
         '\\t<h3>Header 3</h3>'
-        
+
         >>> t.textile('''An old text
-        ... 
+        ...
         ... bq. A block quotation.
-        ... 
+        ...
         ... Any old text''')
         '\\t<p>An old text</p>\\n\\n\\t<blockquote>\\n\\t\\t<p>A block quotation.</p>\\n\\t</blockquote>\\n\\n\\t<p>Any old text</p>'
-        
+
         >>> t.textile('This is covered elsewhere[1].') # doctest: +ELLIPSIS
         '\\t<p>This is covered elsewhere<sup class="footnote"><a href="#...">1</a></sup>.</p>'
-        
+
         >>> t.textile('fn1. Down here, in fact.') # doctest: +ELLIPSIS
         '\\t<p id="..." class="footnote"><sup>1</sup>Down here, in fact.</p>'
-        
+
         >>> t.textile('I _believe_ every word.')
         '\\t<p>I <em>believe</em> every word.</p>'
-        
+
         >>> t.textile('And then? She *fell*!')
         '\\t<p>And then? She <strong>fell</strong>!</p>'
-        
+
         >>> t.textile('''I __know__.
         ... I **really** __know__.''')
         '\\t<p>I <i>know</i>.<br />I <b>really</b> <i>know</i>.</p>'
-        
+
         >>> t.textile("??Cat's Cradle?? by Vonnegut")
         '\\t<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'
-        
+
         >>> t.textile('Convert with @str(foo)@')
         '\\t<p>Convert with <code>str(foo)</code></p>'
-        
+
         >>> t.textile('I\\'m -sure- not sure.')
         '\\t<p>I&#8217;m <del>sure</del> not sure.</p>'
-        
+
         >>> t.textile('You are a +pleasant+ child.')
         '\\t<p>You are a <ins>pleasant</ins> child.</p>'
-        
+
         >>> t.textile('a ^2^ + b ^2^ = c ^2^')
         '\\t<p>a <sup>2</sup> + b <sup>2</sup> = c <sup>2</sup></p>'
-        
+
         >>> t.textile('log ~2~ x')
         '\\t<p>log <sub>2</sub> x</p>'
-        
+
         >>> t.textile('I\\'m %unaware% of most soft drinks.')
         '\\t<p>I&#8217;m <span>unaware</span> of most soft drinks.</p>'
-        
+
         >>> t.textile('''I\'m %{color:red}unaware%
         ... of most soft drinks.''')
         '\\t<p>I&#8217;m <span style="color:red;">unaware</span><br />of most soft drinks.</p>'
-        
+
         >>> t.textile('p(example1). An example')
         '\\t<p class="example1">An example</p>'
-        
+
         >>> t.textile('p(#big-red). Red here')
         '\\t<p id="big-red">Red here</p>'
-        
+
         >>> t.textile('p(example1#big-red2). Red here')
         '\\t<p class="example1" id="big-red2">Red here</p>'
-        
+
         >>> t.textile('p{color:blue;margin:30px}. Spacey blue')
         '\\t<p style="color:blue;margin:30px;">Spacey blue</p>'
-        
+
         >>> t.textile('p[fr]. rouge')
         '\\t<p lang="fr">rouge</p>'
-        
+
         >>> t.textile('''I seriously *{color:red}blushed*
         ... when I _(big)sprouted_ that
         ... corn stalk from my
         ... %[es]cabeza%.''')
         '\\t<p>I seriously <strong style="color:red;">blushed</strong><br />when I <em class="big">sprouted</em> that<br />corn stalk from my<br /><span lang="es">cabeza</span>.</p>'
-        
+
         >>> t.textile('p<. align left')
         '\\t<p style="text-align:left;">align left</p>'
-        
+
         >>> t.textile('p>. align right')
         '\\t<p style="text-align:right;">align right</p>'
-        
+
         >>> t.textile('p=. centered')
         '\\t<p style="text-align:center;">centered</p>'
-        
+
         >>> t.textile('p<>. justified')
         '\\t<p style="text-align:justify;">justified</p>'
-        
+
         >>> t.textile('p(. left ident 1em')
         '\\t<p style="padding-left:1em;">left ident 1em</p>'
-        
+
         >>> t.textile('p((. left ident 2em')
         '\\t<p style="padding-left:2em;">left ident 2em</p>'
-        
+
         >>> t.textile('p))). right ident 3em')
         '\\t<p style="padding-right:3em;">right ident 3em</p>'
-        
+
         >>> t.textile('h2()>. Bingo.')
         '\\t<h2 style="padding-left:1em;padding-right:1em;text-align:right;">Bingo.</h2>'
-        
+
         >>> t.textile('h3()>[no]{color:red}. Bingo')
         '\\t<h3 style="color:red;padding-left:1em;padding-right:1em;text-align:right;" lang="no">Bingo</h3>'
-        
+
         >>> t.textile('''<pre>
         ... <code>
         ...   a.gsub!( /</, "" )
         ... </code>
         ... </pre>''')
         '<pre>\\n<code>\\n  a.gsub!( /&#38;#60;/, &#38;#34;&#38;#34; )\\n</code>\\n</pre>'
-        
+
         >>> t.textile('''<div style="float:right;">
-        ... 
+        ...
         ... h3. Sidebar
-        ... 
+        ...
         ... "Hobix":http://hobix.com/
         ... "Ruby":http://ruby-lang.org/
-        ... 
+        ...
         ... </div>
-        ... 
+        ...
         ... The main text of the
-        ... page goes here and will 
-        ... stay to the left of the 
+        ... page goes here and will
+        ... stay to the left of the
         ... sidebar.''')
-        '\\t<p><div style="float:right;"></p>\\n\\n\\t<h3>Sidebar</h3>\\n\\n\\t<p><a href="http://hobix.com/">Hobix</a><br /><a href="http://ruby-lang.org/">Ruby</a></p>\\n\\n\\t<p></div></p>\\n\\n\\t<p>The main text of the<br />page goes here and will <br />stay to the left of the <br />sidebar.</p>'
-        
+        '\\t<p><div style="float:right;"></p>\\n\\n\\t<h3>Sidebar</h3>\\n\\n\\t<p><a href="http://hobix.com/">Hobix</a><br /><a href="http://ruby-lang.org/">Ruby</a></p>\\n\\n\\t<p></div></p>\\n\\n\\t<p>The main text of the<br />page goes here and will<br />stay to the left of the<br />sidebar.</p>'
+
         >>> t.textile('''# A first item
         ... # A second item
         ... # A third''')
         '\\t<ol>\\n\\t\\t<li>A first item</li>\\n\\t\\t<li>A second item</li>\\n\\t</ol>\\n\\t<ol>\\n\\t\\t<li>A third</li>\\n\\t</ol>'
-        
+
         >>> t.textile('''# Fuel could be:
         ... ## Coal
         ... ## Gasoline
@@ -466,12 +466,12 @@ class Textile(object):
         ... ## Water
         ... ## Protein''')
         '\\t<p>\\t<ol>\\n\\t\\t<li>Fuel could be:\\n\\t<ol>\\n\\t\\t<li>Coal</li>\\n\\t\\t<li>Gasoline</li>\\n\\t</ol></li>\\n\\t<ol>\\n\\t\\t<li>Electricity</li>\\n\\t\\t<li>Humans need only:\\n\\t\\t<li>Water</li>\\n\\t</ol></li>\\n\\t<ol>\\n\\t\\t<li>Protein</li>\\n\\t</ol></li></p>'
-        
+
         >>> t.textile('''* A first item
         ... * A second item
         ... * A third''')
         '\\t<ul>\\n\\t\\t<li>A first item</li>\\n\\t\\t<li>A second item</li>\\n\\t</ul>\\n\\t<ul>\\n\\t\\t<li>A third</li>\\n\\t</ul>'
-        
+
         >>> t.textile('''* Fuel could be:
         ... ** Coal
         ... ** Gasoline
@@ -480,59 +480,59 @@ class Textile(object):
         ... ** Water
         ... ** Protein''')
         '\\t<p>\\t<ul>\\n\\t\\t<li>Fuel could be:\\n\\t<ul>\\n\\t\\t<li>Coal</li>\\n\\t\\t<li>Gasoline</li>\\n\\t</ul></li>\\n\\t<ul>\\n\\t\\t<li>Electricity</li>\\n\\t\\t<li>Humans need only:\\n\\t\\t<li>Water</li>\\n\\t</ul></li>\\n\\t<ul>\\n\\t\\t<li>Protein</li>\\n\\t</ul></li></p>'
-        
+
         >>> t.textile('I searched "Google":http://google.com.')
         '\\t<p>I searched <a href="http://google.com.">Google</a></p>'
-        
+
         >>> t.textile('''I am crazy about "Hobix":hobix
         ... and "it's":hobix "all":hobix I ever
         ... "link to":hobix!
-        ... 
+        ...
         ... [hobix]http://hobix.com''')
         '\\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />and <a href="http://hobix.com">it&#8217;s</a> <a href="http://hobix.com">all</a> I ever<br /><a href="http://hobix.com">link to</a>!</p>\\n\\n'
-        
+
         >>> t.textile('!http://hobix.com/sample.jpg!')
         '\\t<p><img src="http://hobix.com/sample.jpg" alt="" /></p>'
-        
+
         >>> t.textile('!openwindow1.gif(Bunny.)!')
         '\\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny." /></p>'
-        
+
         >>> t.textile('!openwindow1.gif!:http://hobix.com/')
         '\\t<p><a href="http://hobix.com/"><img src="openwindow1.gif" alt="" /></a></p>'
-        
+
         >>> t.textile('''!>obake.gif!
-        ... 
+        ...
         ... And others sat all round the small
         ... machine and paid it to sing to them.''')
         '\\t<p><img src="obake.gif" style="text-align:right;" alt="" /></p>\\n\\n\\t<p>And others sat all round the small<br />machine and paid it to sing to them.</p>'
-        
+
         >>> t.textile('We use CSS(Cascading Style Sheets).')
         '\\t<p>We use <acronym title="Cascading Style Sheets">CSS</acronym>.</p>'
-        
+
         >>> t.textile('''| name | age | sex |
         ... | joan | 24 | f |
         ... | archie | 29 | m |
         ... | bella | 45 | f |''')
         '\\t<table>\\n\\t\\t<tr>\\n\\t\\t\\t<td> name </td>\\n\\t\\t\\t<td> age </td>\\n\\t\\t\\t<td> sex </td>\\n\\t\\t\\t<td> joan </td>\\n\\t\\t\\t<td> 24 </td>\\n\\t\\t\\t<td> f </td>\\n\\t\\t\\t<td> archie </td>\\n\\t\\t\\t<td> 29 </td>\\n\\t\\t\\t<td> m </td>\\n\\t\\t\\t<td> bella </td>\\n\\t\\t\\t<td> 45 </td>\\n\\t\\t\\t<td> f </td>\\n\\t\\t</tr>\\n\\t\\t<tr>\\n\\n\\t\\t</tr>\\n\\t</table>'
-        
+
         >>> t.textile('''|_. name |_. age |_. sex |
         ... | joan | 24 | f |
         ... | archie | 29 | m |
         ... | bella | 45 | f |''')
         '\\t<table>\\n\\t\\t<tr>\\n\\t\\t\\t<th>name </th>\\n\\t\\t\\t<th>age </th>\\n\\t\\t\\t<th>sex </th>\\n\\t\\t\\t<td> joan </td>\\n\\t\\t\\t<td> 24 </td>\\n\\t\\t\\t<td> f </td>\\n\\t\\t\\t<td> archie </td>\\n\\t\\t\\t<td> 29 </td>\\n\\t\\t\\t<td> m </td>\\n\\t\\t\\t<td> bella </td>\\n\\t\\t\\t<td> 45 </td>\\n\\t\\t\\t<td> f </td>\\n\\t\\t</tr>\\n\\t\\t<tr>\\n\\n\\t\\t</tr>\\n\\t</table>'
-        
-        
+
+
         """
         text = _normalize_newlines(text)
-        
+
         if rel:
             self.rel = ' rel="%s"' % rel
-        
+
         text = self.getRefs(text)
-        
+
         if not self.lite:
             text = self.block(text)
-            
+
         text = self.retrieve(text)
 
         # Convert to desired output.
@@ -550,7 +550,7 @@ class Textile(object):
             text = _tidy(text)
 
         return text
-        
+
     def pba(self, input, element=None):
         """
         >>> t = Textile()
@@ -562,31 +562,31 @@ class Textile(object):
         ' rowspan="4"'
         >>> t.pba(r'\\3/4', element='td')
         ' colspan="3" rowspan="4"'
-        
+
         >>> t.vAlign('^')
         'top'
-        
+
         >>> t.pba('^', element='td')
         ' style="vertical-align:top;"'
-        
+
         >>> t.pba('{line-height:18px}')
         ' style="line-height:18px;"'
 
         >>> t.pba('(foo-bar)')
         ' class="foo-bar"'
-        
+
         >>> t.pba('(#myid)')
         ' id="myid"'
-        
+
         >>> t.pba('(foo-bar#myid)')
         ' class="foo-bar" id="myid"'
-        
+
         >>> t.pba('((((')
         ' style="padding-left:4em;"'
-        
+
         >>> t.pba(')))')
         ' style="padding-right:3em;"'
-        
+
         >>> t.pba('[fr]')
         ' lang="fr"'
 
@@ -600,15 +600,15 @@ class Textile(object):
         atts = ''
 
         if not input: return ''
-            
+
         matched = input
         if element == 'td':
             m = re.search(r'\\(\d+)', matched)
-            if m: 
+            if m:
                 colspan = m.group(1)
-                
+
             m = re.search(r'/(\d+)', matched)
-            if m: 
+            if m:
                 rowspan = m.group(1)
 
         if element == 'td' or element == 'tr':
@@ -619,27 +619,27 @@ class Textile(object):
         if m:
             style.append(m.group(1).rstrip(';') + ';')
             matched = matched.replace(m.group(0), '')
-            
+
         m = re.search(r'\[([^\]]+)\]', matched, re.U)
         if m:
             lang = m.group(1)
             matched = matched.replace(m.group(0), '')
-        
+
         m = re.search(r'\(([^()]+)\)', matched, re.U)
         if m:
             aclass = m.group(1)
             matched = matched.replace(m.group(0), '')
-            
+
         m = re.search(r'([(]+)', matched)
         if m:
             style.append("padding-left:%sem;" % len(m.group(1)))
             matched = matched.replace(m.group(0), '')
-            
+
         m = re.search(r'([)]+)', matched)
         if m:
             style.append("padding-right:%sem;" % len(m.group(1)))
             matched = matched.replace(m.group(0), '')
-            
+
         m = re.search(r'(%s)' % self.hlgn, matched)
         if m:
             style.append("text-align:%s;" % self.hAlign(m.group(1)))
@@ -648,11 +648,11 @@ class Textile(object):
         if m:
             id = m.group(2)
             aclass = m.group(1)
-            
+
         if self.restricted:
             if lang: return ' lang="%s"'
             else: return ''
-            
+
         result = []
         if style: result.append(' style="%s"' % "".join(style))
         if aclass: result.append(' class="%s"' % aclass)
@@ -665,19 +665,19 @@ class Textile(object):
     def hasRawText(self, text):
         """
         checks whether the text has text not already enclosed by a block tag
-        
+
         >>> t = Textile()
         >>> t.hasRawText('<p>foo bar biz baz</p>')
         False
-        
+
         >>> t.hasRawText(' why yes, yes it does')
         True
-        
+
         """
         r = re.compile(r'<(p|blockquote|div|form|table|ul|ol|pre|h\d)[^>]*?>.*</\1>', re.S).sub('', text.strip()).strip()
         r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
         return '' != r
-        
+
     def table(self, text):
         r"""
         >>> t = Textile()
@@ -697,7 +697,7 @@ class Textile(object):
                 ratts = self.pba(rmtch.group(1), 'tr')
                 row = rmtch.group(2)
             else: ratts = ''
-            
+
             cells = []
             for cell in row.split('|'):
                 ctyp = 'd'
@@ -707,9 +707,9 @@ class Textile(object):
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
                 else: catts = ''
-                
+
                 cell = self.graf(self.span(cell))
-                
+
                 if cell.strip() != '':
                     cells.append('\t\t\t<t%s%s>%s</t%s>' % (ctyp, catts, cell, ctyp))
             rows.append("\t\t<tr%s>\n%s\n\t\t</tr>" % (ratts, '\n'.join(cells)))
@@ -725,7 +725,7 @@ class Textile(object):
         """
         pattern = re.compile(r'^([#*]+%s.*)$(?![^#*])' % self.c, re.U|re.M|re.S)
         return pattern.sub(self.fList, text)
-    
+
     def fList(self, match):
         text = match.group(0).split("\n")
         result = []
@@ -735,7 +735,7 @@ class Textile(object):
                 nextline = text[i+2]
             except IndexError:
                 nextline = ''
-            
+
             m = re.search(r"^([#*]+)(%s%s) (.*)$" % (self.a, self.c), line, re.S)
             if m:
                 tl, atts, content = m.groups()
@@ -758,7 +758,7 @@ class Textile(object):
                         if len(k) > 1:
                             line = line + "</li>"
                         lists.remove(k)
-                
+
             result.append(line)
         return "\n".join(result)
 
@@ -783,19 +783,19 @@ class Textile(object):
         """
         tre = '|'.join(self.btag)
         text = text.split('\n\n')
-        
+
         tag = 'p'
         atts = cite = graf = ext = ''
-        
+
         out = []
-        
+
         for line in text:
             pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (tre, self.a, self.c)
             match = re.search(pattern, line, re.S)
             if match:
                 if ext:
                     out.append(out.pop() + c1)
-                    
+
                 tag,atts,ext,cite,graf = match.groups()
                 o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, cite, graf)
                 # leave off c1 if this block is extended, we'll close it at the start of the next block
@@ -803,7 +803,7 @@ class Textile(object):
                     line = "%s%s%s%s" % (o1, o2, content, c2)
                 else:
                     line = "%s%s%s%s%s" % (o1, o2, content, c2, c1)
-                    
+
             else:
                 anon = True
                 if ext or not re.search(r'^\s', line):
@@ -815,10 +815,10 @@ class Textile(object):
                         line = "%s%s%s" % (o2, content, c2)
                 else:
                     line = self.graf(line)
-                    
+
             line = self.doPBr(line)
             line = re.sub(r'<br>', '<br />', line)
-            
+
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
             else:
@@ -830,28 +830,28 @@ class Textile(object):
                 cite = ''
                 graf = ''
 
-        if ext: 
+        if ext:
             out.append(out.pop() + c1)
         return '\n\n'.join(out)
-        
+
     def fBlock(self, tag, atts, ext, cite, content):
         """
         >>> t = Textile()
         >>> t.fBlock("bq", "", None, "", "Hello BlockQuote")
         ('\\t<blockquote>\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>')
-        
+
         >>> t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
         ('\\t<blockquote cite="http://google.com">\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>')
-        
+
         >>> t.fBlock("bc", "", None, "", 'printf "Hello, World";') # doctest: +ELLIPSIS
         ('<pre>', '<code>', ..., '</code>', '</pre>')
-        
+
         >>> t.fBlock("h1", "", None, "", "foobar")
         ('', '\\t<h1>', 'foobar', '</h1>', '')
         """
         atts = self.pba(atts)
         o1 = o2 = c2 = c1 = ''
-        
+
         m = re.search(r'fn(\d+)', tag)
         if m:
             tag = 'p'
@@ -874,29 +874,29 @@ class Textile(object):
             o2 = "\t\t<p%s>" % atts
             c2 = "</p>"
             c1 = "\n\t</blockquote>"
-            
+
         elif tag == 'bc':
             o1 = "<pre%s>" % atts
             o2 = "<code%s>" % atts
             c2 = "</code>"
             c1 = "</pre>"
             content = self.shelve(self.encode_html(content.rstrip("\n") + "\n"))
-            
+
         elif tag == 'notextile':
             content = self.shelve(content)
             o1 = o2 = ''
             c1 = c2 = ''
-            
+
         elif tag == 'pre':
             content = self.shelve(self.encode_html(content.rtrim("\n") + "\n"))
             o1 = "<pre%s>" % atts
             o2 = c2 = ''
             c1 = '</pre>'
-            
+
         else:
             o2 = "\t<%s%s>" % (tag, atts)
             c2 = "</%s>" % tag
-            
+
         content = self.graf(content)
         return o1, o2, content, c2, c1
 
@@ -915,29 +915,29 @@ class Textile(object):
         fnid = self.fn[id]
         if not t: t = ''
         return '<sup class="footnote"><a href="#fn%s">%s</a></sup>%s' % (fnid, id, t)
-        
+
     def glyphs(self, text):
         """
         >>> t = Textile()
-        
+
         >>> t.glyphs("apostrophe's")
         'apostrophe&#8217;s'
-        
+
         >>> t.glyphs("back in '88")
         'back in &#8217;88'
-        
+
         >>> t.glyphs('foo ...')
         'foo &#8230;'
-        
+
         >>> t.glyphs('--')
         '&#8212;'
-        
+
         >>> t.glyphs('FooBar[tm]')
         'FooBar&#8482;'
-        
+
         >>> t.glyphs("<p><cite>Cat's Cradle</cite> by Vonnegut</p>")
         '<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'
-        
+
         """
          # fix: hackish
         text = re.sub(r'"\z', '\" ', text)
@@ -989,7 +989,7 @@ class Textile(object):
     def iAlign(self, input):
         d = {'<':'left', '=':'center', '>':'right'}
         return d.get(input, '')
-        
+
     def vAlign(self, input):
         d = {'^':'top', '-':'middle', '~':'bottom'}
         return d.get(input, '')
@@ -1005,15 +1005,15 @@ class Textile(object):
         pattern = re.compile(r'(?:(?<=^)|(?<=\s))\[(.+)\]((?:http:\/\/|\/)\S+)(?=\s|$)', re.U)
         text = pattern.sub(self.refs, text)
         return text
-        
+
     def refs(self, match):
         flag, url = match.groups()
         self.urlrefs[flag] = url
         return ''
-        
+
     def checkRefs(self, url):
         return self.urlrefs.get(url, url)
-        
+
     def relURL(self, url):
         o = urlparse(url)
         if (not o.scheme or o.scheme == 'http') and not o.netloc and re.search(r'^\w', o.path):
@@ -1021,12 +1021,12 @@ class Textile(object):
         if self.restricted and o.scheme and o.scheme not in self.url_schemes:
             return '#'
         return url
-        
+
     def shelve(self, text):
         id = str(uuid.uuid4())
         self.shelf[id] = text
         return id
-    
+
     def retrieve(self, text):
         """
         >>> t = Textile()
@@ -1040,18 +1040,18 @@ class Textile(object):
                 text = text.replace(k,v)
             if text == old: break
         return text
-        
+
     def encode_html(self, text, quotes=True):
         a = {
             '&': '&#38;',
             '<': '&#60;',
             '>': '&#62;'
         }
-        
+
         if quotes:
             a["'"] = '&#39;'
             a['"'] = '&#34;'
-            
+
         for k,v in a.items():
             text = text.replace(k,v)
         return text
@@ -1060,20 +1060,20 @@ class Textile(object):
         if not self.lite:
             text = self.noTextile(text)
             text = self.code(text)
-        
+
         text = self.links(text)
 
         if not self.noimage:
             text = self.image(text)
-        
+
         if not self.lite:
             text = self.lists(text)
             text = self.table(text)
-            
+
         text = self.span(text)
         text = self.footnoteRef(text)
         text = self.glyphs(text)
-        
+
         return text.rstrip('\n')
 
     def links(self, text):
@@ -1107,7 +1107,7 @@ class Textile(object):
         # (\/)?                        # $slash
         # ([^\w\/;]*)                  # $post
         # (?:([\]}])|(?=\s|$|\)))
-                
+
         pnct = ".,\"'?!;:"
         pattern = r"""
             (?:^|(?<=[\s>.\(])|([{\[])) # pre
@@ -1123,9 +1123,9 @@ class Textile(object):
             (?:([\]}])|(?=\s|$|\)))
         """ % (self.c, self.urlch)
         text = re.compile(pattern, re.U|re.X).sub(self.fLink, text)
-            
+
         return text
-    
+
     def fLink(self, match):
         pre, atts, text, title, url, slash, post, _ = match.groups()
         url = self.checkRefs(url)
@@ -1154,7 +1154,7 @@ class Textile(object):
         """
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__', r'_', r'%', r'\+', r'~', r'\^')
         pnct = ".,\"'?!;:"
-        
+
         for qtag in qtags:
             pattern = re.compile(r"""
                 (?:^|(?<=[\s>%(pnct)s])|([\]}]))
@@ -1168,11 +1168,11 @@ class Textile(object):
             """ % {'qtag':qtag,'c':self.c,'pnct':pnct,'selfpnct':self.pnct}, re.X)
             text = pattern.sub(self.fSpan, text)
         return text
-        
 
-    def fSpan(self, match):        
+
+    def fSpan(self, match):
         _, tag, atts, cite, content, end, _ = match.groups()
-        
+
         qtags = {
             '*': 'strong',
             '**': 'b',
@@ -1213,34 +1213,34 @@ class Textile(object):
             (?:[\]}]|(?=\s|$)) # lookahead: space or end of string
         """ % self.c, re.U|re.X)
         return pattern.sub(self.fImage, text)
-        
+
     def fImage(self, match):
         # (None, '', '/imgs/myphoto.jpg', None, None)
         algn, atts, url, title, href = match.groups()
         atts  = self.pba(atts)
         if algn:
             atts = atts + ' align="%s"' % self.iAlign(algn)
-        
+
         if title:
             atts = atts + ' title="%s" alt="%s"' % (title, title)
         else:
             atts = atts + ' alt=""'
-        
+
         # TODO how to do this in python?
         # size = @getimagesize(url)
         # if (size) atts .= " size[3]"
-        
+
         if href:
             href = self.checkRefs(href)
-            
+
         url = self.checkRefs(url)
         url = self.relURL(url)
-        
+
         out = []
         if href: out.append('<a href="%s">' % href)
         out.append('<img src="%s"%s />' % (url, atts))
         if href: out.append('</a>')
-        
+
         return ''.join(out)
 
     def code(self, text):
@@ -1256,14 +1256,14 @@ class Textile(object):
         if not self.restricted:
             text = self.encode_html(text)
         return ''.join([before, self.shelve('<code>%s</code>' % text), after])
-        
+
     def fPre(self, match):
         before, text, after = match.groups()
         # text needs to be escapedd
         if not self.restricted:
             text = self.encode_html(text)
         return ''.join([before, '<pre>', self.shelve(text), '</pre>', after])
-        
+
     def doSpecial(self, text, start, end, method=None):
         if method == None:
             method = self.fSpecial
@@ -1280,12 +1280,12 @@ class Textile(object):
     def noTextile(self, text):
         text = self.doSpecial(text, '<notextile>', '</notextile>', self.fTextile)
         return self.doSpecial(text, '==', '==', self.fTextile)
-        
+
     def fTextile(self, match):
         before, notextile, after = match.groups()
         return ''.join([before, self.shelve(notextile), after])
-        
-        
+
+
 def textile(text, **args):
     """
     this function takes additional parameters:
@@ -1296,7 +1296,7 @@ def textile(text, **args):
     head_offset - ignored
     """
     return Textile().textile(text, **args)
-    
+
 def _test():
     import doctest
     doctest.testmod()
