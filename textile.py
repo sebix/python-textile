@@ -457,7 +457,7 @@ class Textile(object):
     def fTable(self, match):
         tatts = self.pba(match.group(1), 'table')
         rows = []
-        for row in re.split(r'\|$', match.group(2)):
+        for row in [ x for x in match.group(2).split('\n') if x]:
             rmtch = re.search(r'^(%s%s\. )(.*)' % (self.a, self.c), row.lstrip())
             if rmtch:
                 ratts = self.pba(rmtch.group(1), 'tr')
