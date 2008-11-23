@@ -24,8 +24,6 @@ h2. Usage
 	<ul>
 		<li>One</li>
 		<li>Two</li>
-	</ul>
-	<ul>
 		<li>Three</li>
 	</ul>
 	<p>Link to <a href="http://slashdot.org/">Slashdot</a>

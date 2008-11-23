@@ -723,9 +723,9 @@ class Textile(object):
         """
         >>> t = Textile()
         >>> t.lists("* one\\n* two\\n* three")
-        '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t</ul>\\n\\t<ul>\\n\\t\\t<li>three</li>\\n\\t</ul>'
+        '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
         """
-        pattern = re.compile(r'^([#*]+%s.*)$(?![^#*])' % self.c, re.U|re.M|re.S)
+        pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])' % self.c, re.U|re.M|re.S)
         return pattern.sub(self.fList, text)
 
     def fList(self, match):
@@ -734,7 +734,7 @@ class Textile(object):
         lists = []
         for i, line in enumerate(text):
             try:
-                nextline = text[i+2]
+                nextline = text[i+1]
             except IndexError:
                 nextline = ''
 
@@ -753,8 +753,7 @@ class Textile(object):
                     line = "\t\t<li>" + self.graf(content)
 
                 if len(nl) <= len(tl): line = line + "</li>"
-                lists.reverse()
-                for k in lists:
+                for k in reversed(lists):
                     if len(k) > len(nl):
                         line = line + "\n\t</%sl>" % self.lT(k)
                         if len(k) > 1:
