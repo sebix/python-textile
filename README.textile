@@ -4,7 +4,7 @@ PyTextile is a simple text to HTML converter.
 
 h2. Usage
 
-bc. >>> import textile
+bc.. >>> import textile
 >>> textile.__version__
 '2.1.0'
 >>> s = """
