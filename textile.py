@@ -298,7 +298,7 @@ class Textile(object):
         ... <pre>
         ...  I am <b>very</b> serious.
         ... </pre>''')
-        '\\t<p>I am <b>very</b> serious.</p>\\n\\n<pre>\\n I am &#38;#60;b&#38;#62;very&#38;#60;/b&#38;#62; serious.\\n</pre>'
+        '\\t<p>I am <b>very</b> serious.</p>\\n\\n<pre>\\n I am &#60;b&#62;very&#60;/b&#62; serious.\\n</pre>'
 
         >>> t.textile('''I spoke.
         ... And none replied.
@@ -436,7 +436,7 @@ class Textile(object):
         ...   a.gsub!( /</, "" )
         ... </code>
         ... </pre>''')
-        '<pre>\\n<code>\\n  a.gsub!( /&#38;#60;/, &#38;#34;&#38;#34; )\\n</code>\\n</pre>'
+        '<pre>\\n<code>\\n  a.gsub!( /&#60;/, &#34;&#34; )\\n</code>\\n</pre>'
 
         >>> t.textile('''<div style="float:right;">
         ...
@@ -521,6 +521,8 @@ class Textile(object):
         ... | bella | 45 | f |''')
         '\\t<table>\\n\\t\\t<tr>\\n\\t\\t\\t<th>name </th>\\n\\t\\t\\t<th>age </th>\\n\\t\\t\\t<th>sex </th>\\n\\t\\t\\t<td> joan </td>\\n\\t\\t\\t<td> 24 </td>\\n\\t\\t\\t<td> f </td>\\n\\t\\t\\t<td> archie </td>\\n\\t\\t\\t<td> 29 </td>\\n\\t\\t\\t<td> m </td>\\n\\t\\t\\t<td> bella </td>\\n\\t\\t\\t<td> 45 </td>\\n\\t\\t\\t<td> f </td>\\n\\t\\t</tr>\\n\\t\\t<tr>\\n\\n\\t\\t</tr>\\n\\t</table>'
 
+        >>> t.textile('>>> import textile')
+        '\\t<p>>>> import textile</p>'
 
         """
         text = _normalize_newlines(text)
@@ -1042,17 +1044,19 @@ class Textile(object):
         return text
 
     def encode_html(self, text, quotes=True):
-        a = {
-            '&': '&#38;',
-            '<': '&#60;',
-            '>': '&#62;'
-        }
+        a = (
+            ('&', '&#38;'),
+            ('<', '&#60;'),
+            ('>', '&#62;')
+        )
 
         if quotes:
-            a["'"] = '&#39;'
-            a['"'] = '&#34;'
+            a = a + (
+                ("'", '&#39;'),
+                ('"', '&#34;')
+            )
 
-        for k,v in a.items():
+        for k,v in a:
             text = text.replace(k,v)
         return text
 
@@ -1302,10 +1306,10 @@ def _test():
     doctest.testmod()
 
 if __name__ == "__main__":
-#    import sys
-#    if len(sys.argv) == 2:
-#        f = open(sys.argv[1])
-#        text = ''.join(f.readlines())
-#        print Textile().textile(text)
-#    else:
-    _test()
+    import sys
+    if len(sys.argv) == 2:
+        f = open(sys.argv[1])
+        text = ''.join(f.readlines())
+        print Textile().textile(text)
+    else:
+        _test()
