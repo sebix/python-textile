@@ -1,0 +1,31 @@
+h1. PyTextile
+
+PyTextile is a simple text to HTML converter.
+
+h2. Usage
+
+bc. >>> import textile
+>>> textile.__version__
+'2.1.0'
+>>> s = """
+... _This_ is a *test.*
+... 
+... * One
+... * Two
+... * Three
+... 
+... Link to "Slashdot":http://slashdot.org/
+... """
+>>> html = textile.textile(s)
+>>> print html
+<em>This</em> is a <strong>test.</strong>
+	<ul>
+		<li>One</li>
+		<li>Two</li>
+	</ul>
+	<ul>
+		<li>Three</li>
+	</ul>
+	<p>Link to <a href="http://slashdot.org/">Slashdot</a>
+</p>
+>>> 
