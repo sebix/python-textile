@@ -4,7 +4,9 @@ PyTextile is a simple text to HTML converter.
 
 h2. Usage
 
-bc.. >>> import textile
+<pre>
+<code>
+>>> import textile
 >>> textile.__version__
 '2.1.0'
 >>> s = """
@@ -29,3 +31,5 @@ bc.. >>> import textile
 	<p>Link to <a href="http://slashdot.org/">Slashdot</a>
 </p>
 >>> 
+</code>
+</pre>
