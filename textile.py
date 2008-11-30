@@ -853,51 +853,34 @@ class Textile(object):
         'fooobar ... and hello world ...'
         """
 
-        # (?:^|(?<=[\s>.$pnct\(])|([{[])) # $pre
-        # "                            # start
-        # (' . $this->c . ')           # $atts
-        # ([^"]+)                      # $text
-        # \s?
-        # (?:\(([^)]+)\)(?="))?        # $title
-        # ":
-        # ('.$this->urlch.'+)          # $url
-        # (\/)?                        # $slash
-        # ([^\w\/;]*)                  # $post
-        # (?:([\]}])|(?=\s|$|\)))
+        punct = '!"#$%&\'*+,-./:;=?@\\^_`|~'
 
-
-        # (?:^|(?<=[\s>.$pnct\(])|([{[])) # $pre
-        # "                            # start
-        # ((?:(?:\([^)]+\))|(?:\{[^}]+\})|(?:\[[^]]+\])|(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! )))*)           # $atts
-        # ([^"]+)                      # $text
-        # \s?
-        # (?:\(([^)]+)\)(?="))?        # $title
-        # ":
-        # ([\w"$\-_.+!*'(),";\/?:@=&%#{}|\^~\[\]`]+)          # $url
-        # (\/)?                        # $slash
-        # ([^\w\/;]*)                  # $post
-        # (?:([\]}])|(?=\s|$|\)))
-
-        pnct = ".,\"'?!;:"
-        pattern = r"""
-            (?:^|(?<=[\s>.\(])|([{\[])) # pre
-            "                             # start
-            (%s)                          # attrs
-            ([^"]+)                       # text
+        pattern = r'''
+            ([\s\[{(]|[%s])?     # $pre
+            "                          # start
+            (%s)                     # $atts
+            ([^"]+?)                   # $text
             \s?
-            (?:\(([^)]+)\)(?="))?         # title
+            (?:\(([^)]+?)\)(?="))?     # $title
             ":
-            (%s+)                         # url
-            (/)?                          # slash
-            ([^\w\/;]*)                   # post
-            (?:([\]}])|(?=\s|$|\)))
-        """ % (self.c, self.urlch)
-        text = re.compile(pattern, re.U|re.X).sub(self.fLink, text)
+            (\S+?)                     # $url
+            (\/)?                      # $slash
+            ([^\w\/;]*?)               # $post
+            (?=<|\s|$)
+        ''' % (re.escape(punct), self.c)
+
+        text = re.compile(pattern, re.X).sub(self.fLink, text)
 
         return text
 
     def fLink(self, match):
-        pre, atts, text, title, url, slash, post, _ = match.groups()
+        pre, atts, text, title, url, slash, post = match.groups()
+        # print "## ", zip("pre, atts, text, title, url, slash, post".split(","), match.groups()) 
+        # print
+
+        if pre == None:
+            pre = ''
+            
         url = self.checkRefs(url)
 
         atts = self.pba(atts)
@@ -911,10 +894,9 @@ class Textile(object):
 
         url = self.relURL(url)
         if slash: url = url + slash
-        out = '<a href="%s"%s%s>%s</a>%s' % (self.encode_html(url), atts, self.rel, text, post)
-
-        # self.dump(out)
-        return self.shelve(out)
+        out = '<a href="%s"%s%s>%s</a>' % (self.encode_html(url), atts, self.rel, text)
+        out = self.shelve(out)
+        return ''.join([pre, out, post])
 
     def span(self, text):
         """

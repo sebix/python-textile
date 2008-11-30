@@ -122,7 +122,7 @@ class KnownValues(unittest.TestCase):
          '\t<ul>\n\t\t<li>Fuel could be:\n\t<ul>\n\t\t<li>Coal</li>\n\t\t<li>Gasoline</li>\n\t\t<li>Electricity</li>\n\t</ul></li>\n\t\t'
          '<li>Humans need only:\n\t<ul>\n\t\t<li>Water</li>\n\t\t<li>Protein</li>\n\t</ul></li>\n\t</ul>'),
 
-        ('I searched "Google":http://google.com.', '\t<p>I searched <a href="http://google.com.">Google</a></p>'),
+        ('I searched "Google":http://google.com.', '\t<p>I searched <a href="http://google.com">Google</a>.</p>'),
 
         ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
          '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />and <a href="http://hobix.com">it&#8217;s</a> '
@@ -181,6 +181,9 @@ class KnownValues(unittest.TestCase):
 
         ('#{color:blue} one\n# two\n# three', 
          '\t<ol style="color:blue;">\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>'),
+
+        ('Links (like "this":http://foo.com), are now mangled in 2.1.0, whereas 2.0 parsed them correctly.',
+         '\t<p>Links (like <a href="http://foo.com">this</a>), are now mangled in 2.1.0, whereas 2.0 parsed them correctly.</p>'),
                 
     )
 
