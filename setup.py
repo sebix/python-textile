@@ -5,7 +5,7 @@ from distutils.core import setup
 
 
 setup(name='textile',
-      version='2.1.0',
+      version='2.1.1',
       description='This is Textile. A Humane Web Text Generator.',
       author='Jason Samsa',
       author_email='jsamsa@gmail.com',

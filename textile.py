@@ -5,10 +5,9 @@ PyTextile
 A Humane Web Text Generator
 """
 
-__version__ = '2.1.0'
+__version__ = '2.1.1'
 
-__date__ = '2008/11/21'
-
+__date__ = '2008/11/30'
 
 __copyright__ = """
 Copyright (c) 2008, Jason Samsa, http://jsamsa.com/
