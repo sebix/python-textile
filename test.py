@@ -172,6 +172,12 @@ class KnownValues(unittest.TestCase):
         html = textile.textile('fn1. Down here, in fact.')
         self.assertTrue(re.search('^\t<p id="fn[a-z0-9-]+" class="footnote"><sup>1</sup>Down here, in fact.</p>$', html))
 
+    def testURLWithHyphens(self):
+        self.assertEqual(textile.textile('"foo":http://google.com/one--two'), '\t<p><a href="http://google.com/one--two">foo</a></p>')
+
+    def testUnicode(self):
+        self.assertEqual(textile.textile(u'hello\u4500world'), '\t<p>hello\xe4\x94\x80world</p>')
+
 if __name__ == "__main__":
     unittest.main()
 
