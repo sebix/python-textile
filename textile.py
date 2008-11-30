@@ -1000,9 +1000,9 @@ class Textile(object):
         text = self.doSpecial(text, '<pre>', '</pre>', self.fPre)
         return text
 
-
     def fCode(self, match):
         before, text, after = match.groups()
+        if after == None: after = ''
         # text needs to be escaped
         if not self.restricted:
             text = self.encode_html(text)
@@ -1010,6 +1010,7 @@ class Textile(object):
 
     def fPre(self, match):
         before, text, after = match.groups()
+        if after == None: after = ''
         # text needs to be escapedd
         if not self.restricted:
             text = self.encode_html(text)
@@ -1026,6 +1027,7 @@ class Textile(object):
         special blocks like notextile or code
         """
         before, text, after = match.groups()
+        if after == None: after = ''
         return ''.join([before, self.shelve(self.encode_html(text)), after])
 
     def noTextile(self, text):
@@ -1034,6 +1036,7 @@ class Textile(object):
 
     def fTextile(self, match):
         before, notextile, after = match.groups()
+        if after == None: after = ''
         return ''.join([before, self.shelve(notextile), after])
 
 

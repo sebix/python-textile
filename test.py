@@ -184,6 +184,9 @@ class KnownValues(unittest.TestCase):
 
         ('Links (like "this":http://foo.com), are now mangled in 2.1.0, whereas 2.0 parsed them correctly.',
          '\t<p>Links (like <a href="http://foo.com">this</a>), are now mangled in 2.1.0, whereas 2.0 parsed them correctly.</p>'),
+
+        ('@monospaced text@, followed by text', 
+         '\t<p><code>monospaced text</code>, followed by text</p>'),
                 
     )
 
