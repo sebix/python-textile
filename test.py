@@ -156,7 +156,10 @@ class KnownValues(unittest.TestCase):
          '\n\t\t<tr>\n\t\t\t<td> archie </td>\n\t\t\t<td> 29 </td>\n\t\t\t<td> m </td>\n\t\t</tr>'
          '\n\t\t<tr>\n\t\t\t<td> bella </td>\n\t\t\t<td> 45 </td>\n\t\t\t<td> f </td>\n\t\t</tr>\n\t</table>'),
 
-        ('<script>alert("hello");</script>', ''),
+        # ('<script>alert("hello");</script>', ''),
+
+        ('pre.. Hello\n\nHello Again\n\np. normal text', '<pre>Hello\n\nHello Again\n</pre>\n\n\t<p>normal text</p>'),
+        
     )
 
     def testKnownValues(self):

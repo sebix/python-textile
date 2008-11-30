@@ -554,6 +554,7 @@ class Textile(object):
 
         out = []
 
+        anon = False
         for line in text:
             pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (tre, self.a, self.c)
             match = re.search(pattern, line, re.S)
@@ -653,7 +654,7 @@ class Textile(object):
             c1 = c2 = ''
 
         elif tag == 'pre':
-            content = self.shelve(self.encode_html(content.rtrim("\n") + "\n"))
+            content = self.shelve(self.encode_html(content.rstrip("\n") + "\n"))
             o1 = "<pre%s>" % atts
             o2 = c2 = ''
             c1 = '</pre>'
