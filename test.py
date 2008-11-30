@@ -159,7 +159,29 @@ class KnownValues(unittest.TestCase):
         # ('<script>alert("hello");</script>', ''),
 
         ('pre.. Hello\n\nHello Again\n\np. normal text', '<pre>Hello\n\nHello Again\n</pre>\n\n\t<p>normal text</p>'),
-        
+
+        ('<pre>this is in a pre tag</pre>', '<pre>this is in a pre tag</pre>'),
+
+        ('"test1":http://foo.com/bar--baz\n\n"test2":http://foo.com/bar---baz\n\n"test3":http://foo.com/bar-17-18-baz', 
+         '\t<p><a href="http://foo.com/bar--baz">test1</a></p>\n\n\t'
+         '<p><a href="http://foo.com/bar---baz">test2</a></p>\n\n\t'
+         '<p><a href="http://foo.com/bar-17-18-baz">test3</a></p>'),
+
+        # ('"foo ==(bar)==":#foobar', '\t<p><a href="#foobar">foo (bar)</a></p>'),
+
+        ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!', 
+         '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt="" /></p>'),
+
+        ('* Point one\n* Point two\n## Step 1\n## Step 2\n## Step 3\n* Point three\n** Sub point 1\n** Sub point 2',
+         '\t<ul>\n\t\t<li>Point one</li>\n\t\t<li>Point two\n\t<ol>\n\t\t<li>Step 1</li>\n\t\t<li>Step 2</li>\n\t\t'
+         '<li>Step 3</li>\n\t</ol></li>\n\t\t<li>Point three\n\t<ul>\n\t\t<li>Sub point 1</li>\n\t\t'
+         '<li>Sub point 2</li>\n\t</ul></li>\n\t</ul>'),
+
+        ('@array[4] = 8@', '\t<p><code>array[4] = 8</code></p>'),
+
+        ('#{color:blue} one\n# two\n# three', 
+         '\t<ol style="color:blue;">\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>'),
+                
     )
 
     def testKnownValues(self):
@@ -170,6 +192,8 @@ class KnownValues(unittest.TestCase):
     def testFootnoteReference(self):
         html = textile.textile('This is covered elsewhere[1].')
         self.assertTrue(re.search('^\t<p>This is covered elsewhere<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup>.</p>$', html))
+        html = textile.textile('YACC[1]')
+        self.assertTrue(re.search('^\t<p>YACC<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup></p>', html))
 
     def testFootnote(self):
         html = textile.textile('fn1. Down here, in fact.')
@@ -180,6 +204,7 @@ class KnownValues(unittest.TestCase):
 
     def testUnicode(self):
         self.assertEqual(textile.textile(u'hello\u4500world'), '\t<p>hello\xe4\x94\x80world</p>')
+        self.assertEqual(textile.textile(u'\u4500', encoding='utf8', output='utf8'), u'\t<p>\u4500</p>'.encode('utf8'))
 
 if __name__ == "__main__":
     unittest.main()

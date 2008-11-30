@@ -302,7 +302,9 @@ class Textile(object):
         text = self.retrieve(text)
 
         # Convert to desired output.
-        # text = unicode(text, encoding)
+        if isinstance(text, str):
+            text = unicode(text, encoding)
+ 
         text = text.encode(output, 'xmlcharrefreplace')
 
         # Sanitize?
