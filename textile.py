@@ -5,7 +5,7 @@ PyTextile
 A Humane Web Text Generator
 """
 
-__version__ = '2.1.1'
+__version__ = '2.1.2'
 
 __date__ = '2008/11/30'
 
