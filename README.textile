@@ -8,7 +8,7 @@ h2. Usage
 <code>
 >>> import textile
 >>> textile.__version__
-'2.1.0'
+'2.1.3'
 >>> s = """
 ... _This_ is a *test.*
 ... 
