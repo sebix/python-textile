@@ -22,7 +22,7 @@ class KnownValues(unittest.TestCase):
 
         ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br />And none replied.</p>'),
 
-        ('"Observe!"', '\t<p>&#8220;Observe!&#8221;</p>'),
+        ('"Observe!"', '\t<p>&#8220;Observe!&#8221; </p>'),
 
         ('Observe -- very nice!', '\t<p>Observe &#8212; very nice!</p>'),
 
@@ -187,6 +187,8 @@ class KnownValues(unittest.TestCase):
 
         ('@monospaced text@, followed by text', 
          '\t<p><code>monospaced text</code>, followed by text</p>'),
+
+        ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\t<p>some text</p>'),
                 
     )
 

@@ -63,7 +63,11 @@ import sgmllib
 
 def _normalize_newlines(string):
     import re
-    return re.sub(r'(\r\n|\r|\n)', '\n', string)
+    out = re.sub(r'\r\n', '\n', string)
+    out = re.sub(r'\n{3,}', '\n\n', out)
+    out = re.sub(r'\n\s*\n', '\n\n', out)
+    out = re.sub(r'"$', '" ', out)
+    return out
 
 # PyTextile can optionally sanitize the generated XHTML,
 # which is good for weblog comments. This code is from
