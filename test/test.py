@@ -227,6 +227,10 @@ class KnownValues(unittest.TestCase):
     def testIssue002Escaping(self):
         foo = '"foo ==(bar)==":#foobar'
         self.assertEqual(textile.textile(foo), '\t<p><a href="#foobar">foo (bar)</a></p>')
+
+    def testIssue014NewlinesInExtendedPreBlocks(self):
+        text = "pre..\nHello\n\nAgain\n\np. normal text"        
+        self.assertEqual(textile.textile(text), '')
         
 
 if __name__ == "__main__":
