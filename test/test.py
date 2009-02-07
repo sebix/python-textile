@@ -224,6 +224,10 @@ class KnownValues(unittest.TestCase):
     def testPBAColspan(self):
         self.assertEqual(self.t.pba(r'\3', element='td'), ' colspan="3"')
 
+    def testIssue002Escaping(self):
+        foo = '"foo ==(bar)==":#foobar'
+        self.assertEqual(textile.textile(foo), '\t<p><a href="#foobar">foo (bar)</a></p>')
+        
 
 if __name__ == "__main__":
     unittest.main()
