@@ -5,12 +5,12 @@ PyTextile
 A Humane Web Text Generator
 """
 
-__version__ = '2.1.2'
+__version__ = '2.1.3'
 
-__date__ = '2008/11/30'
+__date__ = '2009/02/07'
 
 __copyright__ = """
-Copyright (c) 2008, Jason Samsa, http://jsamsa.com/
+Copyright (c) 2009, Jason Samsa, http://jsamsa.com/
 Copyright (c) 2004, Roberto A. F. De Almeida, http://dealmeida.net/
 Copyright (c) 2003, Mark Pilgrim, http://diveintomark.org/
 
@@ -373,7 +373,6 @@ class Textile(object):
         if not input: return ''
 
         matched = input
-        print "\n###", input, element, "###\n"
         if element == 'td':
             m = re.search(r'\\(\d+)', matched)
             if m:
@@ -788,9 +787,10 @@ class Textile(object):
 
     def relURL(self, url):
         o = urlparse(url)
-        if (not o.scheme or o.scheme == 'http') and not o.netloc and re.search(r'^\w', o.path):
+        (scheme,netloc,path,params,query,fragment) = o[0:6]
+        if (not scheme or scheme == 'http') and not netloc and re.search(r'^\w', path):
             url = self.hu + url
-        if self.restricted and o.scheme and o.scheme not in self.url_schemes:
+        if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
         return url
 
@@ -879,8 +879,6 @@ class Textile(object):
 
     def fLink(self, match):
         pre, atts, text, title, url, slash, post = match.groups()
-        # print "## ", zip("pre, atts, text, title, url, slash, post".split(","), match.groups()) 
-        # print
 
         if pre == None:
             pre = ''
