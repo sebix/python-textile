@@ -244,7 +244,7 @@ class Textile(object):
     clas = r'(?:\([^)]+\))'
     lnge = r'(?:\[[^\]]+\])'
     styl = r'(?:\{[^}]+\})'
-    cspn = r'(?:\\\\\d+)'
+    cspn = r'(?:\\\d+)'
     rspn = r'(?:\/\d+)'
     a = r'(?:%s|%s)*' % (hlgn, vlgn)
     s = r'(?:%s|%s)*' % (cspn, rspn)
@@ -373,6 +373,7 @@ class Textile(object):
         if not input: return ''
 
         matched = input
+        print "\n###", input, element, "###\n"
         if element == 'td':
             m = re.search(r'\\(\d+)', matched)
             if m:

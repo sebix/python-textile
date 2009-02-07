@@ -12,6 +12,9 @@ import re
 """
 
 class KnownValues(unittest.TestCase):
+    def setUp(self):
+        self.t = textile.Textile()
+
     known_values = (
         ('hello, world', '\t<p>hello, world</p>'),
 
@@ -213,6 +216,14 @@ class KnownValues(unittest.TestCase):
     def testUnicode(self):
         self.assertEqual(textile.textile(u'hello\u4500world'), '\t<p>hello\xe4\x94\x80world</p>')
         self.assertEqual(textile.textile(u'\u4500', encoding='utf8', output='utf8'), u'\t<p>\u4500</p>'.encode('utf8'))
+
+    def testIssue024TableColspan(self):
+        self.assertEqual(textile.textile('|\\2. spans two cols |\n| col 1 | col 2 |'), 
+            '\t<table>\n\t\t<tr>\n\t\t\t<td colspan="2">spans two cols </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td> col 1 </td>\n\t\t\t<td> col 2 </td>\n\t\t</tr>\n\t</table>')
+
+    def testPBAColspan(self):
+        self.assertEqual(self.t.pba(r'\3', element='td'), ' colspan="3"')
+
 
 if __name__ == "__main__":
     unittest.main()
