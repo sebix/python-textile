@@ -253,6 +253,17 @@ class KnownValues(unittest.TestCase):
         from urlparse import urlparse
         print urlparse(url)
 
+    def testTableWithHyphenStyles(self):
+        text = 'table(linkblog-thumbnail).\n|(linkblog-thumbnail-cell). apple|bear|'
+        expect = '\t<table class="linkblog-thumbnail">\n\t\t<tr>\n\t\t\t<td style="vertical-align:middle;" class="linkblog-thumbnail-cell">apple</td>\n\t\t\t<td>bear</td>\n\t\t</tr>\n\t</table>'
+        result = textile.textile(text)
+        print text
+        print expect
+        print result
+        assert result == expect
+
+        
+
         
 
 if __name__ == "__main__":
