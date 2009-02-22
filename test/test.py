@@ -197,7 +197,14 @@ class KnownValues(unittest.TestCase):
 
     def testKnownValues(self):
         for t, h in self.known_values:
-            self.assertEqual(textile.textile(t), h)
+            r = textile.textile(t)
+            try:
+                assert r == h
+            except:
+                print t
+                print h
+                print r
+                raise
 
     
     def testFootnoteReference(self):
@@ -231,6 +238,21 @@ class KnownValues(unittest.TestCase):
     def testIssue014NewlinesInExtendedPreBlocks(self):
         text = "pre.. Hello\n\nAgain\n\np. normal text"        
         self.assertEqual(textile.textile(text), '<pre>Hello\n\nAgain\n</pre>\n\n\t<p>normal text</p>')
+
+    def testURLWithParens(self):
+        text = '"python":http://en.wikipedia.org/wiki/Python_(programming_language)'
+        expect='\t<p><a href="http://en.wikipedia.org/wiki/Python_(programming_language)">python</a></p>'
+        result=textile.textile(text)
+        print text
+        print expect
+        print result 
+        assert result == expect
+
+    def testURLWithParensUrlparse(self):
+        url = 'http://en.wikipedia.org/wiki/Python_(programming_language)'
+        from urlparse import urlparse
+        print urlparse(url)
+
         
 
 if __name__ == "__main__":

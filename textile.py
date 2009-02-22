@@ -860,16 +860,15 @@ class Textile(object):
         punct = '!"#$%&\'*+,-./:;=?@\\^_`|~'
 
         pattern = r'''
-            ([\s\[{(]|[%s])?     # $pre
+            (?P<pre>    [\s\[{(]|[%s]   )?
             "                          # start
-            (%s)                     # $atts
-            ([^"]+?)                   # $text
+            (?P<atts>   %s       )
+            (?P<text>   [^"]+?   )
             \s?
-            (?:\(([^)]+?)\)(?="))?     # $title
+            (?:   \(([^)]+?)\)(?=")   )?     # $title
             ":
-            (\S+?)                     # $url
-            (\/)?                      # $slash
-            ([^\w\/;]*?)               # $post
+            (?P<url>    (?:ftp|https?)? (?: :// )? [-A-Za-z0-9+&@#/?=~_()|!:,.;]*[-A-Za-z0-9+&@#/=~_()|]   )
+            (?P<post>   [^\w\/;]*?   )
             (?=<|\s|$)
         ''' % (re.escape(punct), self.c)
 
@@ -878,11 +877,17 @@ class Textile(object):
         return text
 
     def fLink(self, match):
-        pre, atts, text, title, url, slash, post = match.groups()
+        pre, atts, text, title, url, post = match.groups()
 
         if pre == None:
             pre = ''
             
+        # assume ) at the end of the url is not actually part of the url
+        # unless the url also contains a (
+        if url.endswith(')') and not url.find('(') > -1:
+            post = url[-1] + post
+            url = url[:-1]
+
         url = self.checkRefs(url)
 
         atts = self.pba(atts)
@@ -895,7 +900,6 @@ class Textile(object):
         text = self.glyphs(text)
 
         url = self.relURL(url)
-        if slash: url = url + slash
         out = '<a href="%s"%s%s>%s</a>' % (self.encode_html(url), atts, self.rel, text)
         out = self.shelve(out)
         return ''.join([pre, out, post])
