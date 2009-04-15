@@ -15,7 +15,7 @@ class KnownValues(unittest.TestCase):
     def setUp(self):
         self.t = textile.Textile()
 
-    known_values = (
+    xhtml_known_values = (
         ('hello, world', '\t<p>hello, world</p>'),
 
         ('A single paragraph.\n\nFollowed by another.','\t<p>A single paragraph.</p>\n\n\t<p>Followed by another.</p>'),
@@ -192,11 +192,40 @@ class KnownValues(unittest.TestCase):
          '\t<p><code>monospaced text</code>, followed by text</p>'),
 
         ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\t<p>some text</p>'),
-                
+
+    )
+
+    # A few extra cases for HTML4
+    html_known_values = (
+        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br>And none replied.</p>'),
+        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br>I <b>really</b> <i>know</i>.</p>'),
+        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br>of most soft drinks.</p>'),
+        ('I seriously *{color:red}blushed*\nwhen I _(big)sprouted_ that\ncorn stalk from my\n%[es]cabeza%.',
+        '\t<p>I seriously <strong style="color:red;">blushed</strong><br>when I <em class="big">sprouted</em>'
+        ' that<br>corn stalk from my<br><span lang="es">cabeza</span>.</p>'),
+        ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
+         '<pre>\n<code>\na.gsub!( /&#60;/, &#34;&#34; )\n</code>\n</pre>'),
+        ('<div style="float:right;">\n\nh3. Sidebar\n\n"Hobix":http://hobix.com/\n"Ruby":http://ruby-lang.org/\n\n</div>\n\n'
+         'The main text of the\npage goes here and will\nstay to the left of the\nsidebar.',
+         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br>'
+         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br>'
+         'page goes here and will<br>stay to the left of the<br>sidebar.</p>'),
+        ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
+         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br>and <a href="http://hobix.com">it&#8217;s</a> '
+         '<a href="http://hobix.com">all</a> I ever<br><a href="http://hobix.com">link to</a>!</p>\n\n'),
+        ('!http://hobix.com/sample.jpg!', '\t<p><img src="http://hobix.com/sample.jpg" alt=""></p>'),
+        ('!openwindow1.gif(Bunny.)!', '\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny."></p>'),
+        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/"><img src="openwindow1.gif" alt=""></a></p>'),
+        ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
+         '\t<p><img src="obake.gif" style="text-align:right;" alt=""></p>\n\n\t'
+         '<p>And others sat all round the small<br>machine and paid it to sing to them.</p>'),
+        ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!', 
+         '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt=""></p>'),
     )
 
     def testKnownValues(self):
-        for t, h in self.known_values:
+        # XHTML
+        for t, h in self.xhtml_known_values:
             r = textile.textile(t)
             try:
                 assert r == h
@@ -206,7 +235,17 @@ class KnownValues(unittest.TestCase):
                 print r
                 raise
 
-    
+        # HTML4
+        for t, h in self.html_known_values:
+            r = textile.textile(t, html_type='html')
+            try:
+                assert r == h
+            except:
+                print t
+                print h
+                print r
+                raise
+
     def testFootnoteReference(self):
         html = textile.textile('This is covered elsewhere[1].')
         self.assertTrue(re.search('^\t<p>This is covered elsewhere<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup>.</p>$', html))
@@ -243,28 +282,18 @@ class KnownValues(unittest.TestCase):
         text = '"python":http://en.wikipedia.org/wiki/Python_(programming_language)'
         expect='\t<p><a href="http://en.wikipedia.org/wiki/Python_(programming_language)">python</a></p>'
         result=textile.textile(text)
-        print text
-        print expect
-        print result 
         assert result == expect
 
     def testURLWithParensUrlparse(self):
         url = 'http://en.wikipedia.org/wiki/Python_(programming_language)'
         from urlparse import urlparse
-        print urlparse(url)
+        #print urlparse(url)
 
     def testTableWithHyphenStyles(self):
         text = 'table(linkblog-thumbnail).\n|(linkblog-thumbnail-cell). apple|bear|'
         expect = '\t<table class="linkblog-thumbnail">\n\t\t<tr>\n\t\t\t<td style="vertical-align:middle;" class="linkblog-thumbnail-cell">apple</td>\n\t\t\t<td>bear</td>\n\t\t</tr>\n\t</table>'
         result = textile.textile(text)
-        print text
-        print expect
-        print result
         assert result == expect
-
-        
-
-        
 
 if __name__ == "__main__":
     unittest.main()
