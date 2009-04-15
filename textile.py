@@ -94,7 +94,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
         # attrs is a list of (attr, value) tuples
         # e.g. for <pre class="screen">, tag="pre", attrs=[("class", "screen")]
         strattrs = "".join([' %s="%s"' % (key, value) for key, value in attrs])
-        if tag in self.elements_no_end_tag:
+        if tag in self.elements_no_end_tag and self.html_type == 'xhtml':
             self.pieces.append("<%(tag)s%(strattrs)s />" % locals())
         else:
             self.pieces.append("<%(tag)s%(strattrs)s>" % locals())
@@ -102,7 +102,7 @@ class _BaseHTMLProcessor(sgmllib.SGMLParser):
     def unknown_endtag(self, tag):
         # called for each end tag, e.g. for </pre>, tag will be "pre"
         # Reconstruct the original end tag.
-        if tag not in self.elements_no_end_tag:
+        if tag not in self.elements_no_end_tag or self.html_type == 'html':
             self.pieces.append("</%(tag)s>" % locals())
 
     def handle_charref(self, ref):
@@ -286,12 +286,14 @@ class Textile(object):
         self.shelf = {}
         self.rel = ''
 
-    def textile(self, text, rel=None, encoding='utf8', output='utf8', validate=False, sanitize=False, head_offset='ignored'):
+    def textile(self, text, rel=None, encoding='utf8', output='utf8', validate=False, sanitize=False, head_offset='ignored', html_type='xhtml'):
         """
         >>> import textile
         >>> textile.textile('some textile')
         '\\t<p>some textile</p>'
         """
+        self.html_type = html_type
+
         text = _normalize_newlines(text)
 
         if rel:
@@ -542,7 +544,10 @@ class Textile(object):
         return re.compile(r'<(p)([^>]*?)>(.*)(</\1>)', re.S).sub(self.doBr, in_)
 
     def doBr(self, match):
-        content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />', match.group(3))
+        if self.html_type == 'html':
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br>', match.group(3))
+        else:
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />', match.group(3))
         return '<%s%s>%s%s' % (match.group(1), match.group(2), content, match.group(4))
 
     def block(self, text):
@@ -588,7 +593,8 @@ class Textile(object):
                     line = self.graf(line)
 
             line = self.doPBr(line)
-            line = re.sub(r'<br>', '<br />', line)
+            if self.html_type == 'xhtml':
+                line = re.sub(r'<br>', '<br />', line)
 
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
@@ -995,8 +1001,12 @@ class Textile(object):
         url = self.relURL(url)
 
         out = []
-        if href: out.append('<a href="%s">' % href)
-        out.append('<img src="%s"%s />' % (url, atts))
+        if href:
+            out.append('<a href="%s">' % href)
+        if self.html_type == 'html':
+            out.append('<img src="%s"%s>' % (url, atts))
+        else:
+            out.append('<img src="%s"%s />' % (url, atts))
         if href: out.append('</a>')
 
         return ''.join(out)
@@ -1055,6 +1065,7 @@ def textile(text, **args):
     validate - perform mxTidy or uTidyLib validation (default: False)
     sanitize - sanitize output good for weblog comments (default: False)
     head_offset - ignored
+    html_type - 'xhtml' or 'html' style tags
     """
     return Textile().textile(text, **args)
 
