@@ -286,7 +286,7 @@ class Textile(object):
         self.shelf = {}
         self.rel = ''
 
-    def textile(self, text, rel=None, validate=False, sanitize=False, head_offset='ignored', html_type='xhtml'):
+    def textile(self, text, rel=None, validate=False, sanitize=False, head_offset='0', html_type='xhtml'):
         """
         >>> import textile
         >>> textile.textile('some textile')
@@ -303,6 +303,7 @@ class Textile(object):
         text = self.getRefs(text)
 
         if not self.lite:
+            self.head_offset = head_offset
             text = self.block(text)
 
         text = self.retrieve(text)
@@ -568,6 +569,12 @@ class Textile(object):
                     out.append(out.pop() + c1)
 
                 tag,atts,ext,cite,graf = match.groups()
+                h_match = re.search(r'h([1-6])', tag)
+                if h_match:
+                    head_level, = h_match.groups()
+                    tag = 'h%i' % max(1, 
+                                      min(int(head_level) + self.head_offset,
+                                          6))
                 o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, cite, graf)
                 # leave off c1 if this block is extended, we'll close it at the start of the next block
                 if ext:
@@ -1057,7 +1064,7 @@ def textile(text, **args):
     this function takes additional parameters:
     validate - perform mxTidy or uTidyLib validation (default: False)
     sanitize - sanitize output good for weblog comments (default: False)
-    head_offset - ignored
+    head_offset - offset to apply to heading levels
     html_type - 'xhtml' or 'html' style tags
     """
     return Textile().textile(text, **args)
