@@ -1,7 +1,7 @@
 import textile
 import re
 import unittest
-from nose.tools import eq_
+from nose.tools import eq_, assert_true
 
 
 """
@@ -235,67 +235,57 @@ class TestKnownValues():
         eq_(output, expected_output)
 
 
-class Tests(unittest.TestCase):
-
+class Tests():
     def testFootnoteReference(self):
         html = textile.textile('This is covered elsewhere[1].')
-        self.assertTrue(re.search('^\t<p>This is covered elsewhere<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup>.</p>$', html))
+        assert_true(re.search('^\t<p>This is covered elsewhere<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup>.</p>$', html))
         html = textile.textile('YACC[1]')
-        self.assertTrue(re.search('^\t<p>YACC<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup></p>', html))
+        assert_true(re.search('^\t<p>YACC<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup></p>', html))
 
     def testFootnote(self):
         html = textile.textile('fn1. Down here, in fact.')
-        self.assertTrue(re.search('^\t<p id="fn[a-z0-9-]+" class="footnote"><sup>1</sup>Down here, in fact.</p>$', html))
+        assert_true(re.search('^\t<p id="fn[a-z0-9-]+" class="footnote"><sup>1</sup>Down here, in fact.</p>$', html))
 
     def testURLWithHyphens(self):
-        self.assertEqual(textile.textile('"foo":http://google.com/one--two'), '\t<p><a href="http://google.com/one--two">foo</a></p>')
-
-    #def testUnicode(self):
-    #    self.assertEqual(textile.textile(u'hello\u4500world'), '\t<p>hello\xe4\x94\x80world</p>')
-    #    self.assertEqual(textile.textile(u'\u4500', encoding='utf8', output='utf8'), u'\t<p>\u4500</p>'.encode('utf8'))
+        eq_(textile.textile('"foo":http://google.com/one--two'), '\t<p><a href="http://google.com/one--two">foo</a></p>')
 
     def testIssue024TableColspan(self):
-        self.assertEqual(textile.textile('|\\2. spans two cols |\n| col 1 | col 2 |'), 
+        eq_(textile.textile('|\\2. spans two cols |\n| col 1 | col 2 |'), 
             '\t<table>\n\t\t<tr>\n\t\t\t<td colspan="2">spans two cols </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td> col 1 </td>\n\t\t\t<td> col 2 </td>\n\t\t</tr>\n\t</table>')
 
     def testPBAColspan(self):
-        self.assertEqual(textile.Textile().pba(r'\3', element='td'), ' colspan="3"')
+        eq_(textile.Textile().pba(r'\3', element='td'), ' colspan="3"')
 
     def testIssue002Escaping(self):
         foo = '"foo ==(bar)==":#foobar'
-        self.assertEqual(textile.textile(foo), '\t<p><a href="#foobar">foo (bar)</a></p>')
+        eq_(textile.textile(foo), '\t<p><a href="#foobar">foo (bar)</a></p>')
 
     def testIssue014NewlinesInExtendedPreBlocks(self):
         text = "pre.. Hello\n\nAgain\n\np. normal text"        
-        self.assertEqual(textile.textile(text), '<pre>Hello\n\nAgain\n</pre>\n\n\t<p>normal text</p>')
+        eq_(textile.textile(text), '<pre>Hello\n\nAgain\n</pre>\n\n\t<p>normal text</p>')
 
     def testURLWithParens(self):
         text = '"python":http://en.wikipedia.org/wiki/Python_(programming_language)'
         expect='\t<p><a href="http://en.wikipedia.org/wiki/Python_(programming_language)">python</a></p>'
         result=textile.textile(text)
-        assert result == expect
+        eq_(result, expect)
 
-    def testURLWithParensUrlparse(self):
-        url = 'http://en.wikipedia.org/wiki/Python_(programming_language)'
-        from urlparse import urlparse
-        #print urlparse(url)
+    #Test below does not seem to do anything.
+
+    #def testURLWithParensUrlparse(self):
+    #    url = 'http://en.wikipedia.org/wiki/Python_(programming_language)'
+    #    from urlparse import urlparse
+    #    #print urlparse(url)
 
     def testTableWithHyphenStyles(self):
         text = 'table(linkblog-thumbnail).\n|(linkblog-thumbnail-cell). apple|bear|'
         expect = '\t<table class="linkblog-thumbnail">\n\t\t<tr>\n\t\t\t<td style="vertical-align:middle;" class="linkblog-thumbnail-cell">apple</td>\n\t\t\t<td>bear</td>\n\t\t</tr>\n\t</table>'
         result = textile.textile(text)
-        assert result == expect
+        eq_(result, expect)
 
     def testHeadOffset(self):
         text = 'h2. This is a header'
         head_offset = 2
         expect = '\t<h4>This is a header</h4>'
         result = textile.textile(text, head_offset=head_offset)
-        try:
-            assert result == expect
-        except:
-            print text
-            print expect
-            print result
-            raise
-
+        eq_(result, expect)
