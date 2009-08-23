@@ -286,7 +286,7 @@ class Textile(object):
         self.shelf = {}
         self.rel = ''
 
-    def textile(self, text, rel=None, validate=False, sanitize=False, head_offset='0', html_type='xhtml'):
+    def textile(self, text, rel=None, validate=False, sanitize=False, head_offset=0, html_type='xhtml'):
         """
         >>> import textile
         >>> textile.textile('some textile')
@@ -303,8 +303,7 @@ class Textile(object):
         text = self.getRefs(text)
 
         if not self.lite:
-            self.head_offset = int(head_offset)
-            text = self.block(text)
+            text = self.block(text, int(head_offset))
 
         text = self.retrieve(text)
 
@@ -546,7 +545,7 @@ class Textile(object):
             content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />', match.group(3))
         return '<%s%s>%s%s' % (match.group(1), match.group(2), content, match.group(4))
 
-    def block(self, text):
+    def block(self, text, head_offset = 0):
         """
         >>> t = Textile()
         >>> t.block('h1. foobar baby')
@@ -573,7 +572,7 @@ class Textile(object):
                 if h_match:
                     head_level, = h_match.groups()
                     tag = 'h%i' % max(1, 
-                                      min(int(head_level) + self.head_offset,
+                                      min(int(head_level) + head_offset,
                                           6))
                 o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, cite, graf)
                 # leave off c1 if this block is extended, we'll close it at the start of the next block
