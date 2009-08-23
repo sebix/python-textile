@@ -291,7 +291,7 @@ class Textile(object):
         """
         >>> import textile
         >>> textile.textile('some textile')
-        '\\t<p>some textile</p>'
+        u'\\t<p>some textile</p>'
         """
         self.html_type = html_type
 
