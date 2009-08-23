@@ -303,7 +303,7 @@ class Textile(object):
         text = self.getRefs(text)
 
         if not self.lite:
-            self.head_offset = head_offset
+            self.head_offset = int(head_offset)
             text = self.block(text)
 
         text = self.retrieve(text)
