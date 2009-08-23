@@ -1,0 +1,20 @@
+syntax: glob
+*.orig
+*.rej
+*~
+*.pyo
+*.pyc
+*.egg-info
+.coverage
+docs/build
+docs/coverage
+build
+bin
+dist
+eggs
+parts
+develop-eggs
+
+
+syntax: regexp
+.*\#.*\#$
