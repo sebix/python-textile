@@ -1,4 +1,2 @@
-include setup.py
-include textile.py
-include test/test.py
 include README.textile
+include ez_setup.py

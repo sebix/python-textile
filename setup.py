@@ -3,7 +3,7 @@
 import ez_setup
 ez_setup.use_setuptools()
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='textile',
       version='2.1.3',
@@ -11,7 +11,7 @@ setup(name='textile',
       author='Jason Samsa',
       author_email='jsamsa@gmail.com',
       url='http://loopcore.com/python-textile/',
-      py_modules=['textile'],
+      packages = find_packages(),
       platforms = ['any'],
       license = ['BSD'],
       long_description = """
