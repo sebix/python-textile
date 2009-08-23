@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-
 import textile
-import unittest
 import re
+import unittest
+from nose.tools import eq_
 
 
 """
@@ -11,10 +10,7 @@ import re
 
 """
 
-class KnownValues(unittest.TestCase):
-    def setUp(self):
-        self.t = textile.Textile()
-
+class TestKnownValues():
     xhtml_known_values = (
         ('hello, world', '\t<p>hello, world</p>'),
 
@@ -223,28 +219,23 @@ class KnownValues(unittest.TestCase):
          '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt=""></p>'),
     )
 
-    def testKnownValues(self):
+    def testKnownValuesXHTML(self):
         # XHTML
         for t, h in self.xhtml_known_values:
-            r = textile.textile(t)
-            try:
-                assert r == h
-            except:
-                print t
-                print h
-                print r
-                raise
+            yield self.check_textile, t, h, 'xhtml'
 
+    def testKnownValuesHTML(self):
         # HTML4
         for t, h in self.html_known_values:
-            r = textile.textile(t, html_type='html')
-            try:
-                assert r == h
-            except:
-                print t
-                print h
-                print r
-                raise
+            yield self.check_textile, t, h, 'html'
+
+
+    def check_textile(self, input, expected_output, html_type):
+        output = textile.textile(input, html_type=html_type)
+        eq_(output, expected_output)
+
+
+class Tests(unittest.TestCase):
 
     def testFootnoteReference(self):
         html = textile.textile('This is covered elsewhere[1].')
@@ -259,16 +250,16 @@ class KnownValues(unittest.TestCase):
     def testURLWithHyphens(self):
         self.assertEqual(textile.textile('"foo":http://google.com/one--two'), '\t<p><a href="http://google.com/one--two">foo</a></p>')
 
-    def testUnicode(self):
-        self.assertEqual(textile.textile(u'hello\u4500world'), '\t<p>hello\xe4\x94\x80world</p>')
-        self.assertEqual(textile.textile(u'\u4500', encoding='utf8', output='utf8'), u'\t<p>\u4500</p>'.encode('utf8'))
+    #def testUnicode(self):
+    #    self.assertEqual(textile.textile(u'hello\u4500world'), '\t<p>hello\xe4\x94\x80world</p>')
+    #    self.assertEqual(textile.textile(u'\u4500', encoding='utf8', output='utf8'), u'\t<p>\u4500</p>'.encode('utf8'))
 
     def testIssue024TableColspan(self):
         self.assertEqual(textile.textile('|\\2. spans two cols |\n| col 1 | col 2 |'), 
             '\t<table>\n\t\t<tr>\n\t\t\t<td colspan="2">spans two cols </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td> col 1 </td>\n\t\t\t<td> col 2 </td>\n\t\t</tr>\n\t</table>')
 
     def testPBAColspan(self):
-        self.assertEqual(self.t.pba(r'\3', element='td'), ' colspan="3"')
+        self.assertEqual(textile.Textile().pba(r'\3', element='td'), ' colspan="3"')
 
     def testIssue002Escaping(self):
         foo = '"foo ==(bar)==":#foobar'
@@ -307,9 +298,4 @@ class KnownValues(unittest.TestCase):
             print expect
             print result
             raise
-
-
-
-if __name__ == "__main__":
-    unittest.main()
 
