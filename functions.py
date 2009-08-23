@@ -286,7 +286,7 @@ class Textile(object):
         self.shelf = {}
         self.rel = ''
 
-    def textile(self, text, rel=None, encoding='utf8', output='utf8', validate=False, sanitize=False, head_offset='ignored', html_type='xhtml'):
+    def textile(self, text, rel=None, validate=False, sanitize=False, head_offset='ignored', html_type='xhtml'):
         """
         >>> import textile
         >>> textile.textile('some textile')
@@ -294,6 +294,7 @@ class Textile(object):
         """
         self.html_type = html_type
 
+        text = unicode(text)
         text = _normalize_newlines(text)
 
         if rel:
@@ -305,12 +306,6 @@ class Textile(object):
             text = self.block(text)
 
         text = self.retrieve(text)
-
-        # Convert to desired output.
-        if isinstance(text, str):
-            text = unicode(text, encoding)
- 
-        text = text.encode(output, 'xmlcharrefreplace')
 
         # Sanitize?
         if sanitize:
@@ -1060,8 +1055,6 @@ class Textile(object):
 def textile(text, **args):
     """
     this function takes additional parameters:
-    encoding - input encoding (default: 'utf-8')
-    output - output encoding (default: 'utf-8')
     validate - perform mxTidy or uTidyLib validation (default: False)
     sanitize - sanitize output good for weblog comments (default: False)
     head_offset - ignored
