@@ -285,6 +285,7 @@ class Textile(object):
         self.urlrefs = {}
         self.shelf = {}
         self.rel = ''
+        self.html_type='xhtml'
 
     def textile(self, text, rel=None, validate=False, sanitize=False, head_offset=0, html_type='xhtml'):
         """
