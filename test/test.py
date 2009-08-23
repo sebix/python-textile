@@ -295,6 +295,21 @@ class KnownValues(unittest.TestCase):
         result = textile.textile(text)
         assert result == expect
 
+    def testHeadOffset(self):
+        text = 'h2. This is a header'
+        head_offset = 2
+        expect = '\t<h4>This is a header</h4>'
+        result = textile.textile(text, head_offset=head_offset)
+        try:
+            assert result == expect
+        except:
+            print text
+            print expect
+            print result
+            raise
+
+
+
 if __name__ == "__main__":
     unittest.main()
 
