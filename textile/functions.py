@@ -719,7 +719,7 @@ class Textile(object):
 
         """
          # fix: hackish
-        text = re.sub(r'"\z', '\" ', text)
+        text = re.sub(r'"\Z', '\" ', text)
 
         glyph_search = (
             re.compile(r"(\w)\'(\w)"),                                      # apostrophe's

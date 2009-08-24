@@ -289,3 +289,12 @@ class Tests():
         expect = '\t<h4>This is a header</h4>'
         result = textile.textile(text, head_offset=head_offset)
         eq_(result, expect)
+
+    def TestIssue035(self):
+        result = textile.textile('"z"')
+        expect = '\t<p>&#8220;z&#8221; </p>'
+        eq_(result, expect)
+
+        result = textile.textile('" z"')
+        expect = '\t<p>&#8220; z&#8221; </p>'
+        eq_(result, expect)
