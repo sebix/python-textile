@@ -298,3 +298,9 @@ class Tests():
         result = textile.textile('" z"')
         expect = '\t<p>&#8220; z&#8221; </p>'
         eq_(result, expect)
+
+    def TestIssue032(self):
+        text = "|thing|||otherthing|"
+        result = textile.textile(text)
+        expect = "\t<table>\n\t\t<tr>\n\t\t\t<td>thing</td>\n\t\t\t<td></td>\n\t\t\t<td></td>\n\t\t\t<td>otherthing</td>\n\t\t</tr>\n\t</table>"
+        eq_(result, expect)

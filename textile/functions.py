@@ -465,22 +465,23 @@ class Textile(object):
             if rmtch:
                 ratts = self.pba(rmtch.group(1), 'tr')
                 row = rmtch.group(2)
-            else: ratts = ''
+            else:
+                ratts = ''
 
             cells = []
-            for cell in row.split('|'):
+            for cell in row.split('|')[1:-1]:
                 ctyp = 'd'
-                if re.search(r'^_', cell): ctyp = "h"
+                if re.search(r'^_', cell):
+                    ctyp = "h"
                 cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (self.s, self.a, self.c), cell)
                 if cmtch:
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
-                else: catts = ''
+                else:
+                    catts = ''
 
                 cell = self.graf(self.span(cell))
-
-                if cell.strip() != '':
-                    cells.append('\t\t\t<t%s%s>%s</t%s>' % (ctyp, catts, cell, ctyp))
+                cells.append('\t\t\t<t%s%s>%s</t%s>' % (ctyp, catts, cell, ctyp))
             rows.append("\t\t<tr%s>\n%s\n\t\t</tr>" % (ratts, '\n'.join(cells)))
             cells = []
             catts = None
