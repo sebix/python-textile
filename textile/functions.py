@@ -782,7 +782,7 @@ class Textile(object):
         """
         what is this for?
         """
-        pattern = re.compile(r'(?:(?<=^)|(?<=\s))\[(.+)\]((?:http:\/\/|\/)\S+)(?=\s|$)', re.U)
+        pattern = re.compile(r'(?:(?<=^)|(?<=\s))\[(.+)\]((?:http(?:s?):\/\/|\/)\S+)(?=\s|$)', re.U)
         text = pattern.sub(self.refs, text)
         return text
 

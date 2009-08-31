@@ -304,3 +304,14 @@ class Tests():
         result = textile.textile(text)
         expect = "\t<table>\n\t\t<tr>\n\t\t\t<td>thing</td>\n\t\t\t<td></td>\n\t\t\t<td></td>\n\t\t\t<td>otherthing</td>\n\t\t</tr>\n\t</table>"
         eq_(result, expect)
+
+    def TestIssue036(self):
+        test = '"signup":signup\n[signup]http://myservice.com/signup'
+        result = textile.textile(test)
+        expect = '\t<p><a href="http://myservice.com/signup">signup</a></p>'
+        eq_(result, expect)
+
+        test = '"signup":signup\n[signup]https://myservice.com/signup'
+        result = textile.textile(test)
+        expect = '\t<p><a href="https://myservice.com/signup">signup</a></p>'
+        eq_(result, expect)
