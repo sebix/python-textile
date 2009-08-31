@@ -6,6 +6,7 @@ syntax: glob
 *.pyc
 *.egg-info
 .coverage
+.noseids
 docs/build
 docs/coverage
 build
