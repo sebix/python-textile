@@ -1060,7 +1060,7 @@ class Textile(object):
         return ''.join([before, self.shelve(notextile), after])
 
 
-def textile(text, **args):
+def textile(text, lite=False, restricted=False, **args):
     """
     this function takes additional parameters:
     validate - perform mxTidy or uTidyLib validation (default: False)
@@ -1068,7 +1068,7 @@ def textile(text, **args):
     head_offset - offset to apply to heading levels
     html_type - 'xhtml' or 'html' style tags
     """
-    return Textile().textile(text, **args)
+    return Textile(lite=lite, restricted=restricted).textile(text, **args)
 
 def _test():
     import doctest
