@@ -217,6 +217,7 @@ class TestKnownValues():
          '<p>And others sat all round the small<br>machine and paid it to sing to them.</p>'),
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!', 
          '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt=""></p>'),
+        ('notextile. <b> foo bar baz</b>\n\np. quux\n','<b> foo bar baz</b>\n\n\t<p>quux</p>')
     )
 
     def testKnownValuesXHTML(self):
