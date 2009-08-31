@@ -322,8 +322,8 @@ class Tests():
         #(see line 557 in block()), so the beginning and end tags get split up,
         #with the result being that they are not parsed properly.
 
-        #This also seems to be a problem with bc., pre., and the like.
-        
+        #Recommended workaround: use "pre.."
+
         #No blank line in a <pre> block works.
         test = "this is a test\n\n<pre>\nthis should all get enclosed neatly in a <pre> tag\nbut a blank line in the middle screws it up\n</pre>"
         result = textile.textile(test)
