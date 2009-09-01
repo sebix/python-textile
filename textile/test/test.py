@@ -230,7 +230,6 @@ class TestKnownValues():
         for t, h in self.html_known_values:
             yield self.check_textile, t, h, 'html'
 
-
     def check_textile(self, input, expected_output, html_type):
         output = textile.textile(input, html_type=html_type)
         eq_(output, expected_output)
@@ -317,14 +316,31 @@ class Tests():
         expect = '\t<p><a href="https://myservice.com/signup">signup</a></p>'
         eq_(result, expect)
 
-
-
+    def TestNestedFormatting(self):
+        test = "*_test text_*"
+        result = textile.textile(test)
+        expect = "\t<p><strong><em>test text</em></strong></p>"
+        
         eq_(result, expect)
 
 
-    def TestBoldItalic(self):
         test = "_*test text*_"
         result = textile.textile(test)
         expect = "\t<p><em><strong>test text</strong></em></p>"
+        
+        eq_(result, expect)
+
+    def TestRestricted(self):
+        test = "this is \"some\" *bold text*."
+        result = textile.textile_restricted(test)
+        expect = "\t<p>this is &#8220;some&#8221; <strong>bold text</strong>.</p>"
+        
+        eq_(result, expect)
+        
+        #Note that the HTML is escaped, thus rendering
+        #the <script> tag harmless.
+        test = "Here is some text.\n<script>alert('hello world')</script>"
+        result = textile.textile_restricted(test)
+        expect = "\t<p>Here is some text.<br />&#60;script&#62;alert('hello world&#8217;)&#60;/script&#62;</p>"
         
         eq_(result, expect)
