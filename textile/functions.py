@@ -257,7 +257,7 @@ class Textile(object):
     url_schemes = ('http','https','ftp','mailto')
 
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
-    noimage = False
+    btag_lite = ('bq', 'bc', 'p')
     hu = ''
 
     glyph_defaults = (
@@ -277,10 +277,11 @@ class Textile(object):
         ('txt_copyright',          '&#169;'),
     )
 
-    def __init__(self, restricted=False, lite=False):
+    def __init__(self, restricted=False, lite=False, noimage=False):
         """docstring for __init__"""
         self.restricted = restricted
         self.lite = lite
+        self.noimage = noimage
         self.fn = {}
         self.urlrefs = {}
         self.shelf = {}
@@ -298,13 +299,15 @@ class Textile(object):
         text = unicode(text)
         text = _normalize_newlines(text)
 
+        if self.restricted:
+            text = self.encode_html(text, quotes=False)
+
         if rel:
             self.rel = ' rel="%s"' % rel
 
         text = self.getRefs(text)
 
-        if not self.lite:
-            text = self.block(text, int(head_offset))
+        text = self.block(text, int(head_offset))
 
         text = self.retrieve(text)
 
@@ -555,7 +558,10 @@ class Textile(object):
         >>> t.block('h1. foobar baby')
         '\\t<h1>foobar baby</h1>'
         """
-        tre = '|'.join(self.btag)
+        if not self.lite:
+            tre = '|'.join(self.btag)
+        else:
+            tre = '|'.join(self.btag_lite)
         text = text.split('\n\n')
 
         tag = 'p'
@@ -1064,7 +1070,7 @@ class Textile(object):
         return ''.join([before, self.shelve(notextile), after])
 
 
-def textile(text, lite=False, restricted=False, **args):
+def textile(text, **args):
     """
     this function takes additional parameters:
     validate - perform mxTidy or uTidyLib validation (default: False)
@@ -1072,7 +1078,21 @@ def textile(text, lite=False, restricted=False, **args):
     head_offset - offset to apply to heading levels
     html_type - 'xhtml' or 'html' style tags
     """
-    return Textile(lite=lite, restricted=restricted).textile(text, **args)
+    return Textile().textile(text, **args)
+
+def textile_restricted(text, lite = True, noimage = True, **args):
+    """
+    Restricted version of Textile designed for weblog comments and other
+    untrusted input.
+
+    Raw HTML is escaped, block tags are restricted to p, bq, and bc.
+    Lists, tables, and images are disabled by default.
+    Style attributed are disabled.
+    rel='nofollow' is added to external links.
+
+    """
+    return Textile(restricted=True, lite=True,
+                   noimage=noimage).textile(text, rel='nofollow', **args)
 
 def _test():
     import doctest
