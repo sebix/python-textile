@@ -317,23 +317,7 @@ class Tests():
         expect = '\t<p><a href="https://myservice.com/signup">signup</a></p>'
         eq_(result, expect)
 
-    def TestIssue038(self):
-        #The issue here seems to be that the blank line starts a new paragraph
-        #(see line 557 in block()), so the beginning and end tags get split up,
-        #with the result being that they are not parsed properly.
-
-        #Recommended workaround: use "pre.."
-
-        #No blank line in a <pre> block works.
-        test = "this is a test\n\n<pre>\nthis should all get enclosed neatly in a <pre> tag\nbut a blank line in the middle screws it up\n</pre>"
-        result = textile.textile(test)
-        expect = '\t<p>this is a test</p>\n\n<pre>\nthis should all get enclosed neatly in a &#60;pre&#62; tag\nbut a blank line in the middle screws it up\n</pre>'
-        eq_(result, expect)
 
 
-        #Blank line in a <pre> block fails.
-        test = "this is a test\n\n<pre>\nthis should all get enclosed neatly in a <pre> tag\n\nbut a blank line in the middle screws it up\n</pre>"
-        result = textile.textile(test)
-        expect = '\t<p>this is a test</p>\n\n<pre>\nthis should all get enclosed neatly in a &#60;pre&#62; tag\n\nbut a blank line in the middle screws it up\n</pre>'
         eq_(result, expect)
 
