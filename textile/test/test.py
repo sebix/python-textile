@@ -321,3 +321,10 @@ class Tests():
 
         eq_(result, expect)
 
+
+    def TestBoldItalic(self):
+        test = "_*test text*_"
+        result = textile.textile(test)
+        expect = "\t<p><em><strong>test text</strong></em></p>"
+        
+        eq_(result, expect)

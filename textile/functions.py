@@ -957,6 +957,8 @@ class Textile(object):
         if cite:
             atts = atts + 'cite="%s"' % cite
 
+        content = self.span(content)
+
         out = "<%s%s>%s%s</%s>" % (tag, atts, content, end, tag)
         return out;
 
