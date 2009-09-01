@@ -322,6 +322,8 @@ class Textile(object):
 
     def pba(self, input, element=None):
         """
+        Parse block attributes.
+
         >>> t = Textile()
         >>> t.pba(r'\3')
         ''
