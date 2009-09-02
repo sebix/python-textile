@@ -1075,20 +1075,26 @@ def textile(text, **args):
     this function takes additional parameters:
     validate - perform mxTidy or uTidyLib validation (default: False)
     sanitize - sanitize output good for weblog comments (default: False)
-    head_offset - offset to apply to heading levels
-    html_type - 'xhtml' or 'html' style tags
+    head_offset - offset to apply to heading levels (default: 0)
+    html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
     """
     return Textile().textile(text, **args)
 
-def textile_restricted(text, lite = True, noimage = True, **args):
+def textile_restricted(text, lite=True, noimage=True, **args):
     """
     Restricted version of Textile designed for weblog comments and other
     untrusted input.
 
-    Raw HTML is escaped, block tags are restricted to p, bq, and bc.
-    Lists, tables, and images are disabled by default.
-    Style attributed are disabled.
+    Raw HTML is escaped.
+    Style attributes are disabled.
     rel='nofollow' is added to external links.
+
+    When lite=True is set (the default):
+    Block tags are restricted to p, bq, and bc.
+    Lists and tables are disabled.
+    
+    When noimage=True is set (the default):
+    Image tags are disabled.
 
     """
     return Textile(restricted=True, lite=True,
