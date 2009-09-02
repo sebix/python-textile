@@ -270,12 +270,6 @@ class Tests():
         result=textile.textile(text)
         eq_(result, expect)
 
-    #Test below does not seem to do anything.
-
-    #def testURLWithParensUrlparse(self):
-    #    url = 'http://en.wikipedia.org/wiki/Python_(programming_language)'
-    #    from urlparse import urlparse
-    #    #print urlparse(url)
 
     def testTableWithHyphenStyles(self):
         text = 'table(linkblog-thumbnail).\n|(linkblog-thumbnail-cell). apple|bear|'
