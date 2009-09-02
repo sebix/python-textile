@@ -69,6 +69,26 @@ def _normalize_newlines(string):
     out = re.sub(r'"$', '" ', out)
     return out
 
+def getimagesize(url):
+    try:
+        import ImageFile
+        import urllib2
+    except ImportError:
+        return None
+
+    try:
+        p = ImageFile.Parser()
+        f = urllib2.urlopen(url)
+        while 1:
+            s = f.read(1024)
+            if not s:
+                break
+            p.feed(s)
+            if p.image:
+                return 'width="%i" height="%i"' % p.image.size
+    except (IOError, ValueError):
+        return None
+
 # PyTextile can optionally sanitize the generated XHTML,
 # which is good for weblog comments. This code is from
 # Mark Pilgrim's feedparser.
@@ -282,6 +302,7 @@ class Textile(object):
         self.restricted = restricted
         self.lite = lite
         self.noimage = noimage
+        self.get_sizes = False
         self.fn = {}
         self.urlrefs = {}
         self.shelf = {}
@@ -1002,10 +1023,11 @@ class Textile(object):
             atts = atts + ' title="%s" alt="%s"' % (title, title)
         else:
             atts = atts + ' alt=""'
-
-        # TODO how to do this in python?
-        # size = @getimagesize(url)
-        # if (size) atts .= " size[3]"
+            
+        if self.get_sizes:
+            size = getimagesize(url)
+            if (size):
+                atts += " %s" % size
 
         if href:
             href = self.checkRefs(href)
