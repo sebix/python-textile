@@ -823,6 +823,21 @@ class Textile(object):
     def checkRefs(self, url):
         return self.urlrefs.get(url, url)
 
+    def isRelURL(self, url):
+        """
+        Identify relative urls.
+
+        >>> t = Textile()
+        >>> t.isRelURL("http://www.google.com/")
+        False
+        >>> t.isRelURL("/foo")
+        True
+
+        """
+        o = urlparse(url)
+        (scheme,netloc,path,params,query,fragment) = o[0:6]
+        return not scheme and not netloc
+
     def relURL(self, url):
         o = urlparse(url)
         (scheme,netloc,path,params,query,fragment) = o[0:6]
@@ -1024,7 +1039,7 @@ class Textile(object):
         else:
             atts = atts + ' alt=""'
             
-        if self.get_sizes:
+        if not self.isRelURL(url) and self.get_sizes:
             size = getimagesize(url)
             if (size):
                 atts += " %s" % size
