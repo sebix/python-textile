@@ -61,7 +61,6 @@ import uuid
 from urlparse import urlparse
 
 def _normalize_newlines(string):
-    import re
     out = re.sub(r'\r\n', '\n', string)
     out = re.sub(r'\n{3,}', '\n\n', out)
     out = re.sub(r'\n\s*\n', '\n\n', out)
@@ -149,7 +148,7 @@ class Textile(object):
     # urlch = r'[\w"$\-_.+!*\'(),";/?:@=&%#{}|\\^~\[\]`]'
     urlch = '[\w"$\-_.+*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
 
-    url_schemes = ('http','https','ftp','mailto')
+    url_schemes = ('http', 'https', 'ftp', 'mailto')
 
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
     btag_lite = ('bq', 'bc', 'p')
@@ -181,7 +180,7 @@ class Textile(object):
         self.urlrefs = {}
         self.shelf = {}
         self.rel = ''
-        self.html_type='xhtml'
+        self.html_type = 'xhtml'
 
     def textile(self, text, rel=None, validate=False, head_offset=0, html_type='xhtml'):
         """
@@ -263,7 +262,8 @@ class Textile(object):
         id = ''
         atts = ''
 
-        if not input: return ''
+        if not input:
+            return ''
 
         matched = input
         if element == 'td':
@@ -277,7 +277,8 @@ class Textile(object):
 
         if element == 'td' or element == 'tr':
             m = re.search(r'(%s)' % self.vlgn, matched)
-            if m: style.append("vertical-align:%s;" % self.vAlign(m.group(1)))
+            if m:
+                style.append("vertical-align:%s;" % self.vAlign(m.group(1)))
 
         m = re.search(r'\{([^}]*)\}', matched)
         if m:
@@ -314,16 +315,24 @@ class Textile(object):
             aclass = m.group(1)
 
         if self.restricted:
-            if lang: return ' lang="%s"'
-            else: return ''
+            if lang:
+                return ' lang="%s"'
+            else:
+                return ''
 
         result = []
-        if style: result.append(' style="%s"' % "".join(style))
-        if aclass: result.append(' class="%s"' % aclass)
-        if lang: result.append(' lang="%s"' % lang)
-        if id: result.append(' id="%s"' % id)
-        if colspan: result.append(' colspan="%s"' % colspan)
-        if rowspan: result.append(' rowspan="%s"' % rowspan)
+        if style:
+            result.append(' style="%s"' % "".join(style))
+        if aclass:
+            result.append(' class="%s"' % aclass)
+        if lang:
+            result.append(' lang="%s"' % lang)
+        if id:
+            result.append(' id="%s"' % id)
+        if colspan:
+            result.append(' colspan="%s"' % colspan)
+        if rowspan:
+            result.append(' rowspan="%s"' % rowspan)
         return ''.join(result)
 
     def hasRawText(self, text):
@@ -415,7 +424,8 @@ class Textile(object):
                 else:
                     line = "\t\t<li>" + self.graf(content)
 
-                if len(nl) <= len(tl): line = line + "</li>"
+                if len(nl) <= len(tl):
+                    line = line + "</li>"
                 for k in reversed(lists):
                     if len(k) > len(nl):
                         line = line + "\n\t</%sl>" % self.lT(k)
@@ -467,15 +477,18 @@ class Textile(object):
                 if ext:
                     out.append(out.pop() + c1)
 
-                tag,atts,ext,cite,graf = match.groups()
+                tag, atts, ext, cite, graf = match.groups()
                 h_match = re.search(r'h([1-6])', tag)
                 if h_match:
                     head_level, = h_match.groups()
                     tag = 'h%i' % max(1, 
                                       min(int(head_level) + head_offset,
                                           6))
-                o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, cite, graf)
-                # leave off c1 if this block is extended, we'll close it at the start of the next block
+                o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, 
+                                                      cite, graf)
+                # leave off c1 if this block is extended,
+                # we'll close it at the start of the next block
+                
                 if ext:
                     line = "%s%s%s%s" % (o1, o2, content, c2)
                 else:
@@ -484,8 +497,10 @@ class Textile(object):
             else:
                 anon = True
                 if ext or not re.search(r'^\s', line):
-                    o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, cite, line)
-                    # skip $o1/$c1 because this is part of a continuing extended block
+                    o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext,
+                                                          cite, line)
+                    # skip $o1/$c1 because this is part of a continuing
+                    # extended block
                     if tag == 'p' and not self.hasRawText(content):
                         line = content
                     else:
@@ -704,12 +719,12 @@ class Textile(object):
 
         """
         o = urlparse(url)
-        (scheme,netloc,path,params,query,fragment) = o[0:6]
+        (scheme, netloc, path, params, query, fragment) = o[0:6]
         return not scheme and not netloc
 
     def relURL(self, url):
         o = urlparse(url)
-        (scheme,netloc,path,params,query,fragment) = o[0:6]
+        (scheme, netloc, path, params, query, fragment) = o[0:6]
         if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
         return url
@@ -728,9 +743,10 @@ class Textile(object):
         """
         while True:
             old = text
-            for k,v in self.shelf.items():
-                text = text.replace(k,v)
-            if text == old: break
+            for k, v in self.shelf.items():
+                text = text.replace(k, v)
+            if text == old:
+                break
         return text
 
     def encode_html(self, text, quotes=True):
@@ -746,8 +762,8 @@ class Textile(object):
                 ('"', '&#34;')
             )
 
-        for k,v in a:
-            text = text.replace(k,v)
+        for k, v in a:
+            text = text.replace(k, v)
         return text
 
     def graf(self, text):
@@ -811,7 +827,8 @@ class Textile(object):
         url = self.checkRefs(url)
 
         atts = self.pba(atts)
-        if title: atts = atts +  ' title="%s"' % self.encode_html(title)
+        if title:
+            atts = atts +  ' title="%s"' % self.encode_html(title)
 
         if not self.noimage:
             text = self.image(text)
@@ -843,7 +860,8 @@ class Textile(object):
                 ([%(pnct)s]*)
                 %(qtag)s
                 (?:$|([\]}])|(?=%(selfpnct)s{1,2}|\s))
-            """ % {'qtag':qtag,'c':self.c,'pnct':pnct,'selfpnct':self.pnct}, re.X)
+            """ % {'qtag':qtag, 'c':self.c, 'pnct':pnct,
+                   'selfpnct':self.pnct}, re.X)
             text = pattern.sub(self.fSpan, text)
         return text
 
@@ -871,7 +889,7 @@ class Textile(object):
         content = self.span(content)
 
         out = "<%s%s>%s%s</%s>" % (tag, atts, content, end, tag)
-        return out;
+        return out
 
     def image(self, text):
         """
@@ -924,7 +942,8 @@ class Textile(object):
             out.append('<img src="%s"%s>' % (url, atts))
         else:
             out.append('<img src="%s"%s />' % (url, atts))
-        if href: out.append('</a>')
+        if href: 
+            out.append('</a>')
 
         return ''.join(out)
 
@@ -936,7 +955,8 @@ class Textile(object):
 
     def fCode(self, match):
         before, text, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         # text needs to be escaped
         if not self.restricted:
             text = self.encode_html(text)
@@ -944,7 +964,8 @@ class Textile(object):
 
     def fPre(self, match):
         before, text, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         # text needs to be escapedd
         if not self.restricted:
             text = self.encode_html(text)
@@ -961,7 +982,8 @@ class Textile(object):
         special blocks like notextile or code
         """
         before, text, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         return ''.join([before, self.shelve(self.encode_html(text)), after])
 
     def noTextile(self, text):
@@ -970,7 +992,8 @@ class Textile(object):
 
     def fTextile(self, match):
         before, notextile, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         return ''.join([before, self.shelve(notextile), after])
 
 
@@ -1003,15 +1026,3 @@ def textile_restricted(text, lite=True, noimage=True, **args):
     return Textile(restricted=True, lite=lite,
                    noimage=noimage).textile(text, rel='nofollow', **args)
 
-def _test():
-    import doctest
-    doctest.testmod()
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) == 2:
-        f = open(sys.argv[1])
-        text = ''.join(f.readlines())
-        print Textile().textile(text)
-    else:
-        _test()
