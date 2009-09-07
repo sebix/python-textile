@@ -958,16 +958,16 @@ class Textile(object):
         return ''.join([before, self.shelve(notextile), after])
 
 
-def textile(text, **args):
+def textile(text, head_offset=0, html_type='xhtml'):
     """
     this function takes additional parameters:
-    validate - perform mxTidy or uTidyLib validation (default: False)
     head_offset - offset to apply to heading levels (default: 0)
     html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
     """
-    return Textile().textile(text, **args)
+    return Textile().textile(text, head_offset=head_offset,
+                             html_type=html_type)
 
-def textile_restricted(text, lite=True, noimage=True, **args):
+def textile_restricted(text, lite=True, noimage=True, html_type='xhtml'):
     """
     Restricted version of Textile designed for weblog comments and other
     untrusted input.
@@ -985,5 +985,6 @@ def textile_restricted(text, lite=True, noimage=True, **args):
 
     """
     return Textile(restricted=True, lite=lite,
-                   noimage=noimage).textile(text, rel='nofollow', **args)
+                   noimage=noimage).textile(text, rel='nofollow',
+                                            html_type=html_type)
 
