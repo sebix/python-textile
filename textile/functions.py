@@ -221,7 +221,6 @@ class Textile(object):
         colspan = ''
         rowspan = ''
         id = ''
-        atts = ''
 
         if not input:
             return ''
@@ -567,7 +566,8 @@ class Textile(object):
         if id not in self.fn:
             self.fn[id] = str(uuid.uuid4())
         fnid = self.fn[id]
-        if not t: t = ''
+        if not t:
+            t = ''
         return '<sup class="footnote"><a href="#fn%s">%s</a></sup>%s' % (fnid, id, t)
 
     def glyphs(self, text):
@@ -675,13 +675,11 @@ class Textile(object):
         True
 
         """
-        o = urlparse(url)
-        (scheme, netloc, path, params, query, fragment) = o[0:6]
+        (scheme, netloc) = urlparse(url)[0:2]
         return not scheme and not netloc
 
     def relURL(self, url):
-        o = urlparse(url)
-        (scheme, netloc, path, params, query, fragment) = o[0:6]
+        scheme = urlparse(url)[0]
         if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
         return url
