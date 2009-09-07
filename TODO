@@ -6,13 +6,6 @@
 
 * Improve test coverage (use coverage stats in docs/coverage/index.html).
 
-* Consider stripping out HTML validation code.
-  Validation is also not a concern of a text formatting library;
-  with restricted=True, Textile _should_ produce valid HTML or XHTML.
-  If user-generated HTML is allowed (as is the case when restricted=False,
-  the default), then all bets are off.  Genshi or lxml with BeautifulSoup
-  can generally do something useful with user-provided tag soup.
-
 * Improve documentation, both of the code and Textile syntax.
   The previous version of pytextile had excellent inline documentation;
   similarly, docstrings such as "What does this do?" should be improved.

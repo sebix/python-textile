@@ -98,40 +98,6 @@ def getimagesize(url):
     except (IOError, ValueError):
         return None
 
-# PyTextile can optionally validate the generated
-# XHTML code using either mxTidy or uTidyLib.
-try:
-    # This is mxTidy.
-    from mx.Tidy import Tidy
-
-    def _tidy1(text):
-        """mxTidy's XHTML validator.
-
-        This function is a wrapper to mxTidy's validator.
-        """
-        nerrors, nwarnings, text, errortext = Tidy.tidy(text, output_xhtml=1, numeric_entities=1, wrap=0)
-        return _in_tag(text, 'body')
-
-    _tidy = _tidy1
-
-except ImportError:
-    try:
-        # This is uTidyLib.
-        import tidy
-
-        def _tidy2(text):
-            """uTidyLib's XHTML validator.
-
-            This function is a wrapper to uTidyLib's validator.
-            """
-            text = tidy.parseString(text,  output_xhtml=1, add_xml_decl=0, indent=0, tidy_mark=0)
-            return _in_tag(str(text), 'body')
-
-        _tidy = _tidy2
-
-    except ImportError:
-        _tidy = None
-
 class Textile(object):
     hlgn = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
     vlgn = r'[\-^~]'
@@ -182,7 +148,7 @@ class Textile(object):
         self.rel = ''
         self.html_type = 'xhtml'
 
-    def textile(self, text, rel=None, validate=False, head_offset=0, html_type='xhtml'):
+    def textile(self, text, rel=None, head_offset=0, html_type='xhtml'):
         """
         >>> import textile
         >>> textile.textile('some textile')
@@ -204,11 +170,6 @@ class Textile(object):
         text = self.block(text, int(head_offset))
 
         text = self.retrieve(text)
-
-
-        # Validate output.
-        if _tidy and validate:
-            text = _tidy(text)
 
         return text
 
