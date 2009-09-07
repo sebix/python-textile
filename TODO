@@ -16,7 +16,3 @@
 * Improve documentation, both of the code and Textile syntax.
   The previous version of pytextile had excellent inline documentation;
   similarly, docstrings such as "What does this do?" should be improved.
-
-* Address the 'hu' variable (which is a holdover from Textpattern); either
-  remove it (which is to say that Textile has no business resolving
-  relative URLs), or provide a means for it to be set to a meaningful value.

@@ -153,7 +153,6 @@ class Textile(object):
 
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
     btag_lite = ('bq', 'bc', 'p')
-    hu = ''
 
     glyph_defaults = (
         ('txt_quote_single_open',  '&#8216;'),
@@ -711,8 +710,6 @@ class Textile(object):
     def relURL(self, url):
         o = urlparse(url)
         (scheme,netloc,path,params,query,fragment) = o[0:6]
-        if (not scheme or scheme == 'http') and not netloc and re.search(r'^\w', path):
-            url = self.hu + url
         if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
         return url
