@@ -1145,7 +1145,7 @@ def textile_restricted(text, lite=True, noimage=True, **args):
     Image tags are disabled.
 
     """
-    return Textile(restricted=True, lite=True,
+    return Textile(restricted=True, lite=lite,
                    noimage=noimage).textile(text, rel='nofollow', **args)
 
 def _test():
