@@ -640,10 +640,6 @@ class Textile(object):
             result.append(line)
         return ''.join(result)
 
-    def iAlign(self, input):
-        d = {'<':'left', '=':'center', '>':'right'}
-        return d.get(input, '')
-
     def vAlign(self, input):
         d = {'^':'top', '-':'middle', '~':'bottom'}
         return d.get(input, '')
@@ -861,7 +857,6 @@ class Textile(object):
         pattern = re.compile(r"""
             (?:[\[{])?          # pre
             \!                 # opening !
-            (\<|\=|\>)??       # optional alignment atts
             (%s)               # optional style,class atts
             (?:\. )?           # optional dot-space
             ([^\s(!]+)         # presume this is the src
@@ -875,10 +870,8 @@ class Textile(object):
 
     def fImage(self, match):
         # (None, '', '/imgs/myphoto.jpg', None, None)
-        algn, atts, url, title, href = match.groups()
+        atts, url, title, href = match.groups()
         atts  = self.pba(atts)
-        if algn:
-            atts = atts + ' align="%s"' % self.iAlign(algn)
 
         if title:
             atts = atts + ' title="%s" alt="%s"' % (title, title)
