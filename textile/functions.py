@@ -68,19 +68,18 @@ def getimagesize(url):
         return None
 
 class Textile(object):
-    hlgn = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
-    vlgn = r'[\-^~]'
+    horizontal_align_re = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
+    vertical_align_re = r'[\-^~]'
     clas = r'(?:\([^)]+\))'
     lnge = r'(?:\[[^\]]+\])'
     styl = r'(?:\{[^}]+\})'
-    cspn = r'(?:\\\d+)'
-    rspn = r'(?:\/\d+)'
-    a = r'(?:%s|%s)*' % (hlgn, vlgn)
-    s = r'(?:%s|%s)*' % (cspn, rspn)
-    c = r'(?:%s)*' % '|'.join([clas, styl, lnge, hlgn])
+    colspan_re = r'(?:\\\d+)'
+    rowspan_re = r'(?:\/\d+)'
+    a = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
+    s = r'(?:%s|%s)*' % (colspan_re, rowspan_re)
+    c = r'(?:%s)*' % '|'.join([clas, styl, lnge, horizontal_align_re])
 
     pnct = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
-    # urlch = r'[\w"$\-_.+!*\'(),";/?:@=&%#{}|\\^~\[\]`]'
     urlch = '[\w"$\-_.+*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
 
     url_schemes = ('http', 'https', 'ftp', 'mailto')
@@ -205,7 +204,7 @@ class Textile(object):
                 rowspan = m.group(1)
 
         if element == 'td' or element == 'tr':
-            m = re.search(r'(%s)' % self.vlgn, matched)
+            m = re.search(r'(%s)' % self.vertical_align_re, matched)
             if m:
                 style.append("vertical-align:%s;" % self.vAlign(m.group(1)))
 
@@ -234,7 +233,7 @@ class Textile(object):
             style.append("padding-right:%sem;" % len(m.group(1)))
             matched = matched.replace(m.group(0), '')
 
-        m = re.search(r'(%s)' % self.hlgn, matched)
+        m = re.search(r'(%s)' % self.horizontal_align_re, matched)
         if m:
             style.append("text-align:%s;" % self.hAlign(m.group(1)))
 
