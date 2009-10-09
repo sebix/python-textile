@@ -949,7 +949,7 @@ class Textile(object):
         return ''.join([before, self.shelve(notextile), after])
 
 
-def textile(text, head_offset=0, html_type='xhtml'):
+def textile(text, head_offset=0, html_type='xhtml', encoding=None, output=None):
     """
     this function takes additional parameters:
     head_offset - offset to apply to heading levels (default: 0)
