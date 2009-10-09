@@ -1,0 +1,25 @@
+* Finish prosecuting bugs in the Google Code tracker;
+  either develop test cases for them or deem them invalid/unreproducible/wontfix
+  (new bugs should go in the github tracker).  Also look for bugs filed against
+  the PHP implementation (such as in the Textpattern tracker); those bugs
+  may also exist in this implementation.
+
+* Improve test coverage (use coverage stats in docs/coverage/index.html).
+
+* Improve documentation, both of the code and Textile syntax.
+  The previous version of pytextile had excellent inline documentation;
+  similarly, docstrings such as "What does this do?" should be improved.
+
+* Address outstanding architectural issues:
+  The Textile class has a large number of public methods which are, in fact,
+  not intended to be called by the public.
+  Also, some parameters are set in __init__(), while others are set in
+  textile().
+  Because various instance variables get set while text is being processed,
+  a Textile object cannot be reused--that is, it is not possible to set up
+  a Textile object with the desired parameters, and then use it repeatedly
+  to process multiple strings, because parameters such as the shelf do not
+  get reset between calls to textile().
+
+* If we want to re-implement sanitization or validation, it should probably be
+  done with html5lib.

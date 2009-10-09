@@ -59,184 +59,44 @@ POSSIBILITY OF SUCH DAMAGE.
 import re
 import uuid
 from urlparse import urlparse
-import sgmllib
 
 def _normalize_newlines(string):
-    import re
     out = re.sub(r'\r\n', '\n', string)
     out = re.sub(r'\n{3,}', '\n\n', out)
     out = re.sub(r'\n\s*\n', '\n\n', out)
     out = re.sub(r'"$', '" ', out)
     return out
 
-# PyTextile can optionally sanitize the generated XHTML,
-# which is good for weblog comments. This code is from
-# Mark Pilgrim's feedparser.
-class _BaseHTMLProcessor(sgmllib.SGMLParser):
-    elements_no_end_tag = ['area', 'base', 'basefont', 'br', 'col', 'frame', 'hr',
-      'img', 'input', 'isindex', 'link', 'meta', 'param']
+def getimagesize(url):
+    """
+    Attempts to determine an image's width and height, and returns a string
+    suitable for use in an <img> tag, or None in case of failure.
+    Requires that PIL is installed.
 
-    def __init__(self):
-        sgmllib.SGMLParser.__init__(self)
+    >>> getimagesize("http://www.google.com/intl/en_ALL/images/logo.gif")
+    ... #doctest: +ELLIPSIS, +SKIP
+    'width="..." height="..."'
 
-    def reset(self):
-        self.pieces = []
-        sgmllib.SGMLParser.reset(self)
+    """
 
-    def normalize_attrs(self, attrs):
-        # utility method to be called by descendants
-        attrs = [(k.lower(), sgmllib.charref.sub(lambda m: unichr(int(m.groups()[0])), v).strip()) for k, v in attrs]
-        attrs = [(k, k in ('rel', 'type') and v.lower() or v) for k, v in attrs]
-        return attrs
-
-    def unknown_starttag(self, tag, attrs):
-        # called for each start tag
-        # attrs is a list of (attr, value) tuples
-        # e.g. for <pre class="screen">, tag="pre", attrs=[("class", "screen")]
-        strattrs = "".join([' %s="%s"' % (key, value) for key, value in attrs])
-        if tag in self.elements_no_end_tag:
-            self.pieces.append("<%(tag)s%(strattrs)s />" % locals())
-        else:
-            self.pieces.append("<%(tag)s%(strattrs)s>" % locals())
-
-    def unknown_endtag(self, tag):
-        # called for each end tag, e.g. for </pre>, tag will be "pre"
-        # Reconstruct the original end tag.
-        if tag not in self.elements_no_end_tag:
-            self.pieces.append("</%(tag)s>" % locals())
-
-    def handle_charref(self, ref):
-        # called for each character reference, e.g. for "&#160;", ref will be "160"
-        # Reconstruct the original character reference.
-        self.pieces.append("&#%(ref)s;" % locals())
-
-    def handle_entityref(self, ref):
-        # called for each entity reference, e.g. for "&copy;", ref will be "copy"
-        # Reconstruct the original entity reference.
-        self.pieces.append("&%(ref)s;" % locals())
-
-    def handle_data(self, text):
-        # called for each block of plain text, i.e. outside of any tag and
-        # not containing any character or entity references
-        # Store the original text verbatim.
-        self.pieces.append(text)
-
-    def handle_comment(self, text):
-        # called for each HTML comment, e.g. <!-- insert Javascript code here -->
-        # Reconstruct the original comment.
-        self.pieces.append("<!--%(text)s-->" % locals())
-
-    def handle_pi(self, text):
-        # called for each processing instruction, e.g. <?instruction>
-        # Reconstruct original processing instruction.
-        self.pieces.append("<?%(text)s>" % locals())
-
-    def handle_decl(self, text):
-        # called for the DOCTYPE, if present, e.g.
-        # <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        #     "http://www.w3.org/TR/html4/loose.dtd">
-        # Reconstruct original DOCTYPE
-        self.pieces.append("<!%(text)s>" % locals())
-
-    def output(self):
-        """Return processed HTML as a single string"""
-        return "".join(self.pieces)
-
-
-class _HTMLSanitizer(_BaseHTMLProcessor):
-    acceptable_elements = ['a', 'abbr', 'acronym', 'address', 'area', 'b', 'big',
-      'blockquote', 'br', 'button', 'caption', 'center', 'cite', 'code', 'col',
-      'colgroup', 'dd', 'del', 'dfn', 'dir', 'div', 'dl', 'dt', 'em', 'fieldset',
-      'font', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'i', 'img', 'input',
-      'ins', 'kbd', 'label', 'legend', 'li', 'map', 'menu', 'ol', 'optgroup',
-      'option', 'p', 'pre', 'q', 's', 'samp', 'select', 'small', 'span', 'strike',
-      'strong', 'sub', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th',
-      'thead', 'tr', 'tt', 'u', 'ul', 'var']
-
-    acceptable_attributes = ['abbr', 'accept', 'accept-charset', 'accesskey',
-      'action', 'align', 'alt', 'axis', 'border', 'cellpadding', 'cellspacing',
-      'char', 'charoff', 'charset', 'checked', 'cite', 'class', 'clear', 'cols',
-      'colspan', 'color', 'compact', 'coords', 'datetime', 'dir', 'disabled',
-      'enctype', 'for', 'frame', 'headers', 'height', 'href', 'hreflang', 'hspace',
-      'id', 'ismap', 'label', 'lang', 'longdesc', 'maxlength', 'media', 'method',
-      'multiple', 'name', 'nohref', 'noshade', 'nowrap', 'prompt', 'readonly',
-      'rel', 'rev', 'rows', 'rowspan', 'rules', 'scope', 'selected', 'shape', 'size',
-      'span', 'src', 'start', 'summary', 'tabindex', 'target', 'title', 'type',
-      'usemap', 'valign', 'value', 'vspace', 'width']
-
-    unacceptable_elements_with_end_tag = ['script', 'applet']
-
-    # This if for MathML.
-    mathml_elements = ['math', 'mi', 'mn', 'mo', 'mrow', 'msup']
-    mathml_attributes = ['mode', 'xmlns']
-
-    acceptable_elements = acceptable_elements + mathml_elements
-    acceptable_attributes = acceptable_attributes + mathml_attributes
-
-    def reset(self):
-        _BaseHTMLProcessor.reset(self)
-        self.unacceptablestack = 0
-
-    def unknown_starttag(self, tag, attrs):
-        if not tag in self.acceptable_elements:
-            if tag in self.unacceptable_elements_with_end_tag:
-                self.unacceptablestack += 1
-            return
-        attrs = self.normalize_attrs(attrs)
-        attrs = [(key, value) for key, value in attrs if key in self.acceptable_attributes]
-        _BaseHTMLProcessor.unknown_starttag(self, tag, attrs)
-
-    def unknown_endtag(self, tag):
-        if not tag in self.acceptable_elements:
-            if tag in self.unacceptable_elements_with_end_tag:
-                self.unacceptablestack -= 1
-            return
-        _BaseHTMLProcessor.unknown_endtag(self, tag)
-
-    def handle_pi(self, text):
-        pass
-
-    def handle_decl(self, text):
-        pass
-
-    def handle_data(self, text):
-        if not self.unacceptablestack:
-            _BaseHTMLProcessor.handle_data(self, text)
-
-
-# PyTextile can optionally validate the generated
-# XHTML code using either mxTidy or uTidyLib.
-try:
-    # This is mxTidy.
-    from mx.Tidy import Tidy
-
-    def _tidy1(text):
-        """mxTidy's XHTML validator.
-
-        This function is a wrapper to mxTidy's validator.
-        """
-        nerrors, nwarnings, text, errortext = Tidy.tidy(text, output_xhtml=1, numeric_entities=1, wrap=0)
-        return _in_tag(text, 'body')
-
-    _tidy = _tidy1
-
-except ImportError:
     try:
-        # This is uTidyLib.
-        import tidy
-
-        def _tidy2(text):
-            """uTidyLib's XHTML validator.
-
-            This function is a wrapper to uTidyLib's validator.
-            """
-            text = tidy.parseString(text,  output_xhtml=1, add_xml_decl=0, indent=0, tidy_mark=0)
-            return _in_tag(str(text), 'body')
-
-        _tidy = _tidy2
-
+        import ImageFile
+        import urllib2
     except ImportError:
-        _tidy = None
+        return None
+
+    try:
+        p = ImageFile.Parser()
+        f = urllib2.urlopen(url)
+        while True:
+            s = f.read(1024)
+            if not s:
+                break
+            p.feed(s)
+            if p.image:
+                return 'width="%i" height="%i"' % p.image.size
+    except (IOError, ValueError):
+        return None
 
 class Textile(object):
     hlgn = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
@@ -254,11 +114,10 @@ class Textile(object):
     # urlch = r'[\w"$\-_.+!*\'(),";/?:@=&%#{}|\\^~\[\]`]'
     urlch = '[\w"$\-_.+*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
 
-    url_schemes = ('http','https','ftp','mailto')
+    url_schemes = ('http', 'https', 'ftp', 'mailto')
 
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
-    noimage = False
-    hu = ''
+    btag_lite = ('bq', 'bc', 'p')
 
     glyph_defaults = (
         ('txt_quote_single_open',  '&#8216;'),
@@ -277,53 +136,47 @@ class Textile(object):
         ('txt_copyright',          '&#169;'),
     )
 
-    def __init__(self, restricted=False, lite=False):
+    def __init__(self, restricted=False, lite=False, noimage=False):
         """docstring for __init__"""
         self.restricted = restricted
         self.lite = lite
+        self.noimage = noimage
+        self.get_sizes = False
         self.fn = {}
         self.urlrefs = {}
         self.shelf = {}
         self.rel = ''
+        self.html_type = 'xhtml'
 
-    def textile(self, text, rel=None, encoding='utf8', output='utf8', validate=False, sanitize=False, head_offset='ignored'):
+    def textile(self, text, rel=None, head_offset=0, html_type='xhtml'):
         """
         >>> import textile
         >>> textile.textile('some textile')
-        '\\t<p>some textile</p>'
+        u'\\t<p>some textile</p>'
         """
+        self.html_type = html_type
+
+        text = unicode(text)
         text = _normalize_newlines(text)
+
+        if self.restricted:
+            text = self.encode_html(text, quotes=False)
 
         if rel:
             self.rel = ' rel="%s"' % rel
 
         text = self.getRefs(text)
 
-        if not self.lite:
-            text = self.block(text)
+        text = self.block(text, int(head_offset))
 
         text = self.retrieve(text)
-
-        # Convert to desired output.
-        if isinstance(text, str):
-            text = unicode(text, encoding)
- 
-        text = text.encode(output, 'xmlcharrefreplace')
-
-        # Sanitize?
-        if sanitize:
-            p = _HTMLSanitizer()
-            p.feed(text)
-            text = p.output()
-
-        # Validate output.
-        if _tidy and validate:
-            text = _tidy(text)
 
         return text
 
     def pba(self, input, element=None):
         """
+        Parse block attributes.
+
         >>> t = Textile()
         >>> t.pba(r'\3')
         ''
@@ -368,9 +221,9 @@ class Textile(object):
         colspan = ''
         rowspan = ''
         id = ''
-        atts = ''
 
-        if not input: return ''
+        if not input:
+            return ''
 
         matched = input
         if element == 'td':
@@ -384,7 +237,8 @@ class Textile(object):
 
         if element == 'td' or element == 'tr':
             m = re.search(r'(%s)' % self.vlgn, matched)
-            if m: style.append("vertical-align:%s;" % self.vAlign(m.group(1)))
+            if m:
+                style.append("vertical-align:%s;" % self.vAlign(m.group(1)))
 
         m = re.search(r'\{([^}]*)\}', matched)
         if m:
@@ -421,16 +275,24 @@ class Textile(object):
             aclass = m.group(1)
 
         if self.restricted:
-            if lang: return ' lang="%s"'
-            else: return ''
+            if lang:
+                return ' lang="%s"'
+            else:
+                return ''
 
         result = []
-        if style: result.append(' style="%s"' % "".join(style))
-        if aclass: result.append(' class="%s"' % aclass)
-        if lang: result.append(' lang="%s"' % lang)
-        if id: result.append(' id="%s"' % id)
-        if colspan: result.append(' colspan="%s"' % colspan)
-        if rowspan: result.append(' rowspan="%s"' % rowspan)
+        if style:
+            result.append(' style="%s"' % "".join(style))
+        if aclass:
+            result.append(' class="%s"' % aclass)
+        if lang:
+            result.append(' lang="%s"' % lang)
+        if id:
+            result.append(' id="%s"' % id)
+        if colspan:
+            result.append(' colspan="%s"' % colspan)
+        if rowspan:
+            result.append(' rowspan="%s"' % rowspan)
         return ''.join(result)
 
     def hasRawText(self, text):
@@ -467,22 +329,23 @@ class Textile(object):
             if rmtch:
                 ratts = self.pba(rmtch.group(1), 'tr')
                 row = rmtch.group(2)
-            else: ratts = ''
+            else:
+                ratts = ''
 
             cells = []
-            for cell in row.split('|'):
+            for cell in row.split('|')[1:-1]:
                 ctyp = 'd'
-                if re.search(r'^_', cell): ctyp = "h"
+                if re.search(r'^_', cell):
+                    ctyp = "h"
                 cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (self.s, self.a, self.c), cell)
                 if cmtch:
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
-                else: catts = ''
+                else:
+                    catts = ''
 
                 cell = self.graf(self.span(cell))
-
-                if cell.strip() != '':
-                    cells.append('\t\t\t<t%s%s>%s</t%s>' % (ctyp, catts, cell, ctyp))
+                cells.append('\t\t\t<t%s%s>%s</t%s>' % (ctyp, catts, cell, ctyp))
             rows.append("\t\t<tr%s>\n%s\n\t\t</tr>" % (ratts, '\n'.join(cells)))
             cells = []
             catts = None
@@ -521,7 +384,8 @@ class Textile(object):
                 else:
                     line = "\t\t<li>" + self.graf(content)
 
-                if len(nl) <= len(tl): line = line + "</li>"
+                if len(nl) <= len(tl):
+                    line = line + "</li>"
                 for k in reversed(lists):
                     if len(k) > len(nl):
                         line = line + "\n\t</%sl>" % self.lT(k)
@@ -542,16 +406,22 @@ class Textile(object):
         return re.compile(r'<(p)([^>]*?)>(.*)(</\1>)', re.S).sub(self.doBr, in_)
 
     def doBr(self, match):
-        content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />', match.group(3))
+        if self.html_type == 'html':
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br>', match.group(3))
+        else:
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />', match.group(3))
         return '<%s%s>%s%s' % (match.group(1), match.group(2), content, match.group(4))
 
-    def block(self, text):
+    def block(self, text, head_offset = 0):
         """
         >>> t = Textile()
         >>> t.block('h1. foobar baby')
         '\\t<h1>foobar baby</h1>'
         """
-        tre = '|'.join(self.btag)
+        if not self.lite:
+            tre = '|'.join(self.btag)
+        else:
+            tre = '|'.join(self.btag_lite)
         text = text.split('\n\n')
 
         tag = 'p'
@@ -567,9 +437,18 @@ class Textile(object):
                 if ext:
                     out.append(out.pop() + c1)
 
-                tag,atts,ext,cite,graf = match.groups()
-                o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, cite, graf)
-                # leave off c1 if this block is extended, we'll close it at the start of the next block
+                tag, atts, ext, cite, graf = match.groups()
+                h_match = re.search(r'h([1-6])', tag)
+                if h_match:
+                    head_level, = h_match.groups()
+                    tag = 'h%i' % max(1, 
+                                      min(int(head_level) + head_offset,
+                                          6))
+                o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, 
+                                                      cite, graf)
+                # leave off c1 if this block is extended,
+                # we'll close it at the start of the next block
+                
                 if ext:
                     line = "%s%s%s%s" % (o1, o2, content, c2)
                 else:
@@ -578,8 +457,10 @@ class Textile(object):
             else:
                 anon = True
                 if ext or not re.search(r'^\s', line):
-                    o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext, cite, line)
-                    # skip $o1/$c1 because this is part of a continuing extended block
+                    o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext,
+                                                          cite, line)
+                    # skip $o1/$c1 because this is part of a continuing
+                    # extended block
                     if tag == 'p' and not self.hasRawText(content):
                         line = content
                     else:
@@ -588,7 +469,8 @@ class Textile(object):
                     line = self.graf(line)
 
             line = self.doPBr(line)
-            line = re.sub(r'<br>', '<br />', line)
+            if self.html_type == 'xhtml':
+                line = re.sub(r'<br>', '<br />', line)
 
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
@@ -684,7 +566,8 @@ class Textile(object):
         if id not in self.fn:
             self.fn[id] = str(uuid.uuid4())
         fnid = self.fn[id]
-        if not t: t = ''
+        if not t:
+            t = ''
         return '<sup class="footnote"><a href="#fn%s">%s</a></sup>%s' % (fnid, id, t)
 
     def glyphs(self, text):
@@ -711,7 +594,7 @@ class Textile(object):
 
         """
          # fix: hackish
-        text = re.sub(r'"\z', '\" ', text)
+        text = re.sub(r'"\Z', '\" ', text)
 
         glyph_search = (
             re.compile(r"(\w)\'(\w)"),                                      # apostrophe's
@@ -757,10 +640,6 @@ class Textile(object):
             result.append(line)
         return ''.join(result)
 
-    def iAlign(self, input):
-        d = {'<':'left', '=':'center', '>':'right'}
-        return d.get(input, '')
-
     def vAlign(self, input):
         d = {'^':'top', '-':'middle', '~':'bottom'}
         return d.get(input, '')
@@ -773,7 +652,7 @@ class Textile(object):
         """
         what is this for?
         """
-        pattern = re.compile(r'(?:(?<=^)|(?<=\s))\[(.+)\]((?:http:\/\/|\/)\S+)(?=\s|$)', re.U)
+        pattern = re.compile(r'(?:(?<=^)|(?<=\s))\[(.+)\]((?:http(?:s?):\/\/|\/)\S+)(?=\s|$)', re.U)
         text = pattern.sub(self.refs, text)
         return text
 
@@ -785,11 +664,22 @@ class Textile(object):
     def checkRefs(self, url):
         return self.urlrefs.get(url, url)
 
+    def isRelURL(self, url):
+        """
+        Identify relative urls.
+
+        >>> t = Textile()
+        >>> t.isRelURL("http://www.google.com/")
+        False
+        >>> t.isRelURL("/foo")
+        True
+
+        """
+        (scheme, netloc) = urlparse(url)[0:2]
+        return not scheme and not netloc
+
     def relURL(self, url):
-        o = urlparse(url)
-        (scheme,netloc,path,params,query,fragment) = o[0:6]
-        if (not scheme or scheme == 'http') and not netloc and re.search(r'^\w', path):
-            url = self.hu + url
+        scheme = urlparse(url)[0]
         if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
         return url
@@ -808,9 +698,10 @@ class Textile(object):
         """
         while True:
             old = text
-            for k,v in self.shelf.items():
-                text = text.replace(k,v)
-            if text == old: break
+            for k, v in self.shelf.items():
+                text = text.replace(k, v)
+            if text == old:
+                break
         return text
 
     def encode_html(self, text, quotes=True):
@@ -826,8 +717,8 @@ class Textile(object):
                 ('"', '&#34;')
             )
 
-        for k,v in a:
-            text = text.replace(k,v)
+        for k, v in a:
+            text = text.replace(k, v)
         return text
 
     def graf(self, text):
@@ -891,7 +782,8 @@ class Textile(object):
         url = self.checkRefs(url)
 
         atts = self.pba(atts)
-        if title: atts = atts +  ' title="%s"' % self.encode_html(title)
+        if title:
+            atts = atts +  ' title="%s"' % self.encode_html(title)
 
         if not self.noimage:
             text = self.image(text)
@@ -923,7 +815,8 @@ class Textile(object):
                 ([%(pnct)s]*)
                 %(qtag)s
                 (?:$|([\]}])|(?=%(selfpnct)s{1,2}|\s))
-            """ % {'qtag':qtag,'c':self.c,'pnct':pnct,'selfpnct':self.pnct}, re.X)
+            """ % {'qtag':qtag, 'c':self.c, 'pnct':pnct,
+                   'selfpnct':self.pnct}, re.X)
             text = pattern.sub(self.fSpan, text)
         return text
 
@@ -948,8 +841,10 @@ class Textile(object):
         if cite:
             atts = atts + 'cite="%s"' % cite
 
+        content = self.span(content)
+
         out = "<%s%s>%s%s</%s>" % (tag, atts, content, end, tag)
-        return out;
+        return out
 
     def image(self, text):
         """
@@ -960,7 +855,6 @@ class Textile(object):
         pattern = re.compile(r"""
             (?:[\[{])?          # pre
             \!                 # opening !
-            (\<|\=|\>)??       # optional alignment atts
             (%s)               # optional style,class atts
             (?:\. )?           # optional dot-space
             ([^\s(!]+)         # presume this is the src
@@ -974,19 +868,18 @@ class Textile(object):
 
     def fImage(self, match):
         # (None, '', '/imgs/myphoto.jpg', None, None)
-        algn, atts, url, title, href = match.groups()
+        atts, url, title, href = match.groups()
         atts  = self.pba(atts)
-        if algn:
-            atts = atts + ' align="%s"' % self.iAlign(algn)
 
         if title:
             atts = atts + ' title="%s" alt="%s"' % (title, title)
         else:
             atts = atts + ' alt=""'
-
-        # TODO how to do this in python?
-        # size = @getimagesize(url)
-        # if (size) atts .= " size[3]"
+            
+        if not self.isRelURL(url) and self.get_sizes:
+            size = getimagesize(url)
+            if (size):
+                atts += " %s" % size
 
         if href:
             href = self.checkRefs(href)
@@ -995,9 +888,14 @@ class Textile(object):
         url = self.relURL(url)
 
         out = []
-        if href: out.append('<a href="%s">' % href)
-        out.append('<img src="%s"%s />' % (url, atts))
-        if href: out.append('</a>')
+        if href:
+            out.append('<a href="%s">' % href)
+        if self.html_type == 'html':
+            out.append('<img src="%s"%s>' % (url, atts))
+        else:
+            out.append('<img src="%s"%s />' % (url, atts))
+        if href: 
+            out.append('</a>')
 
         return ''.join(out)
 
@@ -1009,7 +907,8 @@ class Textile(object):
 
     def fCode(self, match):
         before, text, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         # text needs to be escaped
         if not self.restricted:
             text = self.encode_html(text)
@@ -1017,7 +916,8 @@ class Textile(object):
 
     def fPre(self, match):
         before, text, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         # text needs to be escapedd
         if not self.restricted:
             text = self.encode_html(text)
@@ -1034,7 +934,8 @@ class Textile(object):
         special blocks like notextile or code
         """
         before, text, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         return ''.join([before, self.shelve(self.encode_html(text)), after])
 
     def noTextile(self, text):
@@ -1043,30 +944,38 @@ class Textile(object):
 
     def fTextile(self, match):
         before, notextile, after = match.groups()
-        if after == None: after = ''
+        if after == None:
+            after = ''
         return ''.join([before, self.shelve(notextile), after])
 
 
-def textile(text, **args):
+def textile(text, head_offset=0, html_type='xhtml'):
     """
     this function takes additional parameters:
-    encoding - input encoding (default: 'utf-8')
-    output - output encoding (default: 'utf-8')
-    validate - perform mxTidy or uTidyLib validation (default: False)
-    sanitize - sanitize output good for weblog comments (default: False)
-    head_offset - ignored
+    head_offset - offset to apply to heading levels (default: 0)
+    html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
     """
-    return Textile().textile(text, **args)
+    return Textile().textile(text, head_offset=head_offset,
+                             html_type=html_type)
 
-def _test():
-    import doctest
-    doctest.testmod()
+def textile_restricted(text, lite=True, noimage=True, html_type='xhtml'):
+    """
+    Restricted version of Textile designed for weblog comments and other
+    untrusted input.
 
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) == 2:
-        f = open(sys.argv[1])
-        text = ''.join(f.readlines())
-        print Textile().textile(text)
-    else:
-        _test()
+    Raw HTML is escaped.
+    Style attributes are disabled.
+    rel='nofollow' is added to external links.
+
+    When lite=True is set (the default):
+    Block tags are restricted to p, bq, and bc.
+    Lists and tables are disabled.
+    
+    When noimage=True is set (the default):
+    Image tags are disabled.
+
+    """
+    return Textile(restricted=True, lite=lite,
+                   noimage=noimage).textile(text, rel='nofollow',
+                                            html_type=html_type)
+
