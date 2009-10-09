@@ -889,7 +889,7 @@ class Textile(object):
 
         out = []
         if href:
-            out.append('<a href="%s">' % href)
+            out.append('<a href="%s" class="img">' % href)
         if self.html_type == 'html':
             out.append('<img src="%s"%s>' % (url, atts))
         else:
