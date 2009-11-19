@@ -156,7 +156,7 @@ class Textile(object):
         """
         self.html_type = html_type
 
-        text = unicode(text)
+        # text = unicode(text)
         text = _normalize_newlines(text)
 
         if self.restricted:
