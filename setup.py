@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 
-import ez_setup
-ez_setup.use_setuptools()
-
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(name='textile',
-      version='2.1.3',
+      version='2.1.4',
       description='This is Textile. A Humane Web Text Generator.',
       author='Jason Samsa',
       author_email='jsamsa@gmail.com',
       url='http://loopcore.com/python-textile/',
-      packages = find_packages(),
+      py_modules=['textile.functions'],
       platforms = ['any'],
       license = ['BSD'],
       long_description = """
