@@ -131,7 +131,7 @@ class TestKnownValues():
 
         ('!openwindow1.gif(Bunny.)!', '\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny." /></p>'),
 
-        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/"><img src="openwindow1.gif" alt="" /></a></p>'),
+        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img src="openwindow1.gif" alt="" /></a></p>'),
 
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
          '\t<p><img src="obake.gif" style="text-align:right;" alt="" /></p>\n\n\t'
@@ -211,7 +211,7 @@ class TestKnownValues():
          '<a href="http://hobix.com">all</a> I ever<br><a href="http://hobix.com">link to</a>!</p>\n\n'),
         ('!http://hobix.com/sample.jpg!', '\t<p><img src="http://hobix.com/sample.jpg" alt=""></p>'),
         ('!openwindow1.gif(Bunny.)!', '\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny."></p>'),
-        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/"><img src="openwindow1.gif" alt=""></a></p>'),
+        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img src="openwindow1.gif" alt=""></a></p>'),
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
          '\t<p><img src="obake.gif" style="text-align:right;" alt=""></p>\n\n\t'
          '<p>And others sat all round the small<br>machine and paid it to sing to them.</p>'),

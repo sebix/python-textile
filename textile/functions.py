@@ -5,9 +5,9 @@ PyTextile
 A Humane Web Text Generator
 """
 
-__version__ = '2.1.3'
+__version__ = '2.1.4'
 
-__date__ = '2009/02/07'
+__date__ = '2009/12/04'
 
 __copyright__ = """
 Copyright (c) 2009, Jason Samsa, http://jsamsa.com/
@@ -124,7 +124,7 @@ class Textile(object):
         """
         self.html_type = html_type
 
-        text = unicode(text)
+        # text = unicode(text)
         text = _normalize_newlines(text)
 
         if self.restricted:
@@ -857,7 +857,7 @@ class Textile(object):
 
         out = []
         if href:
-            out.append('<a href="%s">' % href)
+            out.append('<a href="%s" class="img">' % href)
         if self.html_type == 'html':
             out.append('<img src="%s"%s>' % (url, atts))
         else:
@@ -907,7 +907,7 @@ class Textile(object):
         return ''.join([before, self.shelve(notextile), after])
 
 
-def textile(text, head_offset=0, html_type='xhtml'):
+def textile(text, head_offset=0, html_type='xhtml', encoding=None, output=None):
     """
     this function takes additional parameters:
     head_offset - offset to apply to heading levels (default: 0)
