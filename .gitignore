@@ -1,1 +1,16 @@
 *.pyc
+*.orig
+*.rej
+*~
+*.pyo
+*.egg-info
+.coverage
+.noseids
+docs/build
+docs/coverage
+build
+bin
+dist
+eggs
+parts
+develop-eggs
