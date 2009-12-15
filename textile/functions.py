@@ -120,7 +120,7 @@ class Textile(object):
         """
         >>> import textile
         >>> textile.textile('some textile')
-        u'\\t<p>some textile</p>'
+        '\\t<p>some textile</p>'
         """
         self.html_type = html_type
 
@@ -818,7 +818,7 @@ class Textile(object):
         """
         >>> t = Textile()
         >>> t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
-        '<a href="http://jsamsa.com"><img src="/imgs/myphoto.jpg" alt="" /></a>'
+        '<a href="http://jsamsa.com" class="img"><img src="/imgs/myphoto.jpg" alt="" /></a>'
         """
         pattern = re.compile(r"""
             (?:[\[{])?          # pre
