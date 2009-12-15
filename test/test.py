@@ -1,3 +1,4 @@
+ # -*- coding: utf-8 -*-
 import textile
 import re
 import unittest
@@ -346,3 +347,7 @@ class Tests():
         expect = "\t<p><code>'quoted string'</code></p>"
 
         eq_(result, expect)
+
+    def TestUnicodeFootnote(self):
+        html = textile.textile(u'текст[1]')
+        assert_true(re.compile(u'^\t<p>текст<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup></p>', re.U).search(html))

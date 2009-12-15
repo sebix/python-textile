@@ -527,7 +527,7 @@ class Textile(object):
         >>> t.footnoteRef('foo[1] ') # doctest: +ELLIPSIS
         'foo<sup class="footnote"><a href="#fn...">1</a></sup> '
         """
-        return re.sub(r'\b\[([0-9]+)\](\s)?', self.footnoteID, text)
+        return re.compile(r'\b\[([0-9]+)\](\s)?', re.U).sub(self.footnoteID, text)
 
     def footnoteID(self, match):
         id, t = match.groups()
