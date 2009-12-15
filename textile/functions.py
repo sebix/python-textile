@@ -892,20 +892,9 @@ class Textile(object):
             text = self.encode_html(text)
         return ''.join([before, '<pre>', self.shelve(text), '</pre>', after])
 
-    def doSpecial(self, text, start, end, method=None):
-        if method == None:
-            method = self.fSpecial
+    def doSpecial(self, text, start, end, method):
         pattern = re.compile(r'(^|\s|[\[({>])%s(.*?)%s(\s|$|[\])}])?' % (re.escape(start), re.escape(end)), re.M|re.S)
         return pattern.sub(method, text)
-
-    def fSpecial(self, match):
-        """
-        special blocks like notextile or code
-        """
-        before, text, after = match.groups()
-        if after == None:
-            after = ''
-        return ''.join([before, self.shelve(self.encode_html(text)), after])
 
     def noTextile(self, text):
         text = self.doSpecial(text, '<notextile>', '</notextile>', self.fTextile)
