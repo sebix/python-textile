@@ -99,7 +99,7 @@ class TestKnownValues():
         ('h3()>[no]{color:red}. Bingo', '\t<h3 style="color:red;padding-left:1em;padding-right:1em;text-align:right;" lang="no">Bingo</h3>'),
 
         ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
-         '<pre>\n<code>\na.gsub!( /&#60;/, &#34;&#34; )\n</code>\n</pre>'),
+         '<pre>\n<code>\na.gsub!( /&#60;/, "" )\n</code>\n</pre>'),
 
         ('<div style="float:right;">\n\nh3. Sidebar\n\n"Hobix":http://hobix.com/\n"Ruby":http://ruby-lang.org/\n\n</div>\n\n'
          'The main text of the\npage goes here and will\nstay to the left of the\nsidebar.',
@@ -200,7 +200,7 @@ class TestKnownValues():
         '\t<p>I seriously <strong style="color:red;">blushed</strong><br>when I <em class="big">sprouted</em>'
         ' that<br>corn stalk from my<br><span lang="es">cabeza</span>.</p>'),
         ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
-         '<pre>\n<code>\na.gsub!( /&#60;/, &#34;&#34; )\n</code>\n</pre>'),
+         '<pre>\n<code>\na.gsub!( /&#60;/, "" )\n</code>\n</pre>'),
         ('<div style="float:right;">\n\nh3. Sidebar\n\n"Hobix":http://hobix.com/\n"Ruby":http://ruby-lang.org/\n\n</div>\n\n'
          'The main text of the\npage goes here and will\nstay to the left of the\nsidebar.',
          '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br>'
@@ -337,4 +337,12 @@ class Tests():
         result = textile.textile_restricted(test)
         expect = "\t<p>Here is some text.<br />&#60;script&#62;alert('hello world&#8217;)&#60;/script&#62;</p>"
         
+        eq_(result, expect)
+
+
+    def TestQuotesInCode(self):
+        test = "<code>'quoted string'</code>"
+        result = textile.textile(test)
+        expect = "\t<p><code>'quoted string'</code></p>"
+
         eq_(result, expect)
