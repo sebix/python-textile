@@ -1,7 +1,6 @@
  # -*- coding: utf-8 -*-
 import textile
 import re
-import unittest
 from nose.tools import eq_, assert_true
 
 
