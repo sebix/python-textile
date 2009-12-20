@@ -608,6 +608,10 @@ class Textile(object):
             result.append(line)
         return ''.join(result)
 
+    def iAlign(self, input):
+        d = {'<':'left', '=':'center', '>':'right'}
+        return d.get(input, '')
+
     def vAlign(self, input):
         d = {'^':'top', '-':'middle', '~':'bottom'}
         return d.get(input, '')
@@ -819,10 +823,13 @@ class Textile(object):
         >>> t = Textile()
         >>> t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
         '<a href="http://jsamsa.com" class="img"><img src="/imgs/myphoto.jpg" alt="" /></a>'
+        >>> t.image('!</imgs/myphoto.jpg!')
+        '<img src="imgs/myphoto.jpg style="align: left;" />'
         """
         pattern = re.compile(r"""
             (?:[\[{])?          # pre
             \!                 # opening !
+	    (\<|\=|\>)?       # optional alignment atts
             (%s)               # optional style,class atts
             (?:\. )?           # optional dot-space
             ([^\s(!]+)         # presume this is the src
@@ -836,8 +843,11 @@ class Textile(object):
 
     def fImage(self, match):
         # (None, '', '/imgs/myphoto.jpg', None, None)
-        atts, url, title, href = match.groups()
+        align, atts, url, title, href = match.groups()
         atts  = self.pba(atts)
+
+        if align:
+            atts = atts + 'style="float: %s;"' % self.iAlign(align)
 
         if title:
             atts = atts + ' title="%s" alt="%s"' % (title, title)
