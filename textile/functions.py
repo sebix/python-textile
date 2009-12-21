@@ -70,14 +70,14 @@ def getimagesize(url):
 class Textile(object):
     horizontal_align_re = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
     vertical_align_re = r'[\-^~]'
-    clas = r'(?:\([^)]+\))'
-    lnge = r'(?:\[[^\]]+\])'
-    styl = r'(?:\{[^}]+\})'
+    class_re = r'(?:\([^)]+\))'
+    language_re = r'(?:\[[^\]]+\])'
+    style_re = r'(?:\{[^}]+\})'
     colspan_re = r'(?:\\\d+)'
     rowspan_re = r'(?:\/\d+)'
-    a = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
-    s = r'(?:%s|%s)*' % (colspan_re, rowspan_re)
-    c = r'(?:%s)*' % '|'.join([clas, styl, lnge, horizontal_align_re])
+    align_re = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
+    table_span_re = r'(?:%s|%s)*' % (colspan_re, rowspan_re)
+    c = r'(?:%s)*' % '|'.join([class_re, style_re, language_re, horizontal_align_re])
 
     pnct = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
     urlch = '[\w"$\-_.+*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
@@ -286,14 +286,14 @@ class Textile(object):
         '\t<table>\n\t\t<tr>\n\t\t\t<td>one</td>\n\t\t\t<td>two</td>\n\t\t\t<td>three</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>a</td>\n\t\t\t<td>b</td>\n\t\t\t<td>c</td>\n\t\t</tr>\n\t</table>\n\n'
         """
         text = text + "\n\n"
-        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\. ?\n)?^(%(a)s%(c)s\.? ?\|.*\|)\n\n' % {'s':self.s, 'a':self.a, 'c':self.c}, re.S|re.M|re.U)
+        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\. ?\n)?^(%(a)s%(c)s\.? ?\|.*\|)\n\n' % {'s':self.table_span_re, 'a':self.align_re, 'c':self.c}, re.S|re.M|re.U)
         return pattern.sub(self.fTable, text)
 
     def fTable(self, match):
         tatts = self.pba(match.group(1), 'table')
         rows = []
         for row in [ x for x in match.group(2).split('\n') if x]:
-            rmtch = re.search(r'^(%s%s\. )(.*)' % (self.a, self.c), row.lstrip())
+            rmtch = re.search(r'^(%s%s\. )(.*)' % (self.align_re, self.c), row.lstrip())
             if rmtch:
                 ratts = self.pba(rmtch.group(1), 'tr')
                 row = rmtch.group(2)
@@ -305,7 +305,7 @@ class Textile(object):
                 ctyp = 'd'
                 if re.search(r'^_', cell):
                     ctyp = "h"
-                cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (self.s, self.a, self.c), cell)
+                cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (self.table_span_re, self.align_re, self.c), cell)
                 if cmtch:
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
@@ -338,7 +338,7 @@ class Textile(object):
             except IndexError:
                 nextline = ''
 
-            m = re.search(r"^([#*]+)(%s%s) (.*)$" % (self.a, self.c), line, re.S)
+            m = re.search(r"^([#*]+)(%s%s) (.*)$" % (self.align_re, self.c), line, re.S)
             if m:
                 tl, atts, content = m.groups()
                 nl = ''
@@ -399,7 +399,7 @@ class Textile(object):
 
         anon = False
         for line in text:
-            pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (tre, self.a, self.c)
+            pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (tre, self.align_re, self.c)
             match = re.search(pattern, line, re.S)
             if match:
                 if ext:
