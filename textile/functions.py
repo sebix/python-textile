@@ -88,6 +88,9 @@ class Textile(object):
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
     btag_lite = ('bq', 'bc', 'p')
 
+    vAlign = {'^':'top', '-':'middle', '~':'bottom'}
+    hAlign = {'<':'left', '=':'center', '>':'right', '<>': 'justify'}
+
     glyph_defaults = (
         ('txt_quote_single_open',  '&#8216;'),
         ('txt_quote_single_close', '&#8217;'),
@@ -142,7 +145,7 @@ class Textile(object):
 
         return text
 
-    def pba(self, input, element=None):
+    def pba(self, block_attributes, element=None):
         """
         Parse block attributes.
 
@@ -155,9 +158,6 @@ class Textile(object):
         ' rowspan="4"'
         >>> t.pba(r'\\3/4', element='td')
         ' colspan="3" rowspan="4"'
-
-        >>> t.vAlign('^')
-        'top'
 
         >>> t.pba('^', element='td')
         ' style="vertical-align:top;"'
@@ -189,12 +189,12 @@ class Textile(object):
         lang = ''
         colspan = ''
         rowspan = ''
-        id = ''
+        block_id = ''
 
-        if not input:
+        if not block_attributes:
             return ''
 
-        matched = input
+        matched = block_attributes
         if element == 'td':
             m = re.search(r'\\(\d+)', matched)
             if m:
@@ -207,7 +207,7 @@ class Textile(object):
         if element == 'td' or element == 'tr':
             m = re.search(r'(%s)' % self.vertical_align_re, matched)
             if m:
-                style.append("vertical-align:%s;" % self.vAlign(m.group(1)))
+                style.append("vertical-align:%s;" % self.vAlign[m.group(1)])
 
         m = re.search(r'\{([^}]*)\}', matched)
         if m:
@@ -236,11 +236,11 @@ class Textile(object):
 
         m = re.search(r'(%s)' % self.horizontal_align_re, matched)
         if m:
-            style.append("text-align:%s;" % self.hAlign(m.group(1)))
+            style.append("text-align:%s;" % self.hAlign[m.group(1)])
 
         m = re.search(r'^(.*)#(.*)$', aclass)
         if m:
-            id = m.group(2)
+            block_id = m.group(2)
             aclass = m.group(1)
 
         if self.restricted:
@@ -256,8 +256,8 @@ class Textile(object):
             result.append(' class="%s"' % aclass)
         if lang:
             result.append(' lang="%s"' % lang)
-        if id:
-            result.append(' id="%s"' % id)
+        if block_id:
+            result.append(' id="%s"' % block_id)
         if colspan:
             result.append(' colspan="%s"' % colspan)
         if rowspan:
@@ -362,7 +362,7 @@ class Textile(object):
                 if tl not in lists:
                     lists.append(tl)
                     atts = self.pba(atts)
-                    line = "\t<%sl%s>\n\t\t<li>%s" % (self.lT(tl), atts, self.graf(content))
+                    line = "\t<%sl%s>\n\t\t<li>%s" % (self.listType(tl), atts, self.graf(content))
                 else:
                     line = "\t\t<li>" + self.graf(content)
 
@@ -370,7 +370,7 @@ class Textile(object):
                     line = line + "</li>"
                 for k in reversed(lists):
                     if len(k) > len(nl):
-                        line = line + "\n\t</%sl>" % self.lT(k)
+                        line = line + "\n\t</%sl>" % self.listType(k)
                         if len(k) > 1:
                             line = line + "</li>"
                         lists.remove(k)
@@ -378,8 +378,8 @@ class Textile(object):
             result.append(line)
         return "\n".join(result)
 
-    def lT(self, input):
-        if re.search(r'^#+', input):
+    def listType(self, list_string):
+        if re.search(r'^#+', list_string):
             return 'o'
         else:
             return 'u'
@@ -624,14 +624,6 @@ class Textile(object):
                     line = s.sub(r, line)
             result.append(line)
         return ''.join(result)
-
-    def vAlign(self, input):
-        d = {'^':'top', '-':'middle', '~':'bottom'}
-        return d.get(input, '')
-
-    def hAlign(self, input):
-        d = {'<':'left', '=':'center', '>':'right', '<>': 'justify'}
-        return d.get(input, '')
 
     def getRefs(self, text):
         """
