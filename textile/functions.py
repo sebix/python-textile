@@ -87,6 +87,8 @@ class Textile(object):
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
     btag_lite = ('bq', 'bc', 'p')
 
+    iAlign = {'<':'left', '>':'right'}
+
     glyph_defaults = (
         ('txt_quote_single_open',  '&#8216;'),
         ('txt_quote_single_close', '&#8217;'),
@@ -608,10 +610,6 @@ class Textile(object):
             result.append(line)
         return ''.join(result)
 
-    def iAlign(self, input):
-        d = {'<':'left', '=':'center', '>':'right'}
-        return d.get(input, '')
-
     def vAlign(self, input):
         d = {'^':'top', '-':'middle', '~':'bottom'}
         return d.get(input, '')
@@ -824,12 +822,12 @@ class Textile(object):
         >>> t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
         '<a href="http://jsamsa.com" class="img"><img src="/imgs/myphoto.jpg" alt="" /></a>'
         >>> t.image('!</imgs/myphoto.jpg!')
-        '<img src="imgs/myphoto.jpg style="align: left;" />'
+        '<img src="imgs/myphoto.jpg style="float: left;" />'
         """
         pattern = re.compile(r"""
             (?:[\[{])?          # pre
             \!                 # opening !
-	    (\<|\=|\>)?       # optional alignment atts
+	    (\<|\>)?           # optional alignment atts
             (%s)               # optional style,class atts
             (?:\. )?           # optional dot-space
             ([^\s(!]+)         # presume this is the src
@@ -847,7 +845,7 @@ class Textile(object):
         atts  = self.pba(atts)
 
         if align:
-            atts = atts + 'style="float: %s;"' % self.iAlign(align)
+            atts = atts + ' style="float: %s;"' % self.iAlign[align]
 
         if title:
             atts = atts + ' title="%s" alt="%s"' % (title, title)
