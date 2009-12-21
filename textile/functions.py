@@ -617,19 +617,19 @@ class Textile(object):
         glyph_replace = [x % dict(self.glyph_defaults) for x in (
             r'\1%(txt_apostrophe)s\2',           # apostrophe's
             r'\1%(txt_apostrophe)s\2',           # back in '88
-            r'\1%(txt_quote_single_close)s',     #  single closing
-            r'%(txt_quote_single_open)s',         #  single opening
-            r'\1%(txt_quote_double_close)s',        #  double closing
-            r'%(txt_quote_double_open)s',             #  double opening
-            r'<acronym title="\2">\1</acronym>', #  3+ uppercase acronym
-            r'<span class="caps">\1</span>',     #  3+ uppercase
-            r'\1%(txt_ellipsis)s',                  #  ellipsis
-            r'\1%(txt_emdash)s\2',               #  em dash
-            r' %(txt_endash)s ',                 #  en dash
-            r'\1\2%(txt_dimension)s\3',          #  dimension sign
-            r'%(txt_trademark)s',                #  trademark
-            r'%(txt_registered)s',                #  registered
-            r'%(txt_copyright)s',                #  copyright
+            r'\1%(txt_quote_single_close)s',     # single closing
+            r'%(txt_quote_single_open)s',        # single opening
+            r'\1%(txt_quote_double_close)s',     # double closing
+            r'%(txt_quote_double_open)s',        # double opening
+            r'<acronym title="\2">\1</acronym>', # 3+ uppercase acronym
+            r'<span class="caps">\1</span>',     # 3+ uppercase
+            r'\1%(txt_ellipsis)s',               # ellipsis
+            r'\1%(txt_emdash)s\2',               # em dash
+            r' %(txt_endash)s ',                 # en dash
+            r'\1\2%(txt_dimension)s\3',          # dimension sign
+            r'%(txt_trademark)s',                # trademark
+            r'%(txt_registered)s',               # registered
+            r'%(txt_copyright)s',                # copyright
         )]
 
         result = []
@@ -817,7 +817,7 @@ class Textile(object):
         _, tag, atts, cite, content, end, _ = match.groups()
 
         qtags = {
-            '*': 'strong',
+            '*' : 'strong',
             '**': 'b',
             '??': 'cite',
             '_' : 'em',
@@ -845,7 +845,7 @@ class Textile(object):
         '<a href="http://jsamsa.com" class="img"><img src="/imgs/myphoto.jpg" alt="" /></a>'
         """
         pattern = re.compile(r"""
-            (?:[\[{])?          # pre
+            (?:[\[{])?         # pre
             \!                 # opening !
             (%s)               # optional style,class atts
             (?:\. )?           # optional dot-space
