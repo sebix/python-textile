@@ -77,7 +77,8 @@ class Textile(object):
     rowspan_re = r'(?:\/\d+)'
     align_re = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
     table_span_re = r'(?:%s|%s)*' % (colspan_re, rowspan_re)
-    c = r'(?:%s)*' % '|'.join([class_re, style_re, language_re, horizontal_align_re])
+    c = r'(?:%s)*' % '|'.join([class_re, style_re, 
+                               language_re, horizontal_align_re])
 
     pnct = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
     urlch = '[\w"$\-_.+*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
@@ -275,7 +276,8 @@ class Textile(object):
         True
 
         """
-        r = re.compile(r'<(p|blockquote|div|form|table|ul|ol|pre|h\d)[^>]*?>.*</\1>', re.S).sub('', text.strip()).strip()
+        r = re.compile(r'<(p|blockquote|div|form|table|ul|ol|pre|h\d)[^>]*?>.*</\1>',
+                       re.S).sub('', text.strip()).strip()
         r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
         return '' != r
 
@@ -286,14 +288,19 @@ class Textile(object):
         '\t<table>\n\t\t<tr>\n\t\t\t<td>one</td>\n\t\t\t<td>two</td>\n\t\t\t<td>three</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>a</td>\n\t\t\t<td>b</td>\n\t\t\t<td>c</td>\n\t\t</tr>\n\t</table>\n\n'
         """
         text = text + "\n\n"
-        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\. ?\n)?^(%(a)s%(c)s\.? ?\|.*\|)\n\n' % {'s':self.table_span_re, 'a':self.align_re, 'c':self.c}, re.S|re.M|re.U)
+        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\. ?\n)?^(%(a)s%(c)s\.? ?\|.*\|)\n\n' 
+                             % {'s':self.table_span_re,
+                                'a':self.align_re,
+                                'c':self.c}, 
+                             re.S|re.M|re.U)
         return pattern.sub(self.fTable, text)
 
     def fTable(self, match):
         tatts = self.pba(match.group(1), 'table')
         rows = []
         for row in [ x for x in match.group(2).split('\n') if x]:
-            rmtch = re.search(r'^(%s%s\. )(.*)' % (self.align_re, self.c), row.lstrip())
+            rmtch = re.search(r'^(%s%s\. )(.*)' 
+                              % (self.align_re, self.c), row.lstrip())
             if rmtch:
                 ratts = self.pba(rmtch.group(1), 'tr')
                 row = rmtch.group(2)
@@ -305,7 +312,11 @@ class Textile(object):
                 ctyp = 'd'
                 if re.search(r'^_', cell):
                     ctyp = "h"
-                cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (self.table_span_re, self.align_re, self.c), cell)
+                cmtch = re.search(r'^(_?%s%s%s\. )(.*)' 
+                                  % (self.table_span_re, 
+                                     self.align_re, 
+                                     self.c), 
+                                  cell)
                 if cmtch:
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
@@ -313,8 +324,10 @@ class Textile(object):
                     catts = ''
 
                 cell = self.graf(self.span(cell))
-                cells.append('\t\t\t<t%s%s>%s</t%s>' % (ctyp, catts, cell, ctyp))
-            rows.append("\t\t<tr%s>\n%s\n\t\t</tr>" % (ratts, '\n'.join(cells)))
+                cells.append('\t\t\t<t%s%s>%s</t%s>' 
+                             % (ctyp, catts, cell, ctyp))
+            rows.append("\t\t<tr%s>\n%s\n\t\t</tr>" 
+                        % (ratts, '\n'.join(cells)))
             cells = []
             catts = None
         return "\t<table%s>\n%s\n\t</table>\n\n" % (tatts, '\n'.join(rows))
@@ -325,7 +338,8 @@ class Textile(object):
         >>> t.lists("* one\\n* two\\n* three")
         '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
         """
-        pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])' % self.c, re.U|re.M|re.S)
+        pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])' 
+                             % self.c, re.U|re.M|re.S)
         return pattern.sub(self.fList, text)
 
     def fList(self, match):
@@ -375,10 +389,13 @@ class Textile(object):
 
     def doBr(self, match):
         if self.html_type == 'html':
-            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br>', match.group(3))
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br>',
+                             match.group(3))
         else:
-            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />', match.group(3))
-        return '<%s%s>%s%s' % (match.group(1), match.group(2), content, match.group(4))
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />', 
+                             match.group(3))
+        return '<%s%s>%s%s' % (match.group(1), match.group(2), 
+                               content, match.group(4))
 
     def block(self, text, head_offset = 0):
         """
@@ -893,11 +910,13 @@ class Textile(object):
         return ''.join([before, '<pre>', self.shelve(text), '</pre>', after])
 
     def doSpecial(self, text, start, end, method):
-        pattern = re.compile(r'(^|\s|[\[({>])%s(.*?)%s(\s|$|[\])}])?' % (re.escape(start), re.escape(end)), re.M|re.S)
+        pattern = re.compile(r'(^|\s|[\[({>])%s(.*?)%s(\s|$|[\])}])?' 
+                             % (re.escape(start), re.escape(end)), re.M|re.S)
         return pattern.sub(method, text)
 
     def noTextile(self, text):
-        text = self.doSpecial(text, '<notextile>', '</notextile>', self.fTextile)
+        text = self.doSpecial(text, '<notextile>', '</notextile>',
+                              self.fTextile)
         return self.doSpecial(text, '==', '==', self.fTextile)
 
     def fTextile(self, match):
