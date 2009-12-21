@@ -582,21 +582,36 @@ class Textile(object):
         text = re.sub(r'"\Z', '\" ', text)
 
         glyph_search = (
-            re.compile(r"(\w)\'(\w)"),                                      # apostrophe's
-            re.compile(r'(\s)\'(\d+\w?)\b(?!\')'),                          # back in '88
-            re.compile(r'(\S)\'(?=\s|'+self.pnct+'|<|$)'),                       #  single closing
-            re.compile(r'\'/'),                                             #  single opening
-            re.compile(r'(\S)\"(?=\s|'+self.pnct+'|<|$)'),                       #  double closing
-            re.compile(r'"'),                                               #  double opening
-            re.compile(r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])'),        #  3+ uppercase acronym
-            re.compile(r'\b([A-Z][A-Z\'\-]+[A-Z])(?=[\s.,\)>])'),           #  3+ uppercase
-            re.compile(r'\b(\s{0,1})?\.{3}'),                                     #  ellipsis
-            re.compile(r'(\s?)--(\s?)'),                                    #  em dash
-            re.compile(r'\s-(?:\s|$)'),                                     #  en dash
-            re.compile(r'(\d+)( ?)x( ?)(?=\d+)'),                           #  dimension sign
-            re.compile(r'\b ?[([]TM[])]', re.I),                            #  trademark
-            re.compile(r'\b ?[([]R[])]', re.I),                             #  registered
-            re.compile(r'\b ?[([]C[])]', re.I),                             #  copyright
+            # apostrophe's
+            re.compile(r"(\w)\'(\w)"),
+            # back in '88            
+            re.compile(r'(\s)\'(\d+\w?)\b(?!\')'),
+            # single closing
+            re.compile(r'(\S)\'(?=\s|'+self.pnct+'|<|$)'),
+            # single opening
+            re.compile(r'\'/'),                           
+            # double closing                  
+            re.compile(r'(\S)\"(?=\s|'+self.pnct+'|<|$)'),
+            # double opening
+            re.compile(r'"'),
+            # 3+ uppercase acronym
+            re.compile(r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])'),
+            # 3+ uppercase
+            re.compile(r'\b([A-Z][A-Z\'\-]+[A-Z])(?=[\s.,\)>])'),           
+            # ellipsis
+            re.compile(r'\b(\s{0,1})?\.{3}'),
+            # em dash
+            re.compile(r'(\s?)--(\s?)'),
+            # en dash
+            re.compile(r'\s-(?:\s|$)'),
+            # dimension sign
+            re.compile(r'(\d+)( ?)x( ?)(?=\d+)'),
+            # trademark
+            re.compile(r'\b ?[([]TM[])]', re.I),
+            # registered
+            re.compile(r'\b ?[([]R[])]', re.I),
+            # copyright
+            re.compile(r'\b ?[([]C[])]', re.I), 
          )
 
         glyph_replace = [x % dict(self.glyph_defaults) for x in (
