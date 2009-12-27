@@ -726,6 +726,7 @@ class Textile(object):
             text = self.noTextile(text)
             text = self.code(text)
 
+        text = self.auto_links(text)
         text = self.links(text)
 
         if not self.noimage:
@@ -740,6 +741,17 @@ class Textile(object):
         text = self.glyphs(text)
 
         return text.rstrip('\n')
+
+    def auto_links(self, text):
+        """
+        >>> t = Textile()
+        >>> t.auto_links("http://www.ya.ru")
+        '"http://www.ya.ru":http://www.ya.ru'
+        """
+
+        pattern = r"((^|\s))((%s)://([-A-Za-z0-9+&@#/%%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%%=~_()|]))" % '|'.join(self.url_schemes)
+        return re.sub(pattern, r'"\3":\3', text)
+        
 
     def links(self, text):
         """
