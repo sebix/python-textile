@@ -548,13 +548,14 @@ class Textile(object):
         return re.compile(r'\b\[([0-9]+)\](\s)?', re.U).sub(self.footnoteID, text)
 
     def footnoteID(self, match):
-        id, t = match.groups()
-        if id not in self.fn:
-            self.fn[id] = str(uuid.uuid4())
-        fnid = self.fn[id]
-        if not t:
-            t = ''
-        return '<sup class="footnote"><a href="#fn%s">%s</a></sup>%s' % (fnid, id, t)
+        footnoteNum, text = match.groups()
+        if footnoteNum not in self.fn:
+            self.fn[footnoteNum] = str(uuid.uuid4())
+        footnoteID = self.fn[footnoteNum]
+        if not text:
+            text = ''
+        return '<sup class="footnote"><a href="#fn%s">%s</a></sup>%s' % (
+            footnoteID, footnoteNum, text)
 
     def glyphs(self, text):
         """
