@@ -679,9 +679,9 @@ class Textile(object):
         return url
 
     def shelve(self, text):
-        id = str(uuid.uuid4())
-        self.shelf[id] = text
-        return id
+        itemID = str(uuid.uuid4())
+        self.shelf[itemID] = text
+        return itemID
 
     def retrieve(self, text):
         """
