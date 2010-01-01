@@ -134,7 +134,7 @@ class TestKnownValues():
         ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img src="openwindow1.gif" alt="" /></a></p>'),
 
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
-         '\t<p><img src="obake.gif" style="text-align:right;" alt="" /></p>\n\n\t'
+         '\t<p><img src="obake.gif" style="float: right;" alt="" /></p>\n\n\t'
          '<p>And others sat all round the small<br />machine and paid it to sing to them.</p>'),
 
         ('We use CSS(Cascading Style Sheets).', '\t<p>We use <acronym title="Cascading Style Sheets">CSS</acronym>.</p>'),
@@ -213,7 +213,7 @@ class TestKnownValues():
         ('!openwindow1.gif(Bunny.)!', '\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny."></p>'),
         ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img src="openwindow1.gif" alt=""></a></p>'),
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
-         '\t<p><img src="obake.gif" style="text-align:right;" alt=""></p>\n\n\t'
+         '\t<p><img src="obake.gif" style="float: right;" alt=""></p>\n\n\t'
          '<p>And others sat all round the small<br>machine and paid it to sing to them.</p>'),
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!', 
          '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt=""></p>'),
