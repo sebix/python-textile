@@ -113,12 +113,14 @@ class Textile(object):
         ('txt_copyright',          '&#169;'),
     )
 
-    def __init__(self, restricted=False, lite=False, noimage=False):
+    def __init__(self, restricted=False, lite=False, noimage=False,
+                 auto_link=False):
         """docstring for __init__"""
         self.restricted = restricted
         self.lite = lite
         self.noimage = noimage
         self.get_sizes = False
+        self.auto_link = auto_link
         self.fn = {}
         self.urlrefs = {}
         self.shelf = {}
@@ -725,7 +727,8 @@ class Textile(object):
             text = self.noTextile(text)
             text = self.code(text)
 
-        text = self.auto_links(text)
+        if self.auto_link:
+            text = self.autoLink(text)
         text = self.links(text)
 
         if not self.noimage:
@@ -741,10 +744,10 @@ class Textile(object):
 
         return text.rstrip('\n')
 
-    def auto_links(self, text):
+    def autoLink(self, text):
         """
         >>> t = Textile()
-        >>> t.auto_links("http://www.ya.ru")
+        >>> t.autoLink("http://www.ya.ru")
         '"http://www.ya.ru":http://www.ya.ru'
         """
 
@@ -957,19 +960,24 @@ class Textile(object):
         return ''.join([before, self.shelve(notextile), after])
 
 
-def textile(text, head_offset=0, html_type='xhtml', encoding=None, output=None):
+def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
+            encoding=None, output=None):
     """
     this function takes additional parameters:
     head_offset - offset to apply to heading levels (default: 0)
     html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
+    auto_link - enable automatic linking of URLs
     """
-    return Textile().textile(text, head_offset=head_offset,
-                             html_type=html_type)
+    return Textile(auto_link=auto_link).textile(text, head_offset=head_offset,
+                                                  html_type=html_type)
 
-def textile_restricted(text, lite=True, noimage=True, html_type='xhtml'):
+def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
+                       auto_link=False):
     """
     Restricted version of Textile designed for weblog comments and other
     untrusted input.
+
+    Set auto_link to True to enable automatic linking of URLs.
 
     Raw HTML is escaped.
     Style attributes are disabled.
@@ -984,6 +992,6 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml'):
 
     """
     return Textile(restricted=True, lite=lite,
-                   noimage=noimage).textile(text, rel='nofollow',
-                                            html_type=html_type)
+                   noimage=noimage, auto_link=auto_link).textile(
+        text, rel='nofollow', html_type=html_type)
 
