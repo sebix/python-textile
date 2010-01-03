@@ -969,10 +969,14 @@ class Textile(object):
 def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
             encoding=None, output=None):
     """
-    this function takes additional parameters:
+    
+
+    This function takes the following additional parameters:
+    
     head_offset - offset to apply to heading levels (default: 0)
     html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
-    auto_link - enable automatic linking of URLs
+    auto_link - enable automatic linking of URLs (default: False)
+
     """
     return Textile(auto_link=auto_link).textile(text, head_offset=head_offset,
                                                   html_type=html_type)
@@ -981,20 +985,16 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
                        auto_link=False):
     """
     Restricted version of Textile designed for weblog comments and other
-    untrusted input.
+    untrusted input.  Raw HTML is escaped, style attributes are disabled,
+    and rel='nofollow' is added to external links.
 
-    Set auto_link to True to enable automatic linking of URLs.
-
-    Raw HTML is escaped.
-    Style attributes are disabled.
-    rel='nofollow' is added to external links.
-
-    When lite=True is set (the default):
-    Block tags are restricted to p, bq, and bc.
-    Lists and tables are disabled.
+    This function takes the following additional parameters:
     
-    When noimage=True is set (the default):
-    Image tags are disabled.
+    auto_link - enable automatic linking of URLs (default: False)
+    lite - restrict block tags to p, bq, and bc,
+           disable lists and tables (default: True)
+    noimage - disable image tags (default: True)
+    html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
 
     """
     return Textile(restricted=True, lite=lite,
