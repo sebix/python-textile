@@ -284,7 +284,7 @@ class Tests():
         result = textile.textile(text, head_offset=head_offset)
         eq_(result, expect)
 
-    def TestIssue035(self):
+    def testIssue035(self):
         result = textile.textile('"z"')
         expect = '\t<p>&#8220;z&#8221; </p>'
         eq_(result, expect)
@@ -293,13 +293,13 @@ class Tests():
         expect = '\t<p>&#8220; z&#8221; </p>'
         eq_(result, expect)
 
-    def TestIssue032(self):
+    def testIssue032(self):
         text = "|thing|||otherthing|"
         result = textile.textile(text)
         expect = "\t<table>\n\t\t<tr>\n\t\t\t<td>thing</td>\n\t\t\t<td></td>\n\t\t\t<td></td>\n\t\t\t<td>otherthing</td>\n\t\t</tr>\n\t</table>"
         eq_(result, expect)
 
-    def TestIssue036(self):
+    def testIssue036(self):
         test = '"signup":signup\n[signup]http://myservice.com/signup'
         result = textile.textile(test)
         expect = '\t<p><a href="http://myservice.com/signup">signup</a></p>'
@@ -310,7 +310,7 @@ class Tests():
         expect = '\t<p><a href="https://myservice.com/signup">signup</a></p>'
         eq_(result, expect)
 
-    def TestNestedFormatting(self):
+    def testNestedFormatting(self):
         test = "*_test text_*"
         result = textile.textile(test)
         expect = "\t<p><strong><em>test text</em></strong></p>"
@@ -324,7 +324,7 @@ class Tests():
         
         eq_(result, expect)
 
-    def TestRestricted(self):
+    def testRestricted(self):
         test = "this is \"some\" *bold text*."
         result = textile.textile_restricted(test)
         expect = "\t<p>this is &#8220;some&#8221; <strong>bold text</strong>.</p>"
@@ -340,18 +340,18 @@ class Tests():
         eq_(result, expect)
 
 
-    def TestQuotesInCode(self):
+    def testQuotesInCode(self):
         test = "<code>'quoted string'</code>"
         result = textile.textile(test)
         expect = "\t<p><code>'quoted string'</code></p>"
 
         eq_(result, expect)
 
-    def TestUnicodeFootnote(self):
+    def testUnicodeFootnote(self):
         html = textile.textile(u'текст[1]')
         assert_true(re.compile(u'^\t<p>текст<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup></p>', re.U).search(html))
 
-    def TestAutoLinking(self):
+    def testAutoLinking(self):
         test = "some text http://www.google.com"
         result = "\t<p>some text <a href=\"http://www.google.com\">http://www.google.com</a></p>"
         expect = textile.textile(test, auto_link=True)
