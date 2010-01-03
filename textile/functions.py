@@ -969,7 +969,7 @@ class Textile(object):
 def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
             encoding=None, output=None):
     """
-    
+    Apply Textile to a block of text.
 
     This function takes the following additional parameters:
     
@@ -984,9 +984,9 @@ def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
 def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
                        auto_link=False):
     """
-    Restricted version of Textile designed for weblog comments and other
-    untrusted input.  Raw HTML is escaped, style attributes are disabled,
-    and rel='nofollow' is added to external links.
+    Apply Textile to a block of text, with restrictions designed for weblog
+    comments and other untrusted input.  Raw HTML is escaped, style attributes
+    are disabled, and rel='nofollow' is added to external links.
 
     This function takes the following additional parameters:
     
