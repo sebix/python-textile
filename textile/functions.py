@@ -750,15 +750,19 @@ class Textile(object):
         punct = '!"#$%&\'*+,-./:;=?@\\^_`|~'
 
         pattern = r'''
-            (?P<pre>    [\s\[{(]|[%s]   )?
-            "                          # start
-            (?P<atts>   %s       )
-            (?P<text>   [^"]+?   )
+            (?P<pre>[\s\[{(]|[%s])?         #leading text
+            "                               #opening quote
+            (?P<atts>%s)                    #block attributes
+            (?P<text>[^"]+?)                #link text
             \s?
-            (?:   \(([^)]+?)\)(?=")   )?     # $title
-            ":
-            (?P<url>    (?:ftp|https?)? (?: :// )? [-A-Za-z0-9+&@#/?=~_()|!:,.;]*[-A-Za-z0-9+&@#/=~_()|]   )
-            (?P<post>   [^\w\/;]*?   )
+            (?:\((P<title>[^)]+?)\)(?="))?  #optional title
+            ":                              #closing quote, colon
+            (?P<url>(?:ftp|https?)?         #URL
+			(?: :// )? 
+			[-A-Za-z0-9+&@#/?=~_()|!:,.;]*
+			[-A-Za-z0-9+&@#/=~_()|]   
+	    )
+            (?P<post>[^\w\/;]*?)	    #trailing text
             (?=<|\s|$)
         ''' % (re.escape(punct), self.c)
 
