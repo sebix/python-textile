@@ -28,6 +28,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import re
 import uuid
+import string
 from urlparse import urlparse
 
 def _normalize_newlines(string):
@@ -751,8 +752,9 @@ class Textile(object):
         '"http://www.ya.ru":http://www.ya.ru'
         """
 
-        pattern = r"((^|\s))((%s)://([-A-Za-z0-9+&@#/%%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%%=~_()|]))" % '|'.join(self.url_schemes)
-        return re.sub(pattern, r'"\3":\3', text)
+        pattern = re.compile(
+            r"\b(([\w-]+://?|www[.])[^\s()<>]+(?:(?:\([\w\d)]+\)[^\s()<>]*)+|([^%s\s]|/)))" % re.escape(string.punctuation), re.U)
+        return pattern.sub(r'"\1":\1', text)
 
     def links(self, text):
         """
