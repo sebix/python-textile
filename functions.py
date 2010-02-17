@@ -732,8 +732,9 @@ class Textile(object):
         if not self.noimage:
             text = self.image(text)
 
+        text = self.lists(text)
+
         if not self.lite:
-            text = self.lists(text)
             text = self.table(text)
 
         text = self.span(text)
