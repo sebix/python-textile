@@ -61,7 +61,8 @@ import uuid
 from urlparse import urlparse
 
 def _normalize_newlines(string):
-    out = re.sub(r'\r\n', '\n', string)
+    out = string.strip()
+    out = re.sub(r'\r\n', '\n', out)
     out = re.sub(r'\n{3,}', '\n\n', out)
     out = re.sub(r'\n\s*\n', '\n\n', out)
     out = re.sub(r'"$', '" ', out)
