@@ -14,3 +14,4 @@ dist
 eggs
 parts
 develop-eggs
+.DS_Store

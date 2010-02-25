@@ -32,7 +32,8 @@ import string
 from urlparse import urlparse
 
 def _normalize_newlines(string):
-    out = re.sub(r'\r\n', '\n', string)
+    out = string.strip()
+    out = re.sub(r'\r\n', '\n', out)
     out = re.sub(r'\n{3,}', '\n\n', out)
     out = re.sub(r'\n\s*\n', '\n\n', out)
     out = re.sub(r'"$', '" ', out)
@@ -346,9 +347,12 @@ class Textile(object):
         >>> t.lists("* one\\n* two\\n* three")
         '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
         """
+        #replaces bullets (U+2022) to * on line start
+        bullet_pattern = re.compile(u'^\xe2\x80\xa2', re.U|re.M)
+        
         pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])' 
                              % self.c, re.U|re.M|re.S)
-        return pattern.sub(self.fList, text)
+        return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
         text = match.group(0).split("\n")
@@ -735,8 +739,9 @@ class Textile(object):
         if not self.noimage:
             text = self.image(text)
 
+        text = self.lists(text)
+
         if not self.lite:
-            text = self.lists(text)
             text = self.table(text)
 
         text = self.span(text)
