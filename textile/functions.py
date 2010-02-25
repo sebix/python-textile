@@ -348,7 +348,7 @@ class Textile(object):
         '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
         """
         #replaces bullets (U+2022) to * on line start
-        bullet_pattern = re.compile(u'^\xe2\x80\xa2', re.U|re.M)
+        bullet_pattern = re.compile(u'^\u2022', re.U|re.M)
         
         pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])' 
                              % self.c, re.U|re.M|re.S)
