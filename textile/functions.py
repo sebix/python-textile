@@ -978,9 +978,9 @@ def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
 
     This function takes the following additional parameters:
     
+    auto_link - enable automatic linking of URLs (default: False)
     head_offset - offset to apply to heading levels (default: 0)
     html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
-    auto_link - enable automatic linking of URLs (default: False)
 
     """
     return Textile(auto_link=auto_link).textile(text, head_offset=head_offset,
@@ -996,10 +996,9 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
     This function takes the following additional parameters:
     
     auto_link - enable automatic linking of URLs (default: False)
-    lite - restrict block tags to p, bq, and bc,
-           disable lists and tables (default: True)
-    noimage - disable image tags (default: True)
     html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
+    lite - restrict block tags to p, bq, and bc, disable tables (default: True)
+    noimage - disable image tags (default: True)
 
     """
     return Textile(restricted=True, lite=lite,
