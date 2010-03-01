@@ -347,7 +347,8 @@ class Textile(object):
         >>> t.lists("* one\\n* two\\n* three")
         '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
         """
-        #replaces bullets (U+2022) to * on line start
+        
+        #Replace line-initial bullets with asterisks
         bullet_pattern = re.compile(u'^\u2022', re.U|re.M)
         
         pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])' 
