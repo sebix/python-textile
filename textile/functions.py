@@ -657,7 +657,14 @@ class Textile(object):
 
     def getRefs(self, text):
         """
-        what is this for?
+        Capture and store URL references in self.urlrefs.
+
+        >>> t = Textile()
+        >>> t.getRefs("some text [Google]http://www.google.com")
+        'some text '
+        >>> t.urlrefs
+        {'Google': 'http://www.google.com'}
+
         """
         pattern = re.compile(r'(?:(?<=^)|(?<=\s))\[(.+)\]((?:http(?:s?):\/\/|\/)\S+)(?=\s|$)', re.U)
         text = pattern.sub(self.refs, text)
