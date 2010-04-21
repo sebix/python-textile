@@ -758,18 +758,17 @@ class Textile(object):
             \s?
             (?:   \(([^)]+?)\)(?=")   )?     # $title
             ":
-            (?P<url>    (?:ftp|https?)? (?: :// )? [-A-Za-z0-9+&@#/?=~_()|!:,.;]*[-A-Za-z0-9+&@#/=~_()|]   )
+            (?P<url>    (?:ftp|https?)? (?: :// )? [-A-Za-z0-9+&@#/?=~_()|!:,.;%%]*[-A-Za-z0-9+&@#/=~_()|]   )
             (?P<post>   [^\w\/;]*?   )
             (?=<|\s|$)
         ''' % (re.escape(punct), self.c)
-
         text = re.compile(pattern, re.X).sub(self.fLink, text)
 
         return text
 
     def fLink(self, match):
         pre, atts, text, title, url, post = match.groups()
-
+        print("url: %s" % url)
         if pre == None:
             pre = ''
             
