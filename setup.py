@@ -7,7 +7,10 @@ setup(
     author='Mark Pilgrim, Roberto A. F. De Almeida, Alex Shiels, Jason Samsa, Chris Drackett',
     author_email='chris@shelfworthy.com',
     url='http://github.com/chrisdrackett/python-textile',
-    packages=find_packages(),
+    packages = [
+        "textile",
+        "textile.tests",
+    ],
     classifiers=[
         'Development Status :: 1',
         'Environment :: Web Environment',

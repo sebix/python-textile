@@ -7,7 +7,7 @@ h2. Usage
 <pre>
 <code>
 
-run 'git clone git://github.com/chrisdrackett/python-textile.git textile' on your python path.
+install the 'textile' folder on your python path.
 
 >>> import textile
 >>> textile.__version__
