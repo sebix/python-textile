@@ -7,6 +7,11 @@ h2. Usage
 <pre>
 <code>
 
+
+=======
+install the 'textile' folder on your python path.
+
+
 >>> import textile
 >>> textile.__version__
 '2.1.4'
