@@ -10,6 +10,7 @@ from nose.tools import eq_, assert_true
 
 """
 
+
 class TestKnownValues():
     xhtml_known_values = (
         ('hello, world', '\t<p>hello, world</p>'),
@@ -166,14 +167,14 @@ class TestKnownValues():
 
         ('<pre>this is in a pre tag</pre>', '<pre>this is in a pre tag</pre>'),
 
-        ('"test1":http://foo.com/bar--baz\n\n"test2":http://foo.com/bar---baz\n\n"test3":http://foo.com/bar-17-18-baz', 
+        ('"test1":http://foo.com/bar--baz\n\n"test2":http://foo.com/bar---baz\n\n"test3":http://foo.com/bar-17-18-baz',
          '\t<p><a href="http://foo.com/bar--baz">test1</a></p>\n\n\t'
          '<p><a href="http://foo.com/bar---baz">test2</a></p>\n\n\t'
          '<p><a href="http://foo.com/bar-17-18-baz">test3</a></p>'),
 
         # ('"foo ==(bar)==":#foobar', '\t<p><a href="#foobar">foo (bar)</a></p>'),
 
-        ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!', 
+        ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
          '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt="" /></p>'),
 
         ('* Point one\n* Point two\n## Step 1\n## Step 2\n## Step 3\n* Point three\n** Sub point 1\n** Sub point 2',
@@ -183,13 +184,13 @@ class TestKnownValues():
 
         ('@array[4] = 8@', '\t<p><code>array[4] = 8</code></p>'),
 
-        ('#{color:blue} one\n# two\n# three', 
+        ('#{color:blue} one\n# two\n# three',
          '\t<ol style="color:blue;">\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>'),
 
         ('Links (like "this":http://foo.com), are now mangled in 2.1.0, whereas 2.0 parsed them correctly.',
          '\t<p>Links (like <a href="http://foo.com">this</a>), are now mangled in 2.1.0, whereas 2.0 parsed them correctly.</p>'),
 
-        ('@monospaced text@, followed by text', 
+        ('@monospaced text@, followed by text',
          '\t<p><code>monospaced text</code>, followed by text</p>'),
 
         ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\t<p>some text</p>'),
@@ -222,7 +223,7 @@ class TestKnownValues():
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
          '\t<p><img src="obake.gif" style="float: right;" alt=""></p>\n\n\t'
          '<p>And others sat all round the small<br>machine and paid it to sing to them.</p>'),
-        ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!', 
+        ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
          '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt=""></p>'),
         ('notextile. <b> foo bar baz</b>\n\np. quux\n','<b> foo bar baz</b>\n\n\t<p>quux</p>')
     )
@@ -255,7 +256,7 @@ class Tests():
         eq_(textile.textile('"foo":http://google.com/one--two'), '\t<p><a href="http://google.com/one--two">foo</a></p>')
 
     def testIssue024TableColspan(self):
-        eq_(textile.textile('|\\2. spans two cols |\n| col 1 | col 2 |'), 
+        eq_(textile.textile('|\\2. spans two cols |\n| col 1 | col 2 |'),
             '\t<table>\n\t\t<tr>\n\t\t\t<td colspan="2">spans two cols </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td> col 1 </td>\n\t\t\t<td> col 2 </td>\n\t\t</tr>\n\t</table>')
 
     def testPBAColspan(self):
@@ -266,15 +267,14 @@ class Tests():
         eq_(textile.textile(foo), '\t<p><a href="#foobar">foo (bar)</a></p>')
 
     def testIssue014NewlinesInExtendedPreBlocks(self):
-        text = "pre.. Hello\n\nAgain\n\np. normal text"        
+        text = "pre.. Hello\n\nAgain\n\np. normal text"
         eq_(textile.textile(text), '<pre>Hello\n\nAgain\n</pre>\n\n\t<p>normal text</p>')
 
     def testURLWithParens(self):
         text = '"python":http://en.wikipedia.org/wiki/Python_(programming_language)'
-        expect='\t<p><a href="http://en.wikipedia.org/wiki/Python_(programming_language)">python</a></p>'
-        result=textile.textile(text)
+        expect = '\t<p><a href="http://en.wikipedia.org/wiki/Python_(programming_language)">python</a></p>'
+        result = textile.textile(text)
         eq_(result, expect)
-
 
     def testTableWithHyphenStyles(self):
         text = 'table(linkblog-thumbnail).\n|(linkblog-thumbnail-cell). apple|bear|'
@@ -319,31 +319,29 @@ class Tests():
         test = "*_test text_*"
         result = textile.textile(test)
         expect = "\t<p><strong><em>test text</em></strong></p>"
-        
-        eq_(result, expect)
 
+        eq_(result, expect)
 
         test = "_*test text*_"
         result = textile.textile(test)
         expect = "\t<p><em><strong>test text</strong></em></p>"
-        
+
         eq_(result, expect)
 
     def testRestricted(self):
         test = "this is \"some\" *bold text*."
         result = textile.textile_restricted(test)
         expect = "\t<p>this is &#8220;some&#8221; <strong>bold text</strong>.</p>"
-        
+
         eq_(result, expect)
-        
+
         #Note that the HTML is escaped, thus rendering
         #the <script> tag harmless.
         test = "Here is some text.\n<script>alert('hello world')</script>"
         result = textile.textile_restricted(test)
         expect = "\t<p>Here is some text.<br />&#60;script&#62;alert('hello world&#8217;)&#60;/script&#62;</p>"
-        
-        eq_(result, expect)
 
+        eq_(result, expect)
 
     def testQuotesInCode(self):
         test = "<code>'quoted string'</code>"
@@ -360,12 +358,12 @@ class Tests():
         test = "some text http://www.google.com"
         result = "\t<p>some text <a href=\"http://www.google.com\">http://www.google.com</a></p>"
         expect = textile.textile(test, auto_link=True)
-        
+
         eq_(result, expect)
 
     def testPre(self):
         test = "<pre>some preformatted text</pre>other text"
         result = "\t<p><pre>some preformatted text</pre>other text</p>"
         expect = textile.textile(test)
-        
+
         eq_(result, expect)
