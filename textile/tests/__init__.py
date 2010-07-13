@@ -194,6 +194,8 @@ class TestKnownValues():
 
         ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\t<p>some text</p>'),
 
+        ('*:(foo)foo bar baz*','\t<p><strong cite="foo">foo bar baz</strong></p>')
+
     )
 
     # A few extra cases for HTML4

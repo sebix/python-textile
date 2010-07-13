@@ -850,7 +850,7 @@ class Textile(object):
                 (?:^|(?<=[\s>%(pnct)s])|([\]}]))
                 (%(qtag)s)(?!%(qtag)s)
                 (%(c)s)
-                (?::(\S+))?
+                (?::\(([^)]+?)\))?
                 ([^\s%(qtag)s]+|\S[^%(qtag)s\n]*[^\s%(qtag)s\n])
                 ([%(pnct)s]*)
                 %(qtag)s
@@ -879,7 +879,7 @@ class Textile(object):
         tag = qtags[tag]
         atts = self.pba(atts)
         if cite:
-            atts = atts + 'cite="%s"' % cite
+            atts = atts + ' cite="%s"' % cite
 
         content = self.span(content)
 
