@@ -366,7 +366,8 @@ class Textile(object):
             except IndexError:
                 nextline = ''
 
-            m = re.search(r"^([#*]+)(%s%s) (.*)$" % (self.align_re, self.c), line, re.S)
+            m = re.search(r"^([#*]+)(%s%s) (.*)$" % (self.align_re,
+                                                     self.c), line, re.S)
             if m:
                 tl, atts, content = m.groups()
                 nl = ''
@@ -376,7 +377,8 @@ class Textile(object):
                 if tl not in lists:
                     lists.append(tl)
                     atts = self.pba(atts)
-                    line = "\t<%sl%s>\n\t\t<li>%s" % (self.listType(tl), atts, self.graf(content))
+                    line = "\t<%sl%s>\n\t\t<li>%s" % (self.listType(tl),
+                                                      atts, self.graf(content))
                 else:
                     line = "\t\t<li>" + self.graf(content)
 
@@ -399,7 +401,8 @@ class Textile(object):
             return 'u'
 
     def doPBr(self, in_):
-        return re.compile(r'<(p)([^>]*?)>(.*)(</\1>)', re.S).sub(self.doBr, in_)
+        return re.compile(r'<(p)([^>]*?)>(.*)(</\1>)', re.S).sub(self.doBr,
+                                                                 in_)
 
     def doBr(self, match):
         if self.html_type == 'html':
@@ -431,7 +434,9 @@ class Textile(object):
 
         anon = False
         for line in text:
-            pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (tre, self.align_re, self.c)
+            pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (tre,
+                                                                self.align_re,
+                                                                self.c)
             match = re.search(pattern, line, re.S)
             if match:
                 if ext:
@@ -533,7 +538,8 @@ class Textile(object):
             o2 = "<code%s>" % atts
             c2 = "</code>"
             c1 = "</pre>"
-            content = self.shelve(self.encode_html(content.rstrip("\n") + "\n"))
+            content = self.shelve(self.encode_html(content.rstrip("\n") +
+                                                   "\n"))
 
         elif tag == 'notextile':
             content = self.shelve(content)
@@ -541,7 +547,8 @@ class Textile(object):
             c1 = c2 = ''
 
         elif tag == 'pre':
-            content = self.shelve(self.encode_html(content.rstrip("\n") + "\n"))
+            content = self.shelve(self.encode_html(content.rstrip("\n") +
+                                                   "\n"))
             o1 = "<pre%s>" % atts
             o2 = c2 = ''
             c1 = '</pre>'
@@ -559,7 +566,8 @@ class Textile(object):
         >>> t.footnoteRef('foo[1] ') # doctest: +ELLIPSIS
         'foo<sup class="footnote"><a href="#fn...">1</a></sup> '
         """
-        return re.compile(r'\b\[([0-9]+)\](\s)?', re.U).sub(self.footnoteID, text)
+        return re.compile(r'\b\[([0-9]+)\](\s)?', re.U).sub(self.footnoteID,
+                                                            text)
 
     def footnoteID(self, match):
         footnoteNum, text = match.groups()
@@ -831,7 +839,8 @@ class Textile(object):
         text = self.glyphs(text)
 
         url = self.relURL(url)
-        out = '<a href="%s"%s%s>%s</a>' % (self.encode_html(url), atts, self.rel, text)
+        out = '<a href="%s"%s%s>%s</a>' % (self.encode_html(url),
+                                           atts, self.rel, text)
         out = self.shelve(out)
         return ''.join([pre, out, post])
 
@@ -841,7 +850,8 @@ class Textile(object):
         >>> t.span(r"hello %(bob)span *strong* and **bold**% goodbye")
         'hello <span class="bob">span <strong>strong</strong> and <b>bold</b></span> goodbye'
         """
-        qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__', r'_', r'%', r'\+', r'~', r'\^')
+        qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
+                 r'_', r'%', r'\+', r'~', r'\^')
         pnct = ".,\"'?!;:"
 
         for qtag in qtags:
