@@ -183,6 +183,14 @@ class Textile(object):
         >>> t.pba('[fr]')
         ' lang="fr"'
 
+        >>> rt = Textile()
+        >>> rt.restricted = True
+        >>> rt.pba('[en]')
+        ' lang="en"'
+
+        >>> rt.pba('(#id)')
+        ''
+
         """
         style = []
         aclass = ''
@@ -245,7 +253,7 @@ class Textile(object):
 
         if self.restricted:
             if lang:
-                return ' lang="%s"'
+                return ' lang="%s"' % lang
             else:
                 return ''
 
