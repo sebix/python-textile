@@ -692,6 +692,15 @@ class Textile(object):
         return not scheme and not netloc
 
     def relURL(self, url):
+        """
+        >>> t = Textile()
+        >>> t.relURL("http://www.google.com/")
+        'http://www.google.com/'
+        >>> t.restricted = True
+        >>> t.relURL("gopher://gopher.com/")
+        '#'
+
+        """
         scheme = urlparse(url)[0]
         if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
