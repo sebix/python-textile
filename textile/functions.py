@@ -2,7 +2,7 @@
 
 __copyright__ = """
 Copyright (c) 2009, Jason Samsa, http://jsamsa.com/
-Copyright (c) 2009, Kurt Raschke <kurt@kurtraschke.com>
+Copyright (c) 2010, Kurt Raschke <kurt@kurtraschke.com>
 Copyright (c) 2004, Roberto A. F. De Almeida, http://dealmeida.net/
 Copyright (c) 2003, Mark Pilgrim, http://diveintomark.org/
 
