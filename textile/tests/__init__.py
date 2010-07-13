@@ -362,3 +362,10 @@ class Tests():
         expect = textile.textile(test, auto_link=True)
         
         eq_(result, expect)
+
+    def testPre(self):
+        test = "<pre>some preformatted text</pre>other text"
+        result = "\t<p><pre>some preformatted text</pre>other text</p>"
+        expect = textile.textile(test)
+        
+        eq_(result, expect)
