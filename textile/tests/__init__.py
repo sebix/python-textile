@@ -126,6 +126,8 @@ class TestKnownValues():
 
         ('I searched "Google":http://google.com.', '\t<p>I searched <a href="http://google.com">Google</a>.</p>'),
 
+        ('I searched "a search engine (Google)":http://google.com.', '\t<p>I searched <a href="http://google.com" title="Google">a search engine</a>.</p>'),
+
         ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
          '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />and <a href="http://hobix.com">it&#8217;s</a> '
          '<a href="http://hobix.com">all</a> I ever<br /><a href="http://hobix.com">link to</a>!</p>\n\n'),

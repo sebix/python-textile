@@ -792,7 +792,7 @@ class Textile(object):
             (?P<atts>%s)                    #block attributes
             (?P<text>[^"]+?)                #link text
             \s?
-            (?:\((P<title>[^)]+?)\)(?="))?  #optional title
+            (?:\((?P<title>[^)]+?)\)(?="))?  #optional title
             ":                              #closing quote, colon
             (?P<url>(?:ftp|https?)?         #URL
 			(?: :// )? 
