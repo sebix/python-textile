@@ -244,14 +244,12 @@ class TestKnownValues():
 
 class Tests():
     def testFootnoteReference(self):
-        html = textile.textile('This is covered elsewhere[1].')
-        assert_true(re.search('^\t<p>This is covered elsewhere<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup>.</p>$', html))
         html = textile.textile('YACC[1]')
         assert_true(re.search('^\t<p>YACC<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup></p>', html))
 
     def testFootnote(self):
-        html = textile.textile('fn1. Down here, in fact.')
-        assert_true(re.search('^\t<p id="fn[a-z0-9-]+" class="footnote"><sup>1</sup>Down here, in fact.</p>$', html))
+        html = textile.textile('This is covered elsewhere[1].\n\nfn1. Down here, in fact.\n\nfn2. Here is another footnote.')
+        assert_true(re.search('^\t<p>This is covered elsewhere<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup>.</p>\n\n\t<p id="fn[a-z0-9-]+" class="footnote"><sup>1</sup>Down here, in fact.</p>\n\n\t<p id="fn[a-z0-9-]+" class="footnote"><sup>2</sup>Here is another footnote.</p>$', html))
 
     def testURLWithHyphens(self):
         eq_(textile.textile('"foo":http://google.com/one--two'), '\t<p><a href="http://google.com/one--two">foo</a></p>')
