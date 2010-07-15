@@ -79,12 +79,12 @@ class Textile(object):
     )
 
     def __init__(self, restricted=False, lite=False, noimage=False,
-                 auto_link=False):
+                 auto_link=False, get_sizes=False):
         """docstring for __init__"""
         self.restricted = restricted
         self.lite = lite
         self.noimage = noimage
-        self.get_sizes = False
+        self.get_sizes = get_sizes
         self.auto_link = auto_link
         self.fn = {}
         self.urlrefs = {}
