@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='python-textile',
@@ -9,6 +9,7 @@ setup(
     url='http://github.com/kurtraschke/python-textile',
     packages = [
         "textile",
+        "textile.tools",
         "textile.tests",
     ],
     classifiers=[
