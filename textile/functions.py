@@ -22,6 +22,7 @@ import uuid
 import string
 from urlparse import urlparse
 
+from tools import sanitizer
 
 def _normalize_newlines(string):
     out = string.strip()
@@ -122,7 +123,8 @@ class Textile(object):
         self.rel = ''
         self.html_type = 'xhtml'
 
-    def textile(self, text, rel=None, head_offset=0, html_type='xhtml'):
+    def textile(self, text, rel=None, head_offset=0, html_type='xhtml',
+                sanitize=False):
         """
         >>> import textile
         >>> textile.textile('some textile')
@@ -144,6 +146,9 @@ class Textile(object):
         text = self.block(text, int(head_offset))
 
         text = self.retrieve(text)
+
+        if sanitize:
+            text = sanitizer.sanitize(text, self.html_type)
 
         return text
 

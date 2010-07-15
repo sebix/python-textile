@@ -2,7 +2,7 @@
 import textile
 import re
 from nose.tools import eq_, assert_true
-
+from nose.plugins.skip import SkipTest
 
 """
 ('>>> import textile')
@@ -366,4 +366,26 @@ class Tests():
         result = "\t<p><pre>some preformatted text</pre>other text</p>"
         expect = textile.textile(test)
 
+        eq_(result, expect)
+
+    def testSanitize(self):
+        try:
+            import html5lib
+        except ImportError:
+            raise SkipTest()
+
+        test = "a paragraph of benign text"
+        result = "\t<p>a paragraph of benign text</p>"
+        expect = textile.Textile().textile(test, sanitize=True)
+        eq_(result, expect)
+
+        test = """<p style="width: expression(alert('evil'));">a paragraph of evil text</p>"""
+        result = '<p style="">a paragraph of evil text</p>'
+        expect = textile.Textile().textile(test, sanitize=True)
+        eq_(result, expect)
+
+        test = """<p>a paragraph of benign text<br />and more text</p>"""
+        result = '<p>a paragraph of benign text<br>and more text</p>'
+        expect = textile.Textile().textile(test, sanitize=True,
+                                           html_type='html')
         eq_(result, expect)
