@@ -12,7 +12,7 @@ class TextileFactory(object):
 
     >>> f = TextileFactory(restricted=True)
     >>> f.process("more text here")
-    '\\t<p>more text here</p>'
+    u'\\t<p>more text here</p>'
 
     Certain parameter values are not permitted because they are illogical:
 
@@ -34,9 +34,9 @@ class TextileFactory(object):
 
     """
 
-    def __init__(self, restricted=False, lite=False, noimage=None,
-                 auto_link=False, get_sizes=False, head_offset=0,
-                 html_type='xhtml'):
+    def __init__(self, restricted=False, lite=False, sanitize=None,
+                 noimage=None, auto_link=False, get_sizes=False,
+                 head_offset=0, html_type='xhtml'):
 
         self.class_parms = {}
         self.method_parms = {}
@@ -55,7 +55,14 @@ class TextileFactory(object):
             else:
                 noimage = False
 
+        if sanitize is None:
+            if restricted:
+                sanitize = True
+            else:
+                sanitize = False
+
         self.class_parms['noimage'] = noimage
+        self.method_parms['sanitize'] = sanitize
         self.class_parms['auto_link'] = auto_link
         self.class_parms['get_sizes'] = get_sizes
 
