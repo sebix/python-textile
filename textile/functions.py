@@ -22,7 +22,8 @@ import uuid
 import string
 from urlparse import urlparse
 
-from tools import sanitizer
+from tools import sanitizer, imagesize
+
 
 def _normalize_newlines(string):
     out = string.strip()
@@ -31,38 +32,6 @@ def _normalize_newlines(string):
     out = re.sub(r'\n\s*\n', '\n\n', out)
     out = re.sub(r'"$', '" ', out)
     return out
-
-
-def getimagesize(url):
-    """
-    Attempts to determine an image's width and height, and returns a string
-    suitable for use in an <img> tag, or None in case of failure.
-    Requires that PIL is installed.
-
-    >>> getimagesize("http://www.google.com/intl/en_ALL/images/logo.gif")
-    ... #doctest: +ELLIPSIS, +SKIP
-    'width="..." height="..."'
-
-    """
-
-    try:
-        import ImageFile
-        import urllib2
-    except ImportError:
-        return None
-
-    try:
-        p = ImageFile.Parser()
-        f = urllib2.urlopen(url)
-        while True:
-            s = f.read(1024)
-            if not s:
-                break
-            p.feed(s)
-            if p.image:
-                return 'width="%i" height="%i"' % p.image.size
-    except (IOError, ValueError):
-        return None
 
 
 class Textile(object):
@@ -935,7 +904,7 @@ class Textile(object):
             atts = atts + ' alt=""'
 
         if not self.isRelURL(url) and self.get_sizes:
-            size = getimagesize(url)
+            size = imagesize.getimagesize(url)
             if (size):
                 atts += " %s" % size
 
