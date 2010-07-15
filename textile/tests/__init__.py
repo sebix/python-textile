@@ -389,3 +389,14 @@ class Tests():
         expect = textile.Textile().textile(test, sanitize=True,
                                            html_type='html')
         eq_(result, expect)
+
+    def testSanitize(self):
+        try:
+            import ImageFile
+        except ImportError:
+            raise SkipTest()
+
+        test = "!http://www.google.com/intl/en_ALL/images/srpr/logo1w.png!"
+        result = '\t<p><img src="http://www.google.com/intl/en_ALL/images/srpr/logo1w.png" alt="" width="275" height="95" /></p>'
+        expect = textile.Textile(get_sizes=True).textile(test)
+        eq_(result, expect)
