@@ -1,24 +1,5 @@
-* Improve test coverage
-   nose is configured to produce coverage statistics.
-
 * Improve documentation, both of the code and Textile syntax.
    Not all functions have docstrings or adequate docstrings.
-   Because the Textile syntax implemented by pytextile has deviated from
-   the syntax implemented by the PHP implementation of Textile,
-   pytextile-specific documentation needs to be produced for end-users.
-  
-
-* Address outstanding architectural issues:
-   The Textile class has a large number of public methods which are, in fact,
-   not intended to be called by the public.
-   Also, some parameters are set in __init__(), while others are set in
-   textile().
-   Because various instance variables get set while text is being processed,
-   a Textile object cannot be reused--that is, it is not possible to set up
-   a Textile object with the desired parameters, and then use it repeatedly
-   to process multiple strings, because parameters such as the shelf do not
-   get reset between calls to textile().
-   
-* Re-implement HTML sanitization:
-   HTML sanitization was stripped out due to sgmllib's deprecation; if
-   re-implemented, html5lib should be used.
+   Because the Textile syntax implemented by PyTextile has deviated
+   from the syntax implemented by other implementations of Textile,
+   PyTextile-specific documentation needs to be produced for end-users.
