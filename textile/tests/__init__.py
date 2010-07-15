@@ -201,6 +201,8 @@ class TestKnownValues():
 
         ('line of text\n\n    leading spaces','\t<p>line of text</p>\n\n    leading spaces'),
 
+        ('"some text":http://www.example.com/?q=foo%20bar and more text','\t<p><a href="http://www.example.com/?q=foo%20bar">some text</a> and more text</p>')
+
     )
 
     # A few extra cases for HTML4
