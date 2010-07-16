@@ -396,7 +396,7 @@ class Tests():
                                            html_type='html')
         eq_(result, expect)
 
-    def testSanitize(self):
+    def testImageSize(self):
         try:
             import ImageFile
         except ImportError:
