@@ -905,7 +905,7 @@ class Textile(object):
 
         if not self.isRelURL(url) and self.get_sizes:
             size = imagesize.getimagesize(url)
-            if (size):
+            if size:
                 atts += " %s" % size
 
         if href:
