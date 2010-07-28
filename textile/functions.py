@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 __copyright__ = """
 Copyright (c) 2009, Jason Samsa, http://jsamsa.com/
@@ -754,8 +755,7 @@ class Textile(object):
         '"http://www.ya.ru":http://www.ya.ru'
         """
 
-        pattern = re.compile(
-            r"\b(([\w-]+://?|www[.])[^\s()<>]+(?:(?:\([\w\d)]+\)[^\s()<>]*)+|([^%s\s]|/)))" % re.escape(string.punctuation), re.U)
+        pattern = re.compile(r"""\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""", re.U | re.I)
         return pattern.sub(r'"\1":\1', text)
 
     def links(self, text):
