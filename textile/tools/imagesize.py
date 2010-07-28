@@ -5,7 +5,7 @@ def getimagesize(url):
     Requires that PIL is installed.
 
     >>> getimagesize("http://www.google.com/intl/en_ALL/images/logo.gif")
-    ... #doctest: +ELLIPSIS, +SKIP
+    ... #doctest: +ELLIPSIS
     'width="..." height="..."'
 
     >>> getimagesize("http://bad.domain/")
@@ -31,3 +31,11 @@ def getimagesize(url):
                 return 'width="%i" height="%i"' % p.image.size
     except (IOError, ValueError):
         return ''
+
+
+def setup_module(module):
+    from nose.plugins.skip import SkipTest
+    try:
+        import ImageFile
+    except ImportError:
+        raise SkipTest()
