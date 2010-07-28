@@ -1,10 +1,9 @@
 def sanitize(string, html_type):
     """
-    >>> sanitize("\\t<p>a paragraph</p>","html") #doctest: +SKIP
+    >>> sanitize("\\t<p>a paragraph</p>","html")
     u'\\t<p>a paragraph</p>'
 
     >>> sanitize("\\t<script>alert('evil script');</script>", "xhtml")
-    ... #doctest: +SKIP
     u"\\t&lt;script&gt;alert('evil script');&lt;/script&gt;"
 
     """
@@ -26,3 +25,11 @@ def sanitize(string, html_type):
         s = serializer.htmlserializer.HTMLSerializer(omit_optional_tags=False,
                                                      quote_attr_values=True)
     return s.render(stream)
+
+
+def setup_module(module):
+    from nose.plugins.skip import SkipTest
+    try:
+        import html5lib
+    except ImportError:
+        raise SkipTest()
