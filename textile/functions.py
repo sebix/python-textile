@@ -325,7 +325,7 @@ class Textile(object):
         """
 
         #Replace line-initial bullets with asterisks
-        bullet_pattern = re.compile(u'^\u2022', re.U | re.M)
+        bullet_pattern = re.compile(u'^•', re.U | re.M)
 
         pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])'
                              % self.c, re.U | re.M | re.S)
