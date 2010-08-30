@@ -201,7 +201,11 @@ class TestKnownValues():
 
         ('line of text\n\n    leading spaces','\t<p>line of text</p>\n\n    leading spaces'),
 
-        ('"some text":http://www.example.com/?q=foo%20bar and more text','\t<p><a href="http://www.example.com/?q=foo%20bar">some text</a> and more text</p>')
+        ('"some text":http://www.example.com/?q=foo%20bar and more text','\t<p><a href="http://www.example.com/?q=foo%20bar">some text</a> and more text</p>'),
+
+        ('(??some text??)','\t<p>(<cite>some text</cite>)</p>'),
+
+        ('(*bold text*)','\t<p>(<strong>bold text</strong>)</p>'),
 
     )
 

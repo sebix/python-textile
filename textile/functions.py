@@ -826,7 +826,7 @@ class Textile(object):
         """
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
                  r'_', r'%', r'\+', r'~', r'\^')
-        pnct = ".,\"'?!;:"
+        pnct = ".,\"'?!;:("
 
         for qtag in qtags:
             pattern = re.compile(r"""
