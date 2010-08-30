@@ -830,7 +830,7 @@ class Textile(object):
 
         for qtag in qtags:
             pattern = re.compile(r"""
-                (?:^|(?<=[\s>%(pnct)s])|([\]}]))
+                (?:^|(?<=[\s>%(pnct)s])|([\[{]))
                 (%(qtag)s)(?!%(qtag)s)
                 (%(c)s)
                 (?::\(([^)]+?)\))?

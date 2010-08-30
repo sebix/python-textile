@@ -207,6 +207,8 @@ class TestKnownValues():
 
         ('(*bold text*)','\t<p>(<strong>bold text</strong>)</p>'),
 
+        ('H[~2~]O','\t<p>H<sub>2</sub>O</p>')
+
     )
 
     # A few extra cases for HTML4
