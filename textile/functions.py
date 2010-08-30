@@ -23,7 +23,7 @@ import uuid
 import string
 from urlparse import urlparse
 
-from tools import sanitizer, imagesize
+from textile.tools import sanitizer, imagesize
 
 
 def _normalize_newlines(string):
