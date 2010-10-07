@@ -207,7 +207,29 @@ class TestKnownValues():
 
         ('(*bold text*)','\t<p>(<strong>bold text</strong>)</p>'),
 
-        ('H[~2~]O','\t<p>H<sub>2</sub>O</p>')
+        ('H[~2~]O','\t<p>H<sub>2</sub>O</p>'),
+
+        (u"p=. Où est l'école, l'église s'il vous plaît?",
+         u"""\t<p style="text-align:center;">Où est l&#8217;école, l&#8217;église s&#8217;il vous plaît?</p>"""),
+        
+        ("p=. *_The_* _*Prisoner*_", 
+         """\t<p style="text-align:center;"><strong><em>The</em></strong> <em><strong>Prisoner</strong></em></p>"""),
+
+        ("""p=. "An emphasised _word._" & "*A spanned phrase.*" """,
+         """\t<p style="text-align:center;">&#8220;An emphasised <em>word.</em>&#8221; &amp; &#8220;<strong>A spanned phrase.</strong>&#8221; </p>"""),
+
+        ("""p=. "*Here*'s a word!" """, 
+         """\t<p style="text-align:center;">&#8220;<strong>Here</strong>&#8217;s a word!&#8221; </p>"""),
+
+        ("""p=. "Please visit our "Textile Test Page":http://textile.sitemonks.com" """,
+         """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
+        
+        (u"""| Foreign EXPÓŅÉNTIAL | ...yet will not span these capitals! |""",
+         u"""\t<table>\n\t\t<tr>\n\t\t\t<td>Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t\t<td> ...yet will not span these capitals! </td>\n\t\t</tr>\n\t</table>"""),
+
+        (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""", 
+         u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML">AJAX</acronym>, please?</p>"""),
+
 
     )
 
