@@ -224,8 +224,8 @@ class TestKnownValues():
         ("""p=. "Please visit our "Textile Test Page":http://textile.sitemonks.com" """,
          """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
         
-        (u"""| Foreign EXPÓŅÉNTIAL | ...yet will not span these capitals! |""",
-         u"""\t<table>\n\t\t<tr>\n\t\t\t<td>Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t\t<td> ...yet will not span these capitals! </td>\n\t\t</tr>\n\t</table>"""),
+        (u"""| Foreign EXPÓŅÉNTIAL |""",
+         u"""\t<table>\n\t\t<tr>\n\t\t\t<td>Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t\t<td>\n\t\t</tr>\n\t</table>"""),
 
         (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""", 
          u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML">AJAX</acronym>, please?</p>"""),
