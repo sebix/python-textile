@@ -4,7 +4,7 @@ python-textile is a Python port of Textile, Dean Allen's humane web text generat
 
 h2. Usage
 
-Install the 'textile' folder on your python path, or easy_install http://github.com/kurtraschke/python-textile/tarball/master#egg=python-textile.
+Install the 'textile' folder on your python path, or easy_install http://github.com/chrisdrackett/python-textile/tarball/master#egg=python-textile.
 
 <pre>
 <code>
