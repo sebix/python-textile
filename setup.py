@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 version = '2.1.5'
 
 setup(
-    name='python-textile',
+    name='textile',
     version=version,
     description='Textile processing for python.',
     author='Chris Drackett',
