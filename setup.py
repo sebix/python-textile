@@ -11,7 +11,7 @@ setup(
     url='http://github.com/chrisdrackett/python-textile',
     packages=find_packages(),
     classifiers=[
-        'Development Status :: 1',
+        'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'Intended Audience :: Developers :: Designers',
         'License :: OSI Approved :: BSD License',
