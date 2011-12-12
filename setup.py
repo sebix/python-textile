@@ -1,6 +1,11 @@
 from setuptools import setup, find_packages
+import sys
 
 version = '2.1.5'
+
+extra = {}
+if sys.version_info >= (3,):
+    extra['use_2to3'] = True
 
 setup(
     name='textile',
@@ -24,4 +29,5 @@ setup(
     tests_require = ['nose'],
     include_package_data=True,
     zip_safe=False,
+    **extra
 )
