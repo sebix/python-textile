@@ -434,3 +434,9 @@ class Tests():
         result = '\t<p><img src="http://www.google.com/intl/en_ALL/images/srpr/logo1w.png" alt="" width="275" height="95" /></p>'
         expect = textile.Textile(get_sizes=True).textile(test)
         eq_(result, expect)
+
+    def testAtSignAndNotextileInTable(self):
+        test = "|@<A1>@|@<A2>@ @<A3>@|\n|<notextile>*B1*</notextile>|<notextile>*B2*</notextile> <notextile>*B3*</notextile>|"
+        result = "\t<table>\n\t\t<tr>\n\t\t\t<td><code>&#60;A1&#62;</code></td>\n\t\t\t<td><code>&#60;A2&#62;</code> <code>&#60;A3&#62;</code></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>*B1*</td>\n\t\t\t<td>*B2* *B3*</td>\n\t\t</tr>\n\t</table>"
+        expect = textile.textile(test)
+        eq_(result, expect)

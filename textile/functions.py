@@ -951,7 +951,7 @@ class Textile(object):
         return ''.join([before, '<pre>', self.shelve(text), '</pre>', after])
 
     def doSpecial(self, text, start, end, method):
-        pattern = re.compile(r'(^|\s|[\[({>])%s(.*?)%s(\s|$|[\])}])?'
+        pattern = re.compile(r'(^|\s|[\[({>|])%s(.*?)%s($|[\])}])?'
                              % (re.escape(start), re.escape(end)), re.M | re.S)
         return pattern.sub(method, text)
 
