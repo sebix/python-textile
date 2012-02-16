@@ -777,14 +777,14 @@ class Textile(object):
             ":                              #closing quote, colon
             (?P<url>(?:ftp|https?)?         #URL
                         (?: :// )?
-                        [-A-Za-z0-9+&@#/?=~_()|!:,.;%%]*
-                        [-A-Za-z0-9+&@#/=~_()|]
+                        [-\w+&@#/?=~()|!:,.;%%]*
+                        [-\w+&@#/=~()|]
             )
             (?P<post>[^\w\/;]*?)	    #trailing text
             (?=<|\s|$)
         ''' % (re.escape(punct), self.c)
 
-        text = re.compile(pattern, re.X).sub(self.fLink, text)
+        text = re.compile(pattern, re.X | re.UNICODE).sub(self.fLink, text)
 
         return text
 
