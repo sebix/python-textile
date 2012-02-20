@@ -802,7 +802,10 @@ class Textile(object):
             url = url[:-1]
 
         url = self.checkRefs(url)
-        url = self.encode_url(url)
+        try:
+            url = self.encode_url(url)
+        except:
+            pass
 
         atts = self.pba(atts)
         if title:
