@@ -144,7 +144,7 @@ class TestKnownValues():
          '\t<p><img src="obake.gif" style="float: right;" alt="" /></p>\n\n\t'
          '<p>And others sat all round the small<br />machine and paid it to sing to them.</p>'),
 
-        ('We use CSS(Cascading Style Sheets).', '\t<p>We use <acronym title="Cascading Style Sheets">CSS</acronym>.</p>'),
+        ('We use CSS(Cascading Style Sheets).', '\t<p>We use <acronym title="Cascading Style Sheets"><span class="caps">CSS</span></acronym>.</p>'),
 
         ('|one|two|three|\n|a|b|c|',
          '\t<table>\n\t\t<tr>\n\t\t\t<td>one</td>\n\t\t\t<td>two</td>\n\t\t\t<td>three</td>\n\t\t</tr>'
@@ -162,7 +162,7 @@ class TestKnownValues():
          '\n\t\t<tr>\n\t\t\t<td> archie </td>\n\t\t\t<td> 29 </td>\n\t\t\t<td> m </td>\n\t\t</tr>'
          '\n\t\t<tr>\n\t\t\t<td> bella </td>\n\t\t\t<td> 45 </td>\n\t\t\t<td> f </td>\n\t\t</tr>\n\t</table>'),
 
-        # ('<script>alert("hello");</script>', ''),
+        ('<script>alert("hello");</script>', '\t<p><script>alert(&#8220;hello&#8221;);</script></p>'),
 
         ('pre.. Hello\n\nHello Again\n\np. normal text', '<pre>Hello\n\nHello Again\n</pre>\n\n\t<p>normal text</p>'),
 
@@ -173,7 +173,7 @@ class TestKnownValues():
          '<p><a href="http://foo.com/bar---baz">test2</a></p>\n\n\t'
          '<p><a href="http://foo.com/bar-17-18-baz">test3</a></p>'),
 
-        # ('"foo ==(bar)==":#foobar', '\t<p><a href="#foobar">foo (bar)</a></p>'),
+        ('"foo ==(bar)==":#foobar', '\t<p><a href="#foobar">foo (bar)</a></p>'),
 
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
          '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt="" /></p>'),
@@ -233,8 +233,9 @@ class TestKnownValues():
          #u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
 
         (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
-         u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML">AJAX</acronym>, please?</p>"""),
-
+         u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
+        ('p{font-size:0.8em}. *TxStyle* is a documentation project of Textile 2.4 for "Textpattern CMS":http://texpattern.com.',
+         '\t<p style="font-size:0.8em;"><strong>TxStyle</strong> is a documentation project of Textile 2.4 for <a href="http://texpattern.com">Textpattern <span class="caps">CMS</span></a>.</p>'),
 
     )
 
@@ -285,7 +286,7 @@ class TestKnownValues():
 class Tests():
     def testFootnoteReference(self):
         html = textile.textile('YACC[1]')
-        assert_true(re.search('^\t<p>YACC<sup class="footnote"><a href="#fn[a-z0-9-]+">1</a></sup></p>', html))
+        assert_true(re.search('^\t<p><span class="caps">YACC</span><sup class="footnote"><a href="#fn[a-f0-9-]+">1</a></sup></p>', html))
 
     def testFootnote(self):
         html = textile.textile('This is covered elsewhere[1].\n\nfn1. Down here, in fact.\n\nfn2. Here is another footnote.')

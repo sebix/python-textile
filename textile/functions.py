@@ -144,7 +144,7 @@ class Textile(object):
         r'%(txt_registered)s',                # registered
         r'%(txt_copyright)s',                 # copyright
         r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
-        r'<span class="caps">\1</span>',      # 3+ uppercase
+        r'<span class="caps">\1</span>\2',      # 3+ uppercase
     )]
 
     def __init__(self, restricted=False, lite=False, noimage=False,
@@ -189,8 +189,8 @@ class Textile(object):
                     re.compile(r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])'
                         % (uppers, uppers), re.U),
                     # 3+ uppercase
-                    re.compile(r"\b([%s][%s'-]+[%s])(?=\s|%s|$)" % (uppers,
-                        uppers, uppers, self.pnct), re.U),
+                    re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
+                        % (uppers, self.pnct), re.U),
                     ]
         else:
             uppers_re = [
@@ -198,7 +198,8 @@ class Textile(object):
                     re.compile(r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
                         re.U),
                     # 3+ uppercase
-                    re.compile(r"\b([A-Z][A-Z'-]+[A-Z])(?=\s|%s|$)" % (self.pnct), re.U),
+                    re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
+                        % self.pnct, re.U),
                     ]
 
         self.glyph_search += uppers_re
