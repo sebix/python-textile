@@ -189,8 +189,8 @@ class Textile(object):
                     re.compile(r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])'
                         % (uppers, uppers), re.U),
                     # 3+ uppercase
-                    re.compile(r"\b([%s][%s'-]+[%s])(?=[\(\s.,\)>])" % (uppers,
-                        uppers, uppers), re.U),
+                    re.compile(r"\b([%s][%s'-]+[%s])(?=\s|%s|$)" % (uppers,
+                        uppers, uppers, self.pnct), re.U),
                     ]
         else:
             uppers_re = [
@@ -198,7 +198,7 @@ class Textile(object):
                     re.compile(r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
                         re.U),
                     # 3+ uppercase
-                    re.compile(r"\b([A-Z][A-Z'-]+[A-Z])(?=[\(\s.,\)>])", re.U),
+                    re.compile(r"\b([A-Z][A-Z'-]+[A-Z])(?=\s|%s|$)" % (self.pnct), re.U),
                     ]
 
         self.glyph_search += uppers_re
