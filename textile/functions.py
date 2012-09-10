@@ -20,7 +20,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import re
 import uuid
-import string
+from sys import maxunicode
 from urlparse import urlparse
 
 from textile.tools import sanitizer, imagesize
@@ -62,22 +62,90 @@ class Textile(object):
     vAlign = {'^': 'top', '-': 'middle', '~': 'bottom'}
     hAlign = {'<': 'left', '=': 'center', '>': 'right', '<>': 'justify'}
 
-    glyph_defaults = (
-        ('txt_quote_single_open',  '&#8216;'),
-        ('txt_quote_single_close', '&#8217;'),
-        ('txt_quote_double_open',  '&#8220;'),
-        ('txt_quote_double_close', '&#8221;'),
-        ('txt_apostrophe',         '&#8217;'),
-        ('txt_prime',              '&#8242;'),
-        ('txt_prime_double',       '&#8243;'),
-        ('txt_ellipsis',           '&#8230;'),
-        ('txt_emdash',             '&#8212;'),
-        ('txt_endash',             '&#8211;'),
-        ('txt_dimension',          '&#215;'),
-        ('txt_trademark',          '&#8482;'),
-        ('txt_registered',         '&#174;'),
-        ('txt_copyright',          '&#169;'),
-    )
+    glyph_defaults = {
+            'txt_quote_single_open':  '&#8216;',
+            'txt_quote_single_close': '&#8217;',
+            'txt_quote_double_open':  '&#8220;',
+            'txt_quote_double_close': '&#8221;',
+            'txt_apostrophe':         '&#8217;',
+            'txt_prime':              '&#8242;',
+            'txt_prime_double':       '&#8243;',
+            'txt_ellipsis':           '&#8230;',
+            'txt_ampersand':          '&amp;',
+            'txt_emdash':             '&#8212;',
+            'txt_endash':             '&#8211;',
+            'txt_dimension':          '&#215;',
+            'txt_trademark':          '&#8482;',
+            'txt_registered':         '&#174;',
+            'txt_copyright':          '&#169;',
+        }
+
+    # We'll be searching for characters that need to be HTML-encoded to produce
+    # properly valid html.
+    # These are the defaults that work in most cases.  Below, we'll copy this
+    # and modify the necessary pieces to make it work for characters at the
+    # beginning of the string.
+    glyph_search = [
+            # apostrophe's
+            re.compile(r"(^|\w)'(\w)", re.U),
+            # back in '88
+            re.compile(r"(\s)'(\d+\w?)\b(?!')", re.U),
+            # single closing
+            re.compile(r"(^|\S)'(?=\s|%s|$)" % pnct, re.U),
+            # single opening
+            re.compile(r"'", re.U),
+            # double closing
+            re.compile(r'(^|\S)"(?=\s|%s|$)' % pnct, re.U),
+            # double opening
+            re.compile(r'"'),
+            # ellipsis
+            re.compile(r'\b(\s{0,1})?\.{3}', re.U),
+            # ampersand
+            re.compile(r'(\s)&(\s)', re.U),
+            # em dash
+            re.compile(r'(\s?)--(\s?)', re.U),
+            # en dash
+            re.compile(r'\s-(?:\s|$)', re.U),
+            # dimension sign
+            re.compile(r'(\d+)( ?)x( ?)(?=\d+)', re.U),
+            # trademark
+            re.compile(r'\b ?[([]TM[])]', re.I | re.U),
+            # registered
+            re.compile(r'\b ?[([]R[])]', re.I | re.U),
+            # copyright
+            re.compile(r'\b ?[([]C[])]', re.I | re.U),
+        ]
+
+    # These are the changes that need to be made for characters that occur at
+    # the beginning of the string.
+    glyph_search_initial = list(glyph_search)
+    # apostrophe's
+    glyph_search_initial[0] = re.compile(r"(\w)'(\w)", re.U)
+    # single closing
+    glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|%s|$)" % pnct, re.U)
+    # double closing
+    glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' % pnct, re.U)
+
+
+
+    glyph_replace = [x % glyph_defaults for x in (
+        r'\1%(txt_apostrophe)s\2',            # apostrophe's
+        r'\1%(txt_apostrophe)s\2',            # back in '88
+        r'\1%(txt_quote_single_close)s',      # single closing
+        r'%(txt_quote_single_open)s',         # single opening
+        r'\1%(txt_quote_double_close)s',      # double closing
+        r'%(txt_quote_double_open)s',         # double opening
+        r'\1%(txt_ellipsis)s',                # ellipsis
+        r'\1%(txt_ampersand)s\2',             # ampersand
+        r'\1%(txt_emdash)s\2',                # em dash
+        r' %(txt_endash)s ',                  # en dash
+        r'\1\2%(txt_dimension)s\3',           # dimension sign
+        r'%(txt_trademark)s',                 # trademark
+        r'%(txt_registered)s',                # registered
+        r'%(txt_copyright)s',                 # copyright
+        r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
+        r'<span class="caps">\1</span>',      # 3+ uppercase
+    )]
 
     def __init__(self, restricted=False, lite=False, noimage=False,
                  auto_link=False, get_sizes=False):
@@ -101,6 +169,40 @@ class Textile(object):
         '\\t<p>some textile</p>'
         """
         self.html_type = html_type
+
+        # regular expressions get hairy when trying to search for unicode
+        # characters.
+        # we need to know if there are unicode charcters in the text.
+        # return True as soon as a unicode character is found, else, False
+        self.text_has_unicode = next((True for c in text if ord(c) > 128),
+                False)
+
+        if self.text_has_unicode:
+            uppers = []
+            for i in xrange(maxunicode):
+                c = unichr(i)
+                if c.isupper():
+                    uppers.append(c)
+            uppers = r''.join(uppers)
+            uppers_re = [
+                    # 3+ uppercase acronym
+                    re.compile(r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])'
+                        % (uppers, uppers), re.U),
+                    # 3+ uppercase
+                    re.compile(r"\b([%s][%s'-]+[%s])(?=[\(\s.,\)>])" % (uppers,
+                        uppers, uppers), re.U),
+                    ]
+        else:
+            uppers_re = [
+                    # 3+ uppercase acronym
+                    re.compile(r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
+                        re.U),
+                    # 3+ uppercase
+                    re.compile(r"\b([A-Z][A-Z'-]+[A-Z])(?=[\(\s.,\)>])", re.U),
+                    ]
+
+        self.glyph_search += uppers_re
+        self.glyph_search_initial += uppers_re
 
         # text = unicode(text)
         text = _normalize_newlines(text)
@@ -410,8 +512,7 @@ class Textile(object):
         anon = False
         for line in text:
             pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (tre,
-                                                                self.align_re,
-                                                                self.c)
+                    self.align_re, self.c)
             match = re.search(pattern, line, re.S)
             if match:
                 if ext:
@@ -421,9 +522,7 @@ class Textile(object):
                 h_match = re.search(r'h([1-6])', tag)
                 if h_match:
                     head_level, = h_match.groups()
-                    tag = 'h%i' % max(1,
-                                      min(int(head_level) + head_offset,
-                                          6))
+                    tag = 'h%i' % max(1, min(int(head_level) + head_offset, 6))
                 o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext,
                                                       cite, graf)
                 # leave off c1 if this block is extended,
@@ -556,6 +655,22 @@ class Textile(object):
 
     def glyphs(self, text):
         """
+        Because of the split command, the regular expressions are different for
+        when the text at the beginning and the rest of the text.
+        for example:
+        let's say the raw text provided is "*Here*'s some textile"
+        before it gets to this glyphs method, the text has been converted to
+        "<strong>Here</strong>'s some textile"
+        When run through the split, we end up with ["<strong>Here</strong>",
+        "'s some textile"].  The re.search that follows tells it not to touch
+        the first element, but we need to work on the second.
+        If the single quote is the first character on the line, it's an open
+        single quote.  If it's the first character of one of those splits, it's
+        an apostrophe or closed single quote, but the regex will bear that out.
+        A similar situation occurs for double quotes as well.
+        So, for the first pass, we use the glyph_search_initial set of
+        regexes.  For all remaining passes, we use glyph_search
+
         >>> t = Textile()
 
         >>> t.glyphs("apostrophe's")
@@ -577,66 +692,20 @@ class Textile(object):
         '<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'
 
         """
-         # fix: hackish
-        text = re.sub(r'"\Z', '\" ', text)
-
-        glyph_search = (
-            # apostrophe's
-            re.compile(r"(\w)\'(\w)"),
-            # back in '88
-            re.compile(r'(\s)\'(\d+\w?)\b(?!\')'),
-            # single closing
-            re.compile(r'(\S)\'(?=\s|' + self.pnct + '|<|$)'),
-            # single opening
-            re.compile(r'\'/'),
-            # double closing
-            re.compile(r'(\S)\"(?=\s|' + self.pnct + '|<|$)'),
-            # double opening
-            re.compile(r'"'),
-            # 3+ uppercase acronym
-            re.compile(r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])'),
-            # 3+ uppercase
-            re.compile(r'\b([A-Z][A-Z\'\-]+[A-Z])(?=[\s.,\)>])'),
-            # ellipsis
-            re.compile(r'\b(\s{0,1})?\.{3}'),
-            # em dash
-            re.compile(r'(\s?)--(\s?)'),
-            # en dash
-            re.compile(r'\s-(?:\s|$)'),
-            # dimension sign
-            re.compile(r'(\d+)( ?)x( ?)(?=\d+)'),
-            # trademark
-            re.compile(r'\b ?[([]TM[])]', re.I),
-            # registered
-            re.compile(r'\b ?[([]R[])]', re.I),
-            # copyright
-            re.compile(r'\b ?[([]C[])]', re.I),
-         )
-
-        glyph_replace = [x % dict(self.glyph_defaults) for x in (
-            r'\1%(txt_apostrophe)s\2',            # apostrophe's
-            r'\1%(txt_apostrophe)s\2',            # back in '88
-            r'\1%(txt_quote_single_close)s',      # single closing
-            r'%(txt_quote_single_open)s',         # single opening
-            r'\1%(txt_quote_double_close)s',      # double closing
-            r'%(txt_quote_double_open)s',         # double opening
-            r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
-            r'<span class="caps">\1</span>',      # 3+ uppercase
-            r'\1%(txt_ellipsis)s',                # ellipsis
-            r'\1%(txt_emdash)s\2',                # em dash
-            r' %(txt_endash)s ',                  # en dash
-            r'\1\2%(txt_dimension)s\3',           # dimension sign
-            r'%(txt_trademark)s',                 # trademark
-            r'%(txt_registered)s',                # registered
-            r'%(txt_copyright)s',                 # copyright
-        )]
+        # fix: hackish
+        text = re.sub(r'"\Z', r'" ', text)
 
         result = []
+        i = 0
+        searchlist = self.glyph_search_initial
         for line in re.compile(r'(<.*?>)', re.U).split(text):
             if not re.search(r'<.*>', line):
-                for s, r in zip(glyph_search, glyph_replace):
+                for s, r in zip(searchlist, self.glyph_replace):
                     line = s.sub(r, line)
             result.append(line)
+            if i == 0:
+                searchlist = self.glyph_search
+                i += 1
         return ''.join(result)
 
     def getRefs(self, text):
@@ -713,9 +782,9 @@ class Textile(object):
 
     def encode_html(self, text, quotes=True):
         a = (
-            ('&', '&#38;'),
-            ('<', '&#60;'),
-            ('>', '&#62;'))
+            ('&', '&amp;'),
+            ('<', '&lt;'),
+            ('>', '&gt;'))
 
         if quotes:
             a = a + (("'", '&#39;'),
