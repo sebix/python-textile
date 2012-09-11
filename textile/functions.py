@@ -177,6 +177,8 @@ class Textile(object):
         self.text_has_unicode = next((True for c in text if ord(c) > 128),
                 False)
 
+        # Again, the regex is different depending on whether the acronym/caps
+        # is at the beginning of the line.
         if self.text_has_unicode:
             uppers = []
             for i in xrange(maxunicode):
@@ -184,26 +186,42 @@ class Textile(object):
                 if c.isupper():
                     uppers.append(c)
             uppers = r''.join(uppers)
-            uppers_re = [
+            uppers_re_patterns = [
                     # 3+ uppercase acronym
-                    re.compile(r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])'
-                        % (uppers, uppers), re.U),
+                    r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers,
+                        uppers),
                     # 3+ uppercase
-                    re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                        % (uppers, self.pnct), re.U),
+                    r"""(?:(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
+                        % (uppers, self.pnct),
+                    ]
+            uppers_re_initial_patterns = [
+                    # 3+ uppercase acronym
+                    r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers,
+                        uppers),
+                    # 3+ uppercase
+                    r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
+                        % (uppers, self.pnct),
                     ]
         else:
-            uppers_re = [
+            uppers_re_patterns = [
                     # 3+ uppercase acronym
-                    re.compile(r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
-                        re.U),
+                    r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])'
                     # 3+ uppercase
-                    re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                        % self.pnct, re.U),
+                    r"""(?:(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
+                        % self.pnct,
                     ]
+            uppers_re_initial_patterns = [
+                    # 3+ uppercase acronym
+                    r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
+                    # 3+ uppercase
+                    r"""(?:(?<=^)|(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
+                        % self.pnct,
+                    ]
+        uppers_re = [re.compile(x, re.U) for x in uppers_re_patterns]
+        uppers_re_initial = [re.compile(x, re.U) for x in uppers_re_initial_patterns]
 
         self.glyph_search += uppers_re
-        self.glyph_search_initial += uppers_re
+        self.glyph_search_initial += uppers_re_initial
 
         # text = unicode(text)
         text = _normalize_newlines(text)

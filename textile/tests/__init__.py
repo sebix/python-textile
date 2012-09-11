@@ -227,8 +227,8 @@ class TestKnownValues():
         # nose doesn't handle unicode correctly, and reports this as a failure
         # no matter what I try. It's strange that textile handles the unicode
         # test above properly but not this one.
-        # In all my testing, textile properly handles
-        # the test below according to specification... and the prophecy.
+        # In all my testing, textile properly handles the test below according
+        # to specification... and the prophecy.
         #(u"""| Foreign EXPÓŅÉNTIAL |""",
          #u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
 
