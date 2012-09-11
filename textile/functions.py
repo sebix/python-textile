@@ -665,7 +665,7 @@ class Textile(object):
     def footnoteID(self, match):
         footnoteNum, text = match.groups()
         if footnoteNum not in self.fn:
-            self.fn[footnoteNum] = str(uuid.uuid4())
+            self.fn[footnoteNum] = str(uuid.uuid4()).replace('-', '')
         footnoteID = self.fn[footnoteNum]
         if not text:
             text = ''
