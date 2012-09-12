@@ -21,7 +21,7 @@ class TestKnownValues():
         ('I am <b>very</b> serious.\n\n<pre>\nI am <b>very</b> serious.\n</pre>',
          '\t<p>I am <b>very</b> serious.</p>\n\n<pre>\nI am &lt;b&gt;very&lt;/b&gt; serious.\n</pre>'),
 
-        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br />And none replied.</p>'),
+        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br />\nAnd none replied.</p>'),
 
         ('"Observe!"', '\t<p>&#8220;Observe!&#8221; </p>'),
 
@@ -50,7 +50,7 @@ class TestKnownValues():
 
         ('And then? She *fell*!', '\t<p>And then? She <strong>fell</strong>!</p>'),
 
-        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br />I <b>really</b> <i>know</i>.</p>'),
+        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br />\nI <b>really</b> <i>know</i>.</p>'),
 
         ("??Cat's Cradle?? by Vonnegut", '\t<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'),
 
@@ -66,7 +66,7 @@ class TestKnownValues():
 
         ('I\'m %unaware% of most soft drinks.', '\t<p>I&#8217;m <span>unaware</span> of most soft drinks.</p>'),
 
-        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br />of most soft drinks.</p>'),
+        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br />\nof most soft drinks.</p>'),
 
         ('p(example1). An example', '\t<p class="example1">An example</p>'),
 
@@ -79,8 +79,8 @@ class TestKnownValues():
         ('p[fr]. rouge', '\t<p lang="fr">rouge</p>'),
 
         ('I seriously *{color:red}blushed*\nwhen I _(big)sprouted_ that\ncorn stalk from my\n%[es]cabeza%.',
-        '\t<p>I seriously <strong style="color:red;">blushed</strong><br />when I <em class="big">sprouted</em>'
-        ' that<br />corn stalk from my<br /><span lang="es">cabeza</span>.</p>'),
+        '\t<p>I seriously <strong style="color:red;">blushed</strong><br />\nwhen I <em class="big">sprouted</em>'
+        ' that<br />\ncorn stalk from my<br />\n<span lang="es">cabeza</span>.</p>'),
 
         ('p<. align left', '\t<p style="text-align:left;">align left</p>'),
 
@@ -105,9 +105,9 @@ class TestKnownValues():
 
         ('<div style="float:right;">\n\nh3. Sidebar\n\n"Hobix":http://hobix.com/\n"Ruby":http://ruby-lang.org/\n\n</div>\n\n'
          'The main text of the\npage goes here and will\nstay to the left of the\nsidebar.',
-         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br />'
-         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br />'
-         'page goes here and will<br />stay to the left of the<br />sidebar.</p>'),
+         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br />\n'
+         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br />\n'
+         'page goes here and will<br />\nstay to the left of the<br />\nsidebar.</p>'),
 
         ('# A first item\n# A second item\n# A third',
          '\t<ol>\n\t\t<li>A first item</li>\n\t\t<li>A second item</li>\n\t\t<li>A third</li>\n\t</ol>'),
@@ -131,8 +131,8 @@ class TestKnownValues():
         ('I searched "a search engine (Google)":http://google.com.', '\t<p>I searched <a href="http://google.com" title="Google">a search engine</a>.</p>'),
 
         ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
-         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />and <a href="http://hobix.com">it&#8217;s</a> '
-         '<a href="http://hobix.com">all</a> I ever<br /><a href="http://hobix.com">link to</a>!</p>\n\n'),
+         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />\nand <a href="http://hobix.com">it&#8217;s</a> '
+         '<a href="http://hobix.com">all</a> I ever<br />\n<a href="http://hobix.com">link to</a>!</p>\n\n'),
 
         ('!http://hobix.com/sample.jpg!', '\t<p><img src="http://hobix.com/sample.jpg" alt="" /></p>'),
 
@@ -142,7 +142,7 @@ class TestKnownValues():
 
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
          '\t<p><img src="obake.gif" style="float: right;" alt="" /></p>\n\n\t'
-         '<p>And others sat all round the small<br />machine and paid it to sing to them.</p>'),
+         '<p>And others sat all round the small<br />\nmachine and paid it to sing to them.</p>'),
 
         ('We use CSS(Cascading Style Sheets).', '\t<p>We use <acronym title="Cascading Style Sheets"><span class="caps">CSS</span></acronym>.</p>'),
 
@@ -241,28 +241,28 @@ class TestKnownValues():
 
     # A few extra cases for HTML4
     html_known_values = (
-        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br>And none replied.</p>'),
-        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br>I <b>really</b> <i>know</i>.</p>'),
-        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br>of most soft drinks.</p>'),
+        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br>\nAnd none replied.</p>'),
+        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br>\nI <b>really</b> <i>know</i>.</p>'),
+        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br>\nof most soft drinks.</p>'),
         ('I seriously *{color:red}blushed*\nwhen I _(big)sprouted_ that\ncorn stalk from my\n%[es]cabeza%.',
-        '\t<p>I seriously <strong style="color:red;">blushed</strong><br>when I <em class="big">sprouted</em>'
-        ' that<br>corn stalk from my<br><span lang="es">cabeza</span>.</p>'),
+        '\t<p>I seriously <strong style="color:red;">blushed</strong><br>\nwhen I <em class="big">sprouted</em>'
+        ' that<br>\ncorn stalk from my<br>\n<span lang="es">cabeza</span>.</p>'),
         ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
          '<pre>\n<code>\na.gsub!( /&lt;/, "" )\n</code>\n</pre>'),
         ('<div style="float:right;">\n\nh3. Sidebar\n\n"Hobix":http://hobix.com/\n"Ruby":http://ruby-lang.org/\n\n</div>\n\n'
          'The main text of the\npage goes here and will\nstay to the left of the\nsidebar.',
-         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br>'
-         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br>'
-         'page goes here and will<br>stay to the left of the<br>sidebar.</p>'),
+         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br>\n'
+         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br>\n'
+         'page goes here and will<br>\nstay to the left of the<br>\nsidebar.</p>'),
         ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
-         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br>and <a href="http://hobix.com">it&#8217;s</a> '
-         '<a href="http://hobix.com">all</a> I ever<br><a href="http://hobix.com">link to</a>!</p>\n\n'),
+         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br>\nand <a href="http://hobix.com">it&#8217;s</a> '
+         '<a href="http://hobix.com">all</a> I ever<br>\n<a href="http://hobix.com">link to</a>!</p>\n\n'),
         ('!http://hobix.com/sample.jpg!', '\t<p><img src="http://hobix.com/sample.jpg" alt=""></p>'),
         ('!openwindow1.gif(Bunny.)!', '\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny."></p>'),
         ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img src="openwindow1.gif" alt=""></a></p>'),
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
          '\t<p><img src="obake.gif" style="float: right;" alt=""></p>\n\n\t'
-         '<p>And others sat all round the small<br>machine and paid it to sing to them.</p>'),
+         '<p>And others sat all round the small<br>\nmachine and paid it to sing to them.</p>'),
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
          '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt=""></p>'),
         ('notextile. <b> foo bar baz</b>\n\np. quux\n','<b> foo bar baz</b>\n\n\t<p>quux</p>')
@@ -379,7 +379,7 @@ class Tests():
         #the <script> tag harmless.
         test = "Here is some text.\n<script>alert('hello world')</script>"
         result = textile.textile_restricted(test)
-        expect = "\t<p>Here is some text.<br />&lt;script&gt;alert(&#8216;hello world&#8217;)&lt;/script&gt;</p>"
+        expect = "\t<p>Here is some text.<br />\n&lt;script&gt;alert(&#8216;hello world&#8217;)&lt;/script&gt;</p>"
 
         eq_(result, expect)
 
@@ -425,7 +425,7 @@ class Tests():
         eq_(result, expect)
 
         test = """<p>a paragraph of benign text<br />and more text</p>"""
-        result = '<p>a paragraph of benign text<br>and more text</p>'
+        result = '<p>a paragraph of benign text<br>\nand more text</p>'
         expect = textile.Textile().textile(test, sanitize=True,
                                            html_type='html')
         eq_(result, expect)

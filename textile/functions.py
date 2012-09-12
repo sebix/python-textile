@@ -241,6 +241,10 @@ class Textile(object):
         if sanitize:
             text = sanitizer.sanitize(text, self.html_type)
 
+        breaktag = {'html': '<br>', 'xhtml': '<br />'}
+
+        text = text.replace(breaktag[self.html_type], '%s\n' % breaktag[self.html_type])
+
         return text
 
     def pba(self, block_attributes, element=None):
@@ -502,10 +506,10 @@ class Textile(object):
 
     def doBr(self, match):
         if self.html_type == 'html':
-            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br>',
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', r'\1<br>',
                              match.group(3))
         else:
-            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', '\\1<br />',
+            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', r'\1<br />',
                              match.group(3))
         return '<%s%s>%s%s' % (match.group(1), match.group(2),
                                content, match.group(4))
