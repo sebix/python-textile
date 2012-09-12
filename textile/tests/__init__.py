@@ -74,7 +74,7 @@ class TestKnownValues():
 
         ('p(example1#big-red2). Red here', '\t<p class="example1" id="big-red2">Red here</p>'),
 
-        ('p{color:blue;margin:30px}. Spacey blue', '\t<p style="color:blue;margin:30px;">Spacey blue</p>'),
+        ('p{color:blue;margin:30px}. Spacey blue', '\t<p style="color:blue; margin:30px;">Spacey blue</p>'),
 
         ('p[fr]. rouge', '\t<p lang="fr">rouge</p>'),
 
