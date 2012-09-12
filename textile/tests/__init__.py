@@ -96,9 +96,9 @@ class TestKnownValues():
 
         ('p))). right ident 3em', '\t<p style="padding-right:3em;">right ident 3em</p>'),
 
-        ('h2()>. Bingo.', '\t<h2 style="padding-left:1em;padding-right:1em;text-align:right;">Bingo.</h2>'),
+        ('h2()>. Bingo.', '\t<h2 style="padding-left:1em; padding-right:1em; text-align:right;">Bingo.</h2>'),
 
-        ('h3()>[no]{color:red}. Bingo', '\t<h3 style="color:red;padding-left:1em;padding-right:1em;text-align:right;" lang="no">Bingo</h3>'),
+        ('h3()>[no]{color:red}. Bingo', '\t<h3 style="color:red; padding-left:1em; padding-right:1em; text-align:right;" lang="no">Bingo</h3>'),
 
         ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
          '<pre>\n<code>\na.gsub!( /&lt;/, "" )\n</code>\n</pre>'),

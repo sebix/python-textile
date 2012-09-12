@@ -313,11 +313,11 @@ class Textile(object):
         if element == 'td' or element == 'tr':
             m = re.search(r'(%s)' % self.vertical_align_re, matched)
             if m:
-                style.append("vertical-align:%s;" % self.vAlign[m.group(1)])
+                style.append("vertical-align:%s" % self.vAlign[m.group(1)])
 
         m = re.search(r'\{([^}]*)\}', matched)
         if m:
-            style.append('; '.join(m.group(1).rstrip(';').split(';')) + ';')
+            style += m.group(1).rstrip(';').split(';')
             matched = matched.replace(m.group(0), '')
 
         m = re.search(r'\[([^\]]+)\]', matched, re.U)
@@ -332,17 +332,17 @@ class Textile(object):
 
         m = re.search(r'([(]+)', matched)
         if m:
-            style.append("padding-left:%sem;" % len(m.group(1)))
+            style.append("padding-left:%sem" % len(m.group(1)))
             matched = matched.replace(m.group(0), '')
 
         m = re.search(r'([)]+)', matched)
         if m:
-            style.append("padding-right:%sem;" % len(m.group(1)))
+            style.append("padding-right:%sem" % len(m.group(1)))
             matched = matched.replace(m.group(0), '')
 
         m = re.search(r'(%s)' % self.horizontal_align_re, matched)
         if m:
-            style.append("text-align:%s;" % self.hAlign[m.group(1)])
+            style.append("text-align:%s" % self.hAlign[m.group(1)])
 
         m = re.search(r'^(.*)#(.*)$', aclass)
         if m:
@@ -357,7 +357,7 @@ class Textile(object):
 
         result = []
         if style:
-            result.append(' style="%s"' % "".join(style))
+            result.append(' style="%s;"' % "; ".join(style))
         if aclass:
             result.append(' class="%s"' % aclass)
         if lang:
