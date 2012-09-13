@@ -822,9 +822,10 @@ class Textile(object):
             text = self.noTextile(text)
             text = self.code(text)
 
+        text = self.links(text)
         if self.auto_link:
             text = self.autoLink(text)
-        text = self.links(text)
+            text = self.links(text)
 
         if not self.noimage:
             text = self.image(text)
@@ -844,11 +845,11 @@ class Textile(object):
         """
         >>> t = Textile()
         >>> t.autoLink("http://www.ya.ru")
-        '"http://www.ya.ru":http://www.ya.ru'
+        '"$":http://www.ya.ru'
         """
 
         pattern = re.compile(r"""\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""", re.U | re.I)
-        return pattern.sub(r'"\1":\1', text)
+        return pattern.sub(r'"$":\1', text)
 
     def links(self, text):
         """
@@ -860,19 +861,19 @@ class Textile(object):
         punct = '!"#$%&\'*+,-./:;=?@\\^_`|~'
 
         pattern = r'''
-            (?P<pre>[\s\[{(]|[%s])?         #leading text
-            "                               #opening quote
-            (?P<atts>%s)                    #block attributes
-            (?P<text>[^"]+?)                #link text
-            \s?
-            (?:\((?P<title>[^)]+?)\)(?="))? #optional title
-            ":                              #closing quote, colon
-            (?P<url>(?:ftp|https?)?         #URL
+            (?P<pre>[\s\[{(]|[%s])?         # leading text
+            "                               # opening quote
+            (?P<atts>%s)                    # block attributes
+            (?P<text>[^"]+?)                # link text
+            \s?                             # optional space
+            (?:\((?P<title>[^)]+?)\)(?="))? # optional title
+            ":                              # closing quote, colon
+            (?P<url>(?:ftp|https?)?         # URL
                         (?: :// )?
                         [-A-Za-z0-9+&@#/?=~_()|!:,.;%%]*
                         [-A-Za-z0-9+&@#/=~_()|]
             )
-            (?P<post>[^\w\/;]*?)	    #trailing text
+            (?P<post>[^\w\/;]*?)            # trailing text
             (?=<|\s|$)
         ''' % (re.escape(punct), self.c)
 
@@ -885,6 +886,9 @@ class Textile(object):
 
         if pre == None:
             pre = ''
+
+        if text == '$':
+            text = re.sub(r'^\w+://(.+)', r'\1', url)
 
         # assume ) at the end of the url is not actually part of the url
         # unless the url also contains a (

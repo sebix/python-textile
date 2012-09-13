@@ -9,8 +9,6 @@ TODO
      within these
      tags -->==
 *** Currently, it turns the above newlines into breaks and tries to turn the doubledashes into em-dashes
-** Image tag should include image dimensions
-** Link "$" shortcut functionality
 ** Unicode URLs
 ** Auto-numbered endnotes
 ** ols and uls should conform to the new manner of defining styles for the entire list and individual items

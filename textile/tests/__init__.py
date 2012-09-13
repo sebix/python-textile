@@ -395,8 +395,8 @@ class Tests():
         assert_true(re.compile(u'^\t<p>текст<sup class="footnote"><a href="#fn[a-f0-9]+">1</a></sup></p>', re.U).search(html))
 
     def testAutoLinking(self):
-        test = "some text http://www.google.com"
-        result = "\t<p>some text <a href=\"http://www.google.com\">http://www.google.com</a></p>"
+        test = """some text "test":http://www.google.com http://www.google.com "$":http://www.google.com"""
+        result = """\t<p>some text <a href="http://www.google.com">test</a> <a href="http://www.google.com">www.google.com</a> <a href="http://www.google.com">www.google.com</a></p>"""
         expect = textile.textile(test, auto_link=True)
 
         eq_(result, expect)
