@@ -145,7 +145,7 @@ class Textile(object):
         r'%(txt_registered)s',                # registered
         r'%(txt_copyright)s',                 # copyright
         r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
-        r'<span class="caps">\1</span>\2',      # 3+ uppercase
+        r'<span class="caps">\1</span>\2',    # 3+ uppercase
     )]
 
     def __init__(self, restricted=False, lite=False, noimage=False,
@@ -785,7 +785,7 @@ class Textile(object):
         return url
 
     def shelve(self, text):
-        itemID = str(uuid.uuid4())
+        itemID = str(uuid.uuid4()).replace('-', '')
         self.shelf[itemID] = text
         return itemID
 
@@ -822,6 +822,8 @@ class Textile(object):
         if not self.lite:
             text = self.noTextile(text)
             text = self.code(text)
+
+        text = self.getHTMLComments(text)
 
         text = self.links(text)
         if self.auto_link:
@@ -1114,6 +1116,20 @@ class Textile(object):
         if after == None:
             after = ''
         return ''.join([before, self.shelve(notextile), after])
+
+    def getHTMLComments(self, text):
+        """Search the string for HTML comments, e.g. <!-- comment text -->.  We
+        send the text that matches this to fParseHTMLComments."""
+        return self.doSpecial(text, '<!--', '-->', self.fParseHTMLComments)
+
+    def fParseHTMLComments(self, match):
+        """If self.restricted is True, clean the matched contents of the HTML
+        comment.  Otherwise, return the comments unchanged."""
+        before, commenttext, after = match.groups()
+        if self.restricted:
+            commenttext = self.encode_html(commenttext, quotes=False)
+        commenttext = self.shelve(commenttext)
+        return '<!--%s-->' % commenttext
 
 
 def textile(text, head_offset=0, html_type='xhtml', auto_link=False,

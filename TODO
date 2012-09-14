@@ -4,12 +4,6 @@ TODO
 ** Not all functions have docstrings or adequate docstrings.
 ** Because the Textile syntax implemented by PyTextile has deviated from the syntax implemented by other implementations of Textile, PyTextile-specific documentation needs to be produced for end-users.
 * Add Textile 2.4 functionality
-** PyTextile should ignore everything within HTML comments
-*** ==<!-- do not parse anything
-     within these
-     tags -->==
-*** Currently, it turns the above newlines into breaks and tries to turn the doubledashes into em-dashes
-** Unicode URLs
 ** Auto-numbered endnotes
 ** ols and uls should conform to the new manner of defining styles for the entire list and individual items
 ** Allow specified starting number for ordered list
