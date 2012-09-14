@@ -17,11 +17,5 @@ TODO
 *** Fix colspan
 *** Add thead/tfoot functionality
 *** Add colgroup functionality
-** New special symbols
-*** One quarter [1/4] symbol
-*** One half [1/2] symbol
-*** Three quarters [3/4] symbol
-*** Degree [o] symbol
-*** Plus/minus [+/-] symbol
 ** Add in support for textile comments: ###
 *** This is low-priority.  Why would one do this?

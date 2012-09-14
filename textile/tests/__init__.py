@@ -239,6 +239,8 @@ class TestKnownValues():
         (u""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", u"""\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
         ("""Here is some text with a <!-- Commented out[1] --> block.\n\n<!-- Here is a single <span>line</span> comment block -->\n\n<!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n-->\n\nbc. <!-- Here is a comment block in a code block. -->""",
          """\t<p>Here is some text with a<!-- Commented out[1] --> block.</p>\n\n\t<p><!-- Here is a single <span>line</span> comment block --></p>\n\n\t<p><!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n--></p>\n\n<pre><code>&lt;!-- Here is a comment block in a code block. --&gt;\n</code></pre>"""),
+        (""""Textile(c)" is a registered(r) 'trademark' of Textpattern(tm) -- or TXP(That's textpattern!) -- at least it was - back in '88 when 2x4 was (+/-)5(o)C ... QED!\n\np{font-size: 200%;}. 2(1/4) 3(1/2) 4(3/4)""",
+         """\t<p>&#8220;Textile&#169;&#8221; is a registered&#174; &#8216;trademark&#8217; of Textpattern&#8482; &#8212; or <acronym title="That&#8217;s textpattern!"><span class="caps">TXP</span></acronym> &#8212; at least it was &#8211; back in &#8217;88 when 2&#215;4 was &#177;5&#176;C &#8230; <span class="caps">QED</span>!</p>\n\n\t<p style="font-size: 200%;">2&#188; 3&#189; 4&#190;</p>"""),
 
     )
 

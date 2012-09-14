@@ -79,6 +79,11 @@ class Textile(object):
             'txt_trademark':          '&#8482;',
             'txt_registered':         '&#174;',
             'txt_copyright':          '&#169;',
+            'txt_quarter':            '&#188;',
+            'txt_half':               '&#189;',
+            'txt_threequarters':      '&#190;',
+            'txt_degrees':            '&#176;',
+            'txt_plusminus':          '&#177;',
         }
 
     # We'll be searching for characters that need to be HTML-encoded to produce
@@ -115,6 +120,16 @@ class Textile(object):
             re.compile(r'\b ?[([]R[])]', re.I | re.U),
             # copyright
             re.compile(r'\b ?[([]C[])]', re.I | re.U),
+            # 1/4
+            re.compile(r'[([]1\/4[])]', re.I | re.U),
+            # 1/2
+            re.compile(r'[([]1\/2[])]', re.I | re.U),
+            # 3/4
+            re.compile(r'[([]3\/4[])]', re.I | re.U),
+            # degrees
+            re.compile(r'[([]o[])]', re.I | re.U),
+            # plus/minus
+            re.compile(r'[([]\+\/-[])]', re.I | re.U),
         ]
 
     # These are the changes that need to be made for characters that occur at
@@ -144,6 +159,11 @@ class Textile(object):
         r'%(txt_trademark)s',                 # trademark
         r'%(txt_registered)s',                # registered
         r'%(txt_copyright)s',                 # copyright
+        r'%(txt_quarter)s',                   # 1/4
+        r'%(txt_half)s',                      # 1/2
+        r'%(txt_threequarters)s',             # 3/4
+        r'%(txt_degrees)s',                   # degrees
+        r'%(txt_plusminus)s',                 # plus/minus
         r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
         r'<span class="caps">\1</span>\2',    # 3+ uppercase
     )]
