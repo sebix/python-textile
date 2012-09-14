@@ -236,6 +236,7 @@ class TestKnownValues():
          u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
         ('p{font-size:0.8em}. *TxStyle* is a documentation project of Textile 2.4 for "Textpattern CMS":http://texpattern.com.',
          '\t<p style="font-size:0.8em;"><strong>TxStyle</strong> is a documentation project of Textile 2.4 for <a href="http://texpattern.com">Textpattern <span class="caps">CMS</span></a>.</p>'),
+        (u""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", u"""\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
 
     )
 
@@ -312,7 +313,7 @@ class Tests():
 
     def testURLWithParens(self):
         text = '"python":http://en.wikipedia.org/wiki/Python_(programming_language)'
-        expect = '\t<p><a href="http://en.wikipedia.org/wiki/Python_(programming_language)">python</a></p>'
+        expect = '\t<p><a href="http://en.wikipedia.org/wiki/Python_%28programming_language%29">python</a></p>'
         result = textile.textile(text)
         eq_(result, expect)
 

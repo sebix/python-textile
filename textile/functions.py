@@ -21,7 +21,8 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 import re
 import uuid
 from sys import maxunicode
-from urlparse import urlparse
+import urlparse
+import urllib
 
 from textile.tools import sanitizer, imagesize
 
@@ -765,7 +766,7 @@ class Textile(object):
         True
 
         """
-        (scheme, netloc) = urlparse(url)[0:2]
+        (scheme, netloc) = urlparse.urlparse(url)[0:2]
         return not scheme and not netloc
 
     def relURL(self, url):
@@ -778,7 +779,7 @@ class Textile(object):
         '#'
 
         """
-        scheme = urlparse(url)[0]
+        scheme = urlparse.urlparse(url)[0]
         if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
         return url
@@ -870,14 +871,14 @@ class Textile(object):
             ":                              # closing quote, colon
             (?P<url>(?:ftp|https?)?         # URL
                         (?: :// )?
-                        [-A-Za-z0-9+&@#/?=~_()|!:,.;%%]*
-                        [-A-Za-z0-9+&@#/=~_()|]
+                        [-\w+&@#/?=~()|!:,.;%%]*
+                        [-\w+&@#/=~()|]
             )
             (?P<post>[^\w\/;]*?)            # trailing text
             (?=<|\s|$)
         ''' % (re.escape(punct), self.c)
 
-        text = re.compile(pattern, re.X).sub(self.fLink, text)
+        text = re.compile(pattern, re.X | re.U).sub(self.fLink, text)
 
         return text
 
@@ -897,6 +898,10 @@ class Textile(object):
             url = url[:-1]
 
         url = self.checkRefs(url)
+        try:
+            url = self.encode_url(url)
+        except:
+            pass
 
         atts = self.pba(atts)
         if title:
@@ -913,6 +918,54 @@ class Textile(object):
                                            atts, self.rel, text)
         out = self.shelve(out)
         return ''.join([pre, out, post])
+
+    def encode_url(self, url):
+        """
+        Converts a (unicode) URL to an ASCII URL, with the domain part
+        IDNA-encoded and the path part %-encoded (as per RFC 3986).
+
+        Fixed version of the following code fragment from Stack Overflow:
+        http://stackoverflow.com/questions/804336/best-way-to-convert-a-unicode-url-to-ascii-utf-8-percent-escaped-in-python/804380#804380
+        """
+        # turn string into unicode
+        if not isinstance(url, unicode):
+            url = url.decode('utf8')
+
+        # parse it
+        parsed = urlparse.urlsplit(url)
+
+        # divide the netloc further
+        netloc_pattern = re.compile(r"""
+            (?:(?P<user>[^:@]+)(?::(?P<password>[^:@]+))?@)?
+            (?P<host>[^:]+)
+            (?::(?P<port>[0-9]+))?
+        """, re.X | re.U)
+        netloc_parsed = netloc_pattern.match(parsed.netloc).groupdict()
+
+        # encode each component
+        scheme = parsed.scheme.encode('utf8')
+        user = netloc_parsed['user'] and urllib.quote(netloc_parsed['user'].encode('utf8'))
+        password = netloc_parsed['password'] and urllib.quote(netloc_parsed['password'].encode('utf8'))
+        host = netloc_parsed['host'].encode('idna')
+        port = netloc_parsed['port'] and netloc_parsed['port'].encode('utf8')
+        path = '/'.join(  # could be encoded slashes!
+            urllib.quote(urllib.unquote(pce).encode('utf8'),'')
+            for pce in parsed.path.split('/')
+        )
+        query = urllib.quote(urllib.unquote(parsed.query).encode('utf8'), '=&?/')
+        fragment = urllib.quote(urllib.unquote(parsed.fragment).encode('utf8'))
+
+        # put it back together
+        netloc = ''
+        if user:
+            netloc += user
+            if password:
+                netloc += '@'+password
+            netloc += ':'
+        netloc += host
+        if port:
+            netloc += ':'+port
+        return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
 
     def span(self, text):
         """
