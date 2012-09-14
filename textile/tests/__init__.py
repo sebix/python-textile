@@ -237,10 +237,8 @@ class TestKnownValues():
         ('p{font-size:0.8em}. *TxStyle* is a documentation project of Textile 2.4 for "Textpattern CMS":http://texpattern.com.',
          '\t<p style="font-size:0.8em;"><strong>TxStyle</strong> is a documentation project of Textile 2.4 for <a href="http://texpattern.com">Textpattern <span class="caps">CMS</span></a>.</p>'),
         (u""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", u"""\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
-        (u"""html text <!-- html *comment* --> more text""",
-         u"""\t<p>html text<!-- html *comment* --> more text</p>"""),
-        ("""Here is some text with a <!-- Commented out[1] --> block.\n\n<!-- Here's a single <span>line</span> comment block -->\n\n<!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n-->\n\nIt'll only stop when it reaches a paragraph marker.\ntest\n""",
-         """\t<p>Here is some text with a<!-- Commented out[1] --> block.</p>\n\n\t<p><!-- Here's a single <span>line</span> comment block --></p>\n\n\t<p><!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n--></p>\n\n\t<p>It&#8217;ll only stop when it reaches a paragraph marker.<br />\ntest</p>"""),
+        ("""Here is some text with a <!-- Commented out[1] --> block.\n\n<!-- Here is a single <span>line</span> comment block -->\n\n<!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n-->\n\nbc. <!-- Here is a comment block in a code block. -->""",
+         """\t<p>Here is some text with a<!-- Commented out[1] --> block.</p>\n\n\t<p><!-- Here is a single <span>line</span> comment block --></p>\n\n\t<p><!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n--></p>\n\n<pre><code>&lt;!-- Here is a comment block in a code block. --&gt;\n</code></pre>"""),
 
     )
 
