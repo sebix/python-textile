@@ -39,9 +39,9 @@ def _normalize_newlines(string):
 class Textile(object):
     horizontal_align_re = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
     vertical_align_re = r'[\-^~]'
-    class_re = r'(?:\([^)]+\))'
-    language_re = r'(?:\[[^\]]+\])'
-    style_re = r'(?:\{[^}]+\})'
+    class_re = r'(?:\([^)\n]+\))'       # Don't allow classes/ids,
+    language_re = r'(?:\[[^\]\n]+\])'   # languages,
+    style_re = r'(?:\{[^}\n]+\})'       # or styles to span across newlines
     colspan_re = r'(?:\\\d+)'
     rowspan_re = r'(?:\/\d+)'
     align_re = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
