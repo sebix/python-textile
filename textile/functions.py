@@ -26,6 +26,13 @@ import urllib
 
 from textile.tools import sanitizer, imagesize
 
+# We're going to use the Python 2.7+ OrderedDict data type.  Import it if it's
+# available, otherwise, use the included tool.
+try:
+    from collections import OrderedDict
+except ImportError:
+    from textile.tools import OrderedDict
+
 
 def _normalize_newlines(string):
     out = string.strip()
@@ -46,8 +53,9 @@ class Textile(object):
     rowspan_re = r'(?:\/\d+)'
     align_re = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
     table_span_re = r'(?:%s|%s)*' % (colspan_re, rowspan_re)
-    c = r'(?:%s)*' % '|'.join([class_re, style_re,
-                               language_re, horizontal_align_re])
+    c = r'(?:%s)*' % '|'.join([class_re, style_re, language_re,
+        horizontal_align_re])
+    lc = r'(?:%s)*' % '|'.join([class_re, style_re, language_re])
 
     pnct = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
     urlch = '[\w"$\-_.+*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
@@ -407,7 +415,7 @@ class Textile(object):
         True
 
         """
-        r = re.compile(r'<(p|blockquote|div|form|table|ul|ol|pre|h\d)[^>]*?>.*</\1>',
+        r = re.compile(r'<(p|blockquote|div|form|table|ul|ol|dl|pre|h\d)[^>]*?>.*</\1>',
                        re.S).sub('', text.strip()).strip()
         r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
         return '' != r
@@ -454,6 +462,9 @@ class Textile(object):
                 else:
                     catts = ''
 
+                if not self.lite:
+                    cell = self.redcloth_list(cell)
+
                 cell = self.graf(self.span(cell))
                 cells.append('\t\t\t<t%s%s>%s</t%s>'
                              % (ctyp, catts, cell, ctyp))
@@ -473,64 +484,123 @@ class Textile(object):
         #Replace line-initial bullets with asterisks
         bullet_pattern = re.compile(u'^•', re.U | re.M)
 
-        pattern = re.compile(r'^([#*]+%s .*)$(?![^#*])'
-                             % self.c, re.U | re.M | re.S)
+        pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?)%s[ .].*)$(?![^#*;:])'
+                             % self.lc, re.U | re.M | re.S)
         return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
-        text = match.group(0).split("\n")
+        text = re.split(r'\n(?=[*#;:])', match.group(), re.M)
+        pt = ''
         result = []
-        lists = []
+        ls = OrderedDict()
         for i, line in enumerate(text):
             try:
                 nextline = text[i + 1]
             except IndexError:
                 nextline = ''
 
-            m = re.search(r"^([#*]+)(%s%s) (.*)$" % (self.align_re,
-                                                     self.c), line, re.S)
+            m = re.search(r"^([#*;:]+)(_|\d+)?(%s)[ .](.*)$" % self.lc, line,
+                    re.S)
             if m:
-                tl, atts, content = m.groups()
+                tl, start, atts, content = m.groups()
+                content = content.strip()
                 nl = ''
-                nm = re.search(r'^([#*]+)\s.*', nextline)
+                ltype = self.listType(tl)
+                if ';' == tl:
+                    litem = 'dt'
+                elif ':' == tl:
+                    litem = 'dd'
+                else:
+                    litem = 'li'
+
+                showitem = len(content) > 0
+
+                # handle list continuation/start attribute on ordered lists
+                if ltype == 'o':
+                    if not hasattr(self, 'olstarts'):
+                        self.olstarts = {tl: 1}
+
+                    # does the first line of this ol have a start attribute
+                    if len(tl) > len(pt):
+                        # no, set it to 1
+                        if start is None:
+                            self.olstarts[tl] = 1
+                        # yes, set it to the given number
+                        elif start != '_':
+                            self.olstarts[tl] = int(start)
+                        # we won't need to handle the '_' case, we'll just
+                        # print out the number when it's needed
+
+                    # put together the start attribute if needed
+                    if len(tl) > len(pt) and start is not None:
+                        start = ' start="%s"' % self.olstarts[tl]
+
+                    # This will only increment the count for list items, not
+                    # definition items
+                    if showitem:
+                        self.olstarts[tl] += 1
+
+                nm = re.match("^([#\*;:]+)(_|[\d]+)?%s[ .].*" % self.lc,
+                        nextline)
                 if nm:
                     nl = nm.group(1)
-                if tl not in lists:
-                    lists.append(tl)
-                    atts = self.pba(atts)
-                    line = "\t<%sl%s>\n\t\t<li>%s" % (self.listType(tl),
-                                                      atts, self.graf(content))
+
+                # If we're in a dl tag, we don't want to start a new one.
+                # This will ensure that doesn't happen
+                if ';' in pt and ':' in tl:
+                    ls[tl] = 2
+
+                atts = self.pba(atts)
+                # If start is still None, set it to '', else leave the value
+                # that we've already formatted.
+                start = start or ''
+
+                # if this item tag isn't in the list, create a new list and
+                # item, else just create the item
+                if tl not in ls:
+                    ls[tl] = 1
+                    itemtag = "\n\t\t<%s>%s" % (litem, content) if showitem else ''
+                    line = "\t<%sl%s%s>%s" % (ltype, atts, start, itemtag)
                 else:
-                    line = "\t\t<li>" + self.graf(content)
+                    line = "\t\t<%s%s>%s" % (litem, atts, content) if showitem else ''
 
                 if len(nl) <= len(tl):
-                    line = line + "</li>"
-                for k in reversed(lists):
+                    line = line + ("</%s>" % litem if showitem else '')
+                # work backward through the list closing nested lists/items
+                for k, v in reversed(ls.items()):
                     if len(k) > len(nl):
-                        line = line + "\n\t</%sl>" % self.listType(k)
-                        if len(k) > 1:
-                            line = line + "</li>"
-                        lists.remove(k)
+                        if v != 2:
+                            line = line + "\n\t</%sl>" % self.listType(k)
+                        if len(k) > 1 and v != 2:
+                            line = line + "</%s>" % litem
+                        del ls[k]
 
+                # Remember the current Textile tag
+                pt = tl
+
+            else:
+                line = line + "\n"
             result.append(line)
-        return "\n".join(result)
+        return self.doTagBr(litem, "\n".join(result))
 
     def listType(self, list_string):
-        if re.search(r'^#+', list_string):
-            return 'o'
-        else:
-            return 'u'
+        listtypes = {
+                list_string.startswith('*'): 'u',
+                list_string.startswith('#'): 'o',
+                not list_string.startswith('*') and not list_string.startswith('#'): 'd'
+                }
+        return listtypes[True]
+
+    def doTagBr(self, tag, input):
+        return re.compile(r'<(%s)([^>]*?)>(.*)(</\1>)' % re.escape(tag),
+                re.S).sub(self.doBr, input)
 
     def doPBr(self, in_):
         return re.compile(r'<(p)([^>]*?)>(.*)(</\1>)', re.S).sub(self.doBr,
                                                                  in_)
 
     def doBr(self, match):
-        if self.html_type == 'html':
-            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', r'\1<br>',
-                             match.group(3))
-        else:
-            content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*\s|])', r'\1<br />',
+        content = re.sub(r'(.+)(?:(?<!<br>)|(?<!<br />))\n(?![#*;:\s|])', r'\1<br />',
                              match.group(3))
         return '<%s%s>%s%s' % (match.group(1), match.group(2),
                                content, match.group(4))
@@ -594,6 +664,9 @@ class Textile(object):
             line = self.doPBr(line)
             if self.html_type == 'xhtml':
                 line = re.sub(r'<br>', '<br />', line)
+
+            if self.html_type == 'html':
+                line = re.sub(r'<br />', '<br>', line)
 
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
@@ -857,6 +930,7 @@ class Textile(object):
 
         if not self.lite:
             text = self.table(text)
+            text = self.redcloth_list(text)
 
         text = self.span(text)
         text = self.footnoteRef(text)
@@ -1150,6 +1224,61 @@ class Textile(object):
             commenttext = self.encode_html(commenttext, quotes=False)
         commenttext = self.shelve(commenttext)
         return '<!--%s-->' % commenttext
+
+    def redcloth_list(self, text):
+        """Parse the text for definition lists and send them to be
+        formatted."""
+        pattern = re.compile(r"^([-]+%s[ .].*:=.*)$(?![^-])" % self.lc, re.M
+                | re.U | re.S)
+        return pattern.sub(self.fRCList, text)
+
+    def fRCList(self, match):
+        """Format a definition list."""
+        out = []
+        text = re.split(r'\n(?=[-])', match.group(), re.M)
+        for line in text:
+            # parse the attributes and content
+            m = re.match(r'^[-]+(%s)[ .](.*)$' % self.lc, line, re.M | re.S)
+
+            if m:
+                atts, content = m.groups()
+            else:
+                atts, content = '', line
+            # cleanup
+            content = content.strip()
+            atts = self.pba(atts)
+
+            # split the content into the term and definition
+            xm = re.match(r'^(.*?)[\s]*:=(.*?)[\s]*(=:|:=)?[\s]*$', content,
+                    re.S)
+            term, definition, ending = xm.groups()
+            # cleanup
+            term = term.strip()
+            definition = definition.strip(' ')
+
+            # if this is the first time through, out as a bool is False
+            if not out:
+                if definition == '':
+                    dltag = "<dl%s>" % atts
+                else:
+                    dltag = "<dl>"
+                out.append(dltag)
+
+            if definition != '' and term != '':
+                if definition.startswith('\n'):
+                    definition = '<p>%s</p>' % definition.lstrip()
+                definition = definition.replace('\n', '<br />').strip()
+
+                term = self.graf(term)
+                definition = self.graf(definition)
+
+                out.extend(['\t<dt%s>%s</dt>' % (atts, term), '\t<dd>%s</dd>'
+                    % definition])
+
+
+        out.append('</dl>')
+        out = '\n'.join(out)
+        return out
 
 
 def textile(text, head_offset=0, html_type='xhtml', auto_link=False,

@@ -241,7 +241,18 @@ class TestKnownValues():
          """\t<p>Here is some text with a<!-- Commented out[1] --> block.</p>\n\n\t<p><!-- Here is a single <span>line</span> comment block --></p>\n\n\t<p><!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n--></p>\n\n<pre><code>&lt;!-- Here is a comment block in a code block. --&gt;\n</code></pre>"""),
         (""""Textile(c)" is a registered(r) 'trademark' of Textpattern(tm) -- or TXP(That's textpattern!) -- at least it was - back in '88 when 2x4 was (+/-)5(o)C ... QED!\n\np{font-size: 200%;}. 2(1/4) 3(1/2) 4(3/4)""",
          """\t<p>&#8220;Textile&#169;&#8221; is a registered&#174; &#8216;trademark&#8217; of Textpattern&#8482; &#8212; or <acronym title="That&#8217;s textpattern!"><span class="caps">TXP</span></acronym> &#8212; at least it was &#8211; back in &#8217;88 when 2&#215;4 was &#177;5&#176;C &#8230; <span class="caps">QED</span>!</p>\n\n\t<p style="font-size: 200%;">2&#188; 3&#189; 4&#190;</p>"""),
-
+        ("""-(hot) *coffee* := Hot _and_ black\n-(hot#tea) tea := Also hot, but a little less black\n-(cold) milk := Nourishing beverage for baby cows.\nCold drink that goes great with cookies. =:\n\n-(hot) coffee := Hot and black\n-(hot#tea) tea := Also hot, but a little less black\n-(cold) milk :=\nNourishing beverage for baby cows.\nCold drink that goes great with cookies. =:""",
+        """<dl>\n\t<dt class="hot"><strong>coffee</strong></dt>\n\t<dd>Hot <em>and</em> black</dd>\n\t<dt class="hot" id="tea">tea</dt>\n\t<dd>Also hot, but a little less black</dd>\n\t<dt class="cold">milk</dt>\n\t<dd>Nourishing beverage for baby cows.<br />\nCold drink that goes great with cookies.</dd>\n</dl>\n\n<dl>\n\t<dt class="hot">coffee</dt>\n\t<dd>Hot and black</dd>\n\t<dt class="hot" id="tea">tea</dt>\n\t<dd>Also hot, but a little less black</dd>\n\t<dt class="cold">milk</dt>\n\t<dd><p>Nourishing beverage for baby cows.<br />\nCold drink that goes great with cookies.</p></dd>\n</dl>"""),
+        (""";(class#id) Term 1\n: Def 1\n: Def 2\n: Def 3""",
+         """\t<dl class="class" id="id">\n\t\t<dt>Term 1</dt>\n\t\t<dd>Def 1</dd>\n\t\t<dd>Def 2</dd>\n\t\t<dd>Def 3</dd>\n\t</dl>"""),
+        ("""*Here is a comment*\n\nHere is *(class)a comment*\n\n*(class)Here is a class* that is a little extended and is\n*followed* by a strong word!\n\nbc. ; Content-type: text/javascript\n; Cache-Control: no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0\n; Expires: Sat, 24 Jul 2003 05:00:00 GMT\n; Last-Modified: Wed, 1 Jan 2025 05:00:00 GMT\n; Pragma: no-cache\n\n*123 test*\n\n*test 123*\n\n**123 test**\n\n**test 123**""",
+         """\t<p><strong>Here is a comment</strong></p>\n\n\t<p>Here is <strong class="class">a comment</strong></p>\n\n\t<p><strong class="class">Here is a class</strong> that is a little extended and is<br />\n<strong>followed</strong> by a strong word!</p>\n\n<pre><code>; Content-type: text/javascript\n; Cache-Control: no-store, no-cache, must-revalidate, pre-check=0, post-check=0, max-age=0\n; Expires: Sat, 24 Jul 2003 05:00:00 GMT\n; Last-Modified: Wed, 1 Jan 2025 05:00:00 GMT\n; Pragma: no-cache\n</code></pre>\n\n\t<p><strong>123 test</strong></p>\n\n\t<p><strong>test 123</strong></p>\n\n\t<p><b>123 test</b></p>\n\n\t<p><b>test 123</b></p>"""),
+        ("""#_(first#list) one\n# two\n# three\n\ntest\n\n#(ordered#list2).\n# one\n# two\n# three\n\ntest\n\n#_(class_4).\n# four\n# five\n# six\n\ntest\n\n#_ seven\n# eight\n# nine\n\ntest\n\n# one\n# two\n# three\n\ntest\n\n#22 22\n# 23\n# 24""",
+         """\t<ol class="first" id="list" start="1">\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol class="ordered" id="list2">\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol class="class_4" start="4">\n\t\t<li>four</li>\n\t\t<li>five</li>\n\t\t<li>six</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol start="7">\n\t\t<li>seven</li>\n\t\t<li>eight</li>\n\t\t<li>nine</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol>\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol start="22">\n\t\t<li>22</li>\n\t\t<li>23</li>\n\t\t<li>24</li>\n\t</ol>"""),
+        ("""# one\n##3 one.three\n## one.four\n## one.five\n# two\n\ntest\n\n#_(continuation#section2).\n# three\n# four\n##_ four.six\n## four.seven\n# five\n\ntest\n\n#21 twenty-one\n# twenty-two""",
+         """\t<ol>\n\t\t<li>one\n\t<ol start="3">\n\t\t<li>one.three</li>\n\t\t<li>one.four</li>\n\t\t<li>one.five</li>\n\t</ol></li>\n\t\t<li>two</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol class="continuation" id="section2" start="3">\n\t\t<li>three</li>\n\t\t<li>four\n\t<ol start="6">\n\t\t<li>four.six</li>\n\t\t<li>four.seven</li>\n\t</ol></li>\n\t\t<li>five</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol start="21">\n\t\t<li>twenty-one</li>\n\t\t<li>twenty-two</li>\n\t</ol>"""),
+        ("""|* Foo[^2^]\n* _bar_\n* ~baz~ |\n|#4 *Four*\n# __Five__ |\n|-(hot) coffee := Hot and black\n-(hot#tea) tea := Also hot, but a little less black\n-(cold) milk :=\nNourishing beverage for baby cows.\nCold drink that goes great with cookies. =:\n|""",
+         """\t<table>\n\t\t<tr>\n\t\t\t<td>\t<ul>\n\t\t<li>Foo<sup>2</sup></li>\n\t\t<li><em>bar</em></li>\n\t\t<li><sub>baz</sub></li>\n\t</ul></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\t<ol start="4">\n\t\t<li><strong>Four</strong></li>\n\t\t<li><i>Five</i></li>\n\t</ol></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td><dl>\n\t<dt class="hot">coffee</dt>\n\t<dd>Hot and black</dd>\n\t<dt class="hot" id="tea">tea</dt>\n\t<dd>Also hot, but a little less black</dd>\n\t<dt class="cold">milk</dt>\n\t<dd><p>Nourishing beverage for baby cows.<br />\nCold drink that goes great with cookies.</p></dd><br />\n</dl></td>\n\t\t</tr>\n\t</table>\n"""),
     )
 
     # A few extra cases for HTML4
@@ -385,6 +396,12 @@ class Tests():
         test = "Here is some text.\n<script>alert('hello world')</script>"
         result = textile.textile_restricted(test)
         expect = "\t<p>Here is some text.<br />\n&lt;script&gt;alert(&#8216;hello world&#8217;)&lt;/script&gt;</p>"
+
+        eq_(result, expect)
+
+        test = "Here's some <!-- commented *out* --> text."
+        result = textile.textile_restricted(test)
+        expect = "\t<p>Here&#8217;s some &lt;!&#8212; commented <strong>out</strong> &#8212;&gt; text.</p>"
 
         eq_(result, expect)
 

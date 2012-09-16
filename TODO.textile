@@ -5,15 +5,12 @@ TODO
 ** Because the Textile syntax implemented by PyTextile has deviated from the syntax implemented by other implementations of Textile, PyTextile-specific documentation needs to be produced for end-users.
 * Add Textile 2.4 functionality
 ** Auto-numbered endnotes
-** ols and uls should conform to the new manner of defining styles for the entire list and individual items
-** Allow specified starting number for ordered list
-*** This would also include adding the ability to continue the numbering from a previous list
-** Definition lists
 ** Footnotes:
 *** [\d\+] doesn't work after punctutation
 *** Add new backlink functionality
 *** Add [\d\+!] functionality to disable adding the link.  Although, what exactly is the point of this?
 ** Tables
+*** Fix lists within tables
 *** Fix colspan
 *** Add thead/tfoot functionality
 *** Add colgroup functionality
