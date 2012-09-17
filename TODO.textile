@@ -9,10 +9,5 @@ TODO
 *** [\d\+] doesn't work after punctutation
 *** Add new backlink functionality
 *** Add [\d\+!] functionality to disable adding the link.  Although, what exactly is the point of this?
-** Tables
-*** Fix lists within tables
-*** Fix colspan
-*** Add thead/tfoot functionality
-*** Add colgroup functionality
 ** Add in support for textile comments: ###
 *** This is low-priority.  Why would one do this?

@@ -206,8 +206,6 @@ class Textile(object):
         self.text_has_unicode = next((True for c in text if ord(c) > 128),
                 False)
 
-        # Again, the regex is different depending on whether the acronym/caps
-        # is at the beginning of the line.
         if self.text_has_unicode:
             uppers = []
             for i in xrange(maxunicode):
@@ -220,37 +218,22 @@ class Textile(object):
                     r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers,
                         uppers),
                     # 3+ uppercase
-                    r"""(?:(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                        % (uppers, self.pnct),
-                    ]
-            uppers_re_initial_patterns = [
-                    # 3+ uppercase acronym
-                    r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers,
-                        uppers),
-                    # 3+ uppercase
                     r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
                         % (uppers, self.pnct),
                     ]
         else:
             uppers_re_patterns = [
                     # 3+ uppercase acronym
-                    r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])'
-                    # 3+ uppercase
-                    r"""(?:(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                        % self.pnct,
-                    ]
-            uppers_re_initial_patterns = [
-                    # 3+ uppercase acronym
                     r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
                     # 3+ uppercase
                     r"""(?:(?<=^)|(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
                         % self.pnct,
                     ]
+
         uppers_re = [re.compile(x, re.U) for x in uppers_re_patterns]
-        uppers_re_initial = [re.compile(x, re.U) for x in uppers_re_initial_patterns]
 
         self.glyph_search += uppers_re
-        self.glyph_search_initial += uppers_re_initial
+        self.glyph_search_initial += uppers_re
 
         # text = unicode(text)
         text = _normalize_newlines(text)
@@ -427,7 +410,7 @@ class Textile(object):
         '\t<table>\n\t\t<tr class="rowclass">\n\t\t\t<td>one</td>\n\t\t\t<td>two</td>\n\t\t\t<td>three</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>a</td>\n\t\t\t<td>b</td>\n\t\t\t<td>c</td>\n\t\t</tr>\n\t</table>\n\n'
         """
         text = text + "\n\n"
-        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\. ?\n)?^(%(a)s%(c)s\.? ?\|.*\|)\n\n'
+        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\.(.*?)\n)?^(%(a)s%(c)s\.? ?\|.*\|)[\s]*\n\n'
                              % {'s': self.table_span_re,
                                 'a': self.align_re,
                                 'c': self.c},
@@ -436,8 +419,68 @@ class Textile(object):
 
     def fTable(self, match):
         tatts = self.pba(match.group(1), 'table')
+
+        summary = ' summary="%s"' % match.group(2).strip() if match.group(2) else ''
+        cap = ''
+        colgrp, last_rgrp = '', ''
+        c_row = 1
         rows = []
-        for row in [x for x in match.group(2).split('\n') if x]:
+        for row in [x for x in re.split(r'\|\s*?$', match.group(3), flags=re.M) if x]:
+            row = row.lstrip()
+
+            # Caption -- only occurs on row 1, otherwise treat '|=. foo |...'
+            # as a normal center-aligned cell.
+            captionpattern = r"^\|\=(%(s)s%(a)s%(c)s)\. ([^\n]*)(.*)" % {'s':
+                    self.table_span_re, 'a': self.align_re, 'c': self.c}
+            caption_re = re.compile(captionpattern, re.S)
+            cmtch = caption_re.match(row)
+            if c_row ==1 and cmtch:
+                capatts = self.pba(cmtch.group(1))
+                cap = "\t<caption%s>%s</saption>\n" % (capatts, cmtch.group(2).strip())
+                row = cmtch.group(3).lstrip()
+                if row == '':
+                    continue
+
+            c_row += 1
+
+            # Colgroup
+            grppattern = r"^\|:(%(s)s%(a)s%(c)s\. .*)" % {'s': self.table_span_re, 'a':
+                    self.align_re, 'c': self.c}
+            grp_re = re.compile(grppattern, re.M)
+            gmtch = grp_re.match(row.lstrip())
+            if gmtch:
+                has_newline = "\n" in row
+                idx = 0
+                for col in gmtch.group(1).replace('.', '').split("|"):
+                    gatts = self.pba(col.strip(), 'col')
+                    if idx == 0:
+                        gatts = "group%s>" % gatts
+                    else:
+                        gatts = gatts + " />"
+                    colgrp = colgrp + "\t<col%s\n" % gatts
+                    idx += 1
+                colgrp = "\t</colgroup>\n"
+
+
+                # If the row has a newline in it, account for the missing
+                # closing pipe and process the rest of the line
+                if has_newline:
+                    row = row[row.index('\n'):].lstrip()
+
+            grpmatchpattern = (r"(:?^\|(%(v)s)(%(s)s%(a)s%(c)s)\.\s*$\n)?^(.*)"
+                    % {'v': self.vertical_align_re,'s': self.table_span_re,
+                        'a': self.align_re, 'c': self.c})
+            grpmatch_re = re.compile(grpmatchpattern, re.S | re.M)
+            grpmatch = grpmatch_re.match(row.lstrip())
+
+            # Row group
+            rgrp = ''
+            rgrptypes = {'^': 'head', '~': 'foot', '-': 'body'}
+            if grpmatch.group(2):
+                rgrp = rgrptypes[grpmatch.group(2)]
+            rgrpatts = self.pba(grpmatch.group(3))
+            row = grpmatch.group(4)
+
             rmtch = re.search(r'^(%s%s\. )(.*)'
                               % (self.align_re, self.c), row.lstrip())
             if rmtch:
@@ -447,15 +490,13 @@ class Textile(object):
                 ratts = ''
 
             cells = []
-            for cell in row.split('|')[1:-1]:
+            cellctr = 0
+            for cell in row.split('|'):
                 ctyp = 'd'
                 if re.search(r'^_', cell):
                     ctyp = "h"
-                cmtch = re.search(r'^(_?%s%s%s\. )(.*)'
-                                  % (self.table_span_re,
-                                     self.align_re,
-                                     self.c),
-                                  cell)
+                cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (self.table_span_re,
+                    self.align_re, self.c), cell)
                 if cmtch:
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
@@ -464,15 +505,39 @@ class Textile(object):
 
                 if not self.lite:
                     cell = self.redcloth_list(cell)
+                    cell = self.lists(cell)
 
-                cell = self.graf(self.span(cell))
-                cells.append('\t\t\t<t%s%s>%s</t%s>'
-                             % (ctyp, catts, cell, ctyp))
-            rows.append("\t\t<tr%s>\n%s\n\t\t</tr>"
-                        % (ratts, '\n'.join(cells)))
+                # row.split() gives us ['', 'cell 1 contents', '...']
+                # so we ignore the first cell.
+                if cellctr > 0:
+                    ctag = "t%s" % ctyp
+                    cline = ("\t\t\t<%(ctag)s%(catts)s>%(cell)s</%(ctag)s>"
+                            % {'ctag': ctag, 'catts': catts, 'cell': cell})
+                    cells.append(self.doTagBr(ctag, cline))
+
+                cellctr += 1
+
+                if rgrp and last_rgrp:
+                    grp = "\t<t%s>\n" % last_rgrp
+                else:
+                    grp = ''
+
+                if rgrp:
+                    grp = grp + "\t<t%s%s>\n" % (rgrp, rgrpatts)
+
+                last_rgrp = rgrp if rgrp else last_rgrp
+
+            rows.append("%s\t\t<tr%s>\n%s%s\t\t</tr>" % (rgrp, ratts,
+                '\n'.join(cells), '\n' if cells else ''))
             cells = []
             catts = None
-        return "\t<table%s>\n%s\n\t</table>\n\n" % (tatts, '\n'.join(rows))
+
+        if last_rgrp:
+            last_rgrp = '\t</t%s>\n' % last_rgrp
+        tbl = ("\t<table%(tatts)s%(summary)s>\n%(cap)s%(colgrp)s%(last_rgrp)s%(rows)s\n\t</table>\n\n"
+                % {'tatts': tatts, 'summary': summary, 'cap': cap, 'colgrp':
+                    colgrp, 'last_rgrp': last_rgrp, 'rows': '\n'.join(rows)})
+        return tbl
 
     def lists(self, text):
         """
@@ -489,7 +554,7 @@ class Textile(object):
         return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
-        text = re.split(r'\n(?=[*#;:])', match.group(), re.M)
+        text = re.split(r'\n(?=[*#;:])', match.group(), flags=re.M)
         pt = ''
         result = []
         ls = OrderedDict()
@@ -506,9 +571,9 @@ class Textile(object):
                 content = content.strip()
                 nl = ''
                 ltype = self.listType(tl)
-                if ';' == tl:
+                if ';' in tl:
                     litem = 'dt'
-                elif ':' == tl:
+                elif ':' in tl:
                     litem = 'dd'
                 else:
                     litem = 'li'
@@ -545,8 +610,9 @@ class Textile(object):
                 if nm:
                     nl = nm.group(1)
 
-                # If we're in a dl tag, we don't want to start a new one.
-                # This will ensure that doesn't happen
+                # We need to handle nested definition lists differently.
+                # If the next tag is a dt (';') of a lower ensted level than the current dd (':'),
+                #if (';' in nl and ':' in tl) and len(nl) < len(tl):
                 if ';' in pt and ':' in tl:
                     ls[tl] = 2
 
@@ -778,9 +844,9 @@ class Textile(object):
         let's say the raw text provided is "*Here*'s some textile"
         before it gets to this glyphs method, the text has been converted to
         "<strong>Here</strong>'s some textile"
-        When run through the split, we end up with ["<strong>Here</strong>",
-        "'s some textile"].  The re.search that follows tells it not to touch
-        the first element, but we need to work on the second.
+        When run through the split, we end up with ["<strong>", "Here",
+        "</strong>", "'s some textile"].  The re.search that follows tells it
+        not to ignore html tags.
         If the single quote is the first character on the line, it's an open
         single quote.  If it's the first character of one of those splits, it's
         an apostrophe or closed single quote, but the regex will bear that out.
@@ -813,16 +879,14 @@ class Textile(object):
         text = re.sub(r'"\Z', r'" ', text)
 
         result = []
-        i = 0
         searchlist = self.glyph_search_initial
-        for line in re.compile(r'(<.*?>)', re.U).split(text):
-            if not re.search(r'<.*>', line):
+        for i, line in enumerate(re.compile(r'(<[\w\/!?].*?>)', re.U).split(text)):
+            if not i % 2:
                 for s, r in zip(searchlist, self.glyph_replace):
                     line = s.sub(r, line)
             result.append(line)
             if i == 0:
                 searchlist = self.glyph_search
-                i += 1
         return ''.join(result)
 
     def getRefs(self, text):
@@ -898,6 +962,11 @@ class Textile(object):
         return text
 
     def encode_html(self, text, quotes=True):
+        """Return text that's safe for an HTML attribute.
+        >>> t = Textile()
+        >>> t.encode_html('this is a "test" of text that\\\'s safe to put in an <html> attribute.')
+        'this is a &#34;test&#34; of text that&#39;s safe to put in an &lt;html&gt; attribute.'
+        """
         a = (
             ('&', '&amp;'),
             ('<', '&lt;'),
@@ -918,6 +987,7 @@ class Textile(object):
 
         text = self.getHTMLComments(text)
 
+        text = self.getRefs(text)
         text = self.links(text)
         if self.auto_link:
             text = self.autoLink(text)
@@ -926,11 +996,11 @@ class Textile(object):
         if not self.noimage:
             text = self.image(text)
 
-        text = self.lists(text)
 
         if not self.lite:
             text = self.table(text)
             text = self.redcloth_list(text)
+            text = self.lists(text)
 
         text = self.span(text)
         text = self.footnoteRef(text)
@@ -1235,7 +1305,7 @@ class Textile(object):
     def fRCList(self, match):
         """Format a definition list."""
         out = []
-        text = re.split(r'\n(?=[-])', match.group(), re.M)
+        text = re.split(r'\n(?=[-])', match.group(), flags=re.M)
         for line in text:
             # parse the attributes and content
             m = re.match(r'^[-]+(%s)[ .](.*)$' % self.lc, line, re.M | re.S)
