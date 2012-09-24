@@ -23,6 +23,7 @@ import uuid
 from sys import maxunicode
 import urlparse
 import urllib
+import HTMLParser
 
 from textile.tools import sanitizer, imagesize
 
@@ -59,10 +60,11 @@ class Textile(object):
 
     pnct = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
     urlch = '[\w"$\-_.+*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
+    syms  = u'¤§µ¶†‡•∗∴◊♠♣♥♦'
 
     url_schemes = ('http', 'https', 'ftp', 'mailto')
 
-    btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p')
+    btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p', '###')
     btag_lite = ('bq', 'bc', 'p')
 
     iAlign = {'<': 'float: left;',
@@ -70,6 +72,8 @@ class Textile(object):
               '=': 'display: block; margin: 0 auto;'}
     vAlign = {'^': 'top', '-': 'middle', '~': 'bottom'}
     hAlign = {'<': 'left', '=': 'center', '>': 'right', '<>': 'justify'}
+
+    note_index = 1
 
     glyph_defaults = {
             'txt_quote_single_open':  '&#8216;',
@@ -113,7 +117,7 @@ class Textile(object):
             # double opening
             re.compile(r'"'),
             # ellipsis
-            re.compile(r'\b(\s{0,1})?\.{3}', re.U),
+            re.compile(r'([^.]?)\.{3}', re.U),
             # ampersand
             re.compile(r'(\s)&(\s)', re.U),
             # em dash
@@ -198,6 +202,9 @@ class Textile(object):
         '\\t<p>some textile</p>'
         """
         self.html_type = html_type
+        self.notes = OrderedDict()
+        self.unreferencedNotes = OrderedDict()
+        self.notelist_cache = OrderedDict()
 
         # regular expressions get hairy when trying to search for unicode
         # characters.
@@ -246,7 +253,12 @@ class Textile(object):
 
         text = self.getRefs(text)
 
+        # The original php puts the below within an if not self.lite, but our
+        # block function handles self.lite itself.
         text = self.block(text, int(head_offset))
+
+        if not self.lite:
+            text = self.placeNoteLists(text)
 
         text = self.retrieve(text)
 
@@ -297,6 +309,9 @@ class Textile(object):
         >>> t.pba('[fr]')
         ' lang="fr"'
 
+        >>> t.pba(r'\\5 80', 'col')
+        ' span="5" width="80"'
+
         >>> rt = Textile()
         >>> rt.restricted = True
         >>> rt.pba('[en]')
@@ -312,6 +327,8 @@ class Textile(object):
         colspan = ''
         rowspan = ''
         block_id = ''
+        span = ''
+        width = ''
 
         if not block_attributes:
             return ''
@@ -365,6 +382,11 @@ class Textile(object):
             block_id = m.group(2)
             aclass = m.group(1)
 
+        if element == 'col':
+            pattern = r'(?:\\(\d+))?\s*(\d+)?'
+            csp = re.match(pattern, matched)
+            span, width = csp.groups()
+
         if self.restricted:
             if lang:
                 return ' lang="%s"' % lang
@@ -373,6 +395,9 @@ class Textile(object):
 
         result = []
         if style:
+            # Previous splits that created style may have introduced extra
+            # whitespace into the list elements.  Clean it up.
+            style = [x.strip() for x in style]
             result.append(' style="%s;"' % "; ".join(style))
         if aclass:
             result.append(' class="%s"' % aclass)
@@ -384,6 +409,10 @@ class Textile(object):
             result.append(' colspan="%s"' % colspan)
         if rowspan:
             result.append(' rowspan="%s"' % rowspan)
+        if span:
+            result.append(' span="%s"' % span)
+        if width:
+            result.append(' width="%s"' % width)
         return ''.join(result)
 
     def hasRawText(self, text):
@@ -436,7 +465,7 @@ class Textile(object):
             cmtch = caption_re.match(row)
             if c_row ==1 and cmtch:
                 capatts = self.pba(cmtch.group(1))
-                cap = "\t<caption%s>%s</saption>\n" % (capatts, cmtch.group(2).strip())
+                cap = "\t<caption%s>%s</caption>\n" % (capatts, cmtch.group(2).strip())
                 row = cmtch.group(3).lstrip()
                 if row == '':
                     continue
@@ -459,12 +488,14 @@ class Textile(object):
                         gatts = gatts + " />"
                     colgrp = colgrp + "\t<col%s\n" % gatts
                     idx += 1
-                colgrp = "\t</colgroup>\n"
+                colgrp += "\t</colgroup>\n"
 
 
                 # If the row has a newline in it, account for the missing
                 # closing pipe and process the rest of the line
-                if has_newline:
+                if not has_newline:
+                    continue
+                else:
                     row = row[row.index('\n'):].lstrip()
 
             grpmatchpattern = (r"(:?^\|(%(v)s)(%(s)s%(a)s%(c)s)\.\s*$\n)?^(.*)"
@@ -517,24 +548,24 @@ class Textile(object):
 
                 cellctr += 1
 
-                if rgrp and last_rgrp:
-                    grp = "\t<t%s>\n" % last_rgrp
-                else:
-                    grp = ''
+            if rgrp and last_rgrp:
+                grp = "\t</t%s>\n" % last_rgrp
+            else:
+                grp = ''
 
-                if rgrp:
-                    grp = grp + "\t<t%s%s>\n" % (rgrp, rgrpatts)
+            if rgrp:
+                grp += "\t<t%s%s>\n" % (rgrp, rgrpatts)
 
-                last_rgrp = rgrp if rgrp else last_rgrp
+            last_rgrp = rgrp if rgrp else last_rgrp
 
-            rows.append("%s\t\t<tr%s>\n%s%s\t\t</tr>" % (rgrp, ratts,
+            rows.append("%s\t\t<tr%s>\n%s%s\t\t</tr>" % (grp, ratts,
                 '\n'.join(cells), '\n' if cells else ''))
             cells = []
             catts = None
 
         if last_rgrp:
             last_rgrp = '\t</t%s>\n' % last_rgrp
-        tbl = ("\t<table%(tatts)s%(summary)s>\n%(cap)s%(colgrp)s%(last_rgrp)s%(rows)s\n\t</table>\n\n"
+        tbl = ("\t<table%(tatts)s%(summary)s>\n%(cap)s%(colgrp)s%(rows)s\n%(last_rgrp)s\t</table>\n\n"
                 % {'tatts': tatts, 'summary': summary, 'cap': cap, 'colgrp':
                     colgrp, 'last_rgrp': last_rgrp, 'rows': '\n'.join(rows)})
         return tbl
@@ -644,8 +675,11 @@ class Textile(object):
                 # Remember the current Textile tag
                 pt = tl
 
-            else:
-                line = line + "\n"
+            # This else exists in the original php version.  I'm not sure how
+            # to come up with a case where the line would not match.  I think
+            # it may have been necessary due to the way php returns matches.
+            #else:
+                #line = line + "\n"
             result.append(line)
         return self.doTagBr(litem, "\n".join(result))
 
@@ -703,7 +737,7 @@ class Textile(object):
                 if h_match:
                     head_level, = h_match.groups()
                     tag = 'h%i' % max(1, min(int(head_level) + head_offset, 6))
-                o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext,
+                o1, o2, content, c2, c1, eat = self.fBlock(tag, atts, ext,
                                                       cite, graf)
                 # leave off c1 if this block is extended,
                 # we'll close it at the start of the next block
@@ -716,7 +750,7 @@ class Textile(object):
             else:
                 anon = True
                 if ext or not re.search(r'^\s', line):
-                    o1, o2, content, c2, c1 = self.fBlock(tag, atts, ext,
+                    o1, o2, content, c2, c1, eat = self.fBlock(tag, atts, ext,
                                                           cite, line)
                     # skip $o1/$c1 because this is part of a continuing
                     # extended block
@@ -736,7 +770,7 @@ class Textile(object):
 
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
-            else:
+            elif not eat:
                 out.append(line)
 
             if not ext:
@@ -753,19 +787,36 @@ class Textile(object):
         """
         >>> t = Textile()
         >>> t.fBlock("bq", "", None, "", "Hello BlockQuote")
-        ('\\t<blockquote>\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>')
+        ('\\t<blockquote>\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
 
         >>> t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
-        ('\\t<blockquote cite="http://google.com">\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>')
+        ('\\t<blockquote cite="http://google.com">\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
 
         >>> t.fBlock("bc", "", None, "", 'printf "Hello, World";') # doctest: +ELLIPSIS
-        ('<pre>', '<code>', ..., '</code>', '</pre>')
+        ('<pre>', '<code>', ..., '</code>', '</pre>', False)
 
         >>> t.fBlock("h1", "", None, "", "foobar")
-        ('', '\\t<h1>', 'foobar', '</h1>', '')
+        ('', '\\t<h1>', 'foobar', '</h1>', '', False)
         """
         atts = self.pba(atts)
         o1 = o2 = c2 = c1 = ''
+        eat = False
+
+        if tag == 'p':
+            # is this an anonymous block with a note definition?
+            notedef_re = re.compile(r"""
+            ^note\#                 # start of note def marker
+            ([^%%<*!@#^([{ \s.]+)   # !label
+            ([*!^]?)                # !link
+            (%s)                    # !att
+            \.?                     # optional period.
+            [\s]+                   # whitespace ends def marker
+            (.*)$                   # !content""" % (self.c), re.X)
+            notedef = notedef_re.sub(self.fParseNoteDefs, content)
+
+            # It will be empty if the regex matched and ate it.
+            if '' == notedef:
+                return o1, o2, notedef, c2, c1, True
 
         m = re.search(r'fn(\d+)', tag)
         if m:
@@ -810,12 +861,18 @@ class Textile(object):
             o2 = c2 = ''
             c1 = '</pre>'
 
+        elif tag == '###':
+            eat = True
+
         else:
             o2 = "\t<%s%s>" % (tag, atts)
             c2 = "</%s>" % tag
 
-        content = self.graf(content)
-        return o1, o2, content, c2, c1
+        if not eat:
+            content = self.graf(content)
+        else:
+            content = ''
+        return o1, o2, content, c2, c1, eat
 
     def footnoteRef(self, text):
         """
@@ -1004,6 +1061,7 @@ class Textile(object):
 
         text = self.span(text)
         text = self.footnoteRef(text)
+        text = self.noteRef(text)
         text = self.glyphs(text)
 
         return text.rstrip('\n')
@@ -1092,6 +1150,9 @@ class Textile(object):
 
         Fixed version of the following code fragment from Stack Overflow:
         http://stackoverflow.com/questions/804336/best-way-to-convert-a-unicode-url-to-ascii-utf-8-percent-escaped-in-python/804380#804380
+
+        >>> t = Textile()
+
         """
         # turn string into unicode
         if not isinstance(url, unicode):
@@ -1126,8 +1187,8 @@ class Textile(object):
         if user:
             netloc += user
             if password:
-                netloc += '@'+password
-            netloc += ':'
+                netloc += ':' + password
+            netloc += '@'
         netloc += host
         if port:
             netloc += ':'+port
@@ -1288,10 +1349,14 @@ class Textile(object):
 
     def fParseHTMLComments(self, match):
         """If self.restricted is True, clean the matched contents of the HTML
-        comment.  Otherwise, return the comments unchanged."""
+        comment.  Otherwise, return the comments unchanged.
+        The original php had an if statement in here regarding restricted mode.
+        nose reported that this line wasn't covered.  It's correct.  In
+        restricted mode, the html comment tags have already been converted to
+        &lt;!*#8212; and &#8212;&gt; so they don't match in getHTMLComments,
+        and never arrive here.
+        """
         before, commenttext, after = match.groups()
-        if self.restricted:
-            commenttext = self.encode_html(commenttext, quotes=False)
         commenttext = self.shelve(commenttext)
         return '<!--%s-->' % commenttext
 
@@ -1310,10 +1375,7 @@ class Textile(object):
             # parse the attributes and content
             m = re.match(r'^[-]+(%s)[ .](.*)$' % self.lc, line, re.M | re.S)
 
-            if m:
-                atts, content = m.groups()
-            else:
-                atts, content = '', line
+            atts, content = m.groups()
             # cleanup
             content = content.strip()
             atts = self.pba(atts)
@@ -1349,6 +1411,160 @@ class Textile(object):
         out.append('</dl>')
         out = '\n'.join(out)
         return out
+
+    def placeNoteLists(self, text):
+        """Parse the text for endnotes."""
+        if self.notes:
+            o = OrderedDict()
+            for label, info in self.notes.items():
+                if 'seq' in info:
+                    i = info['seq']
+                    info['seq'] = label
+                    o[i] = info
+                else:
+                    self.unreferencedNotes[label] = info
+
+            if o:
+                # sort o by key
+                o = OrderedDict(sorted(o.items(), key=lambda t: t[0]))
+            self.notes = o
+        text_re = re.compile('<p>notelist(%s)(?:\:([\w|%s]))?([\^!]?)(\+?)\.?[\s]*</p>'
+                % (self.c, self.syms), re.U)
+        text = text_re.sub(self.fNoteLists, text)
+        return text
+
+    def fNoteLists(self, match):
+        """Given the text that matches as a note, format it into HTML."""
+        att, start_char, g_links, extras = match.groups()
+        start_char = start_char or 'a'
+        index = '%s%s%s' % (g_links, extras, start_char)
+        result = ''
+
+        if index not in self.notelist_cache:
+            o = []
+            if self.notes:
+                for seq, info in self.notes.items():
+                    links = self.makeBackrefLink(info, g_links, start_char)
+                    atts = ''
+                    if 'def' in info:
+                        infoid = info['id']
+                        atts = info['def']['atts']
+                        content = info['def']['content']
+                        li = """\t<li%s>%s<span id="note%s"> </span>%s</li>""" % (atts, links, infoid, content)
+                    else:
+                        li = """\t<li%s>%s Undefined Note [#%s].<li>""" % (atts, links, info['seq'])
+                    o.append(li)
+            if '+' == extras and self.unreferencedNotes:
+                for seq, info in self.unreferencedNotes.items():
+                    if info['def']:
+                        atts = info['def']['atts']
+                        content = info['def']['content']
+                        li = """\t<li%s>%s</li>""" % (atts, content)
+                    o.append(li)
+            self.notelist_cache[index] = u"\n".join(o)
+            result = self.notelist_cache[index]
+        if result:
+            list_atts = self.pba(att)
+            result = """<ol%s>\n%s\n</ol>""" % (list_atts, result)
+        return result
+
+    def makeBackrefLink(self, info, g_links, i):
+        """Given the pieces of a back reference link, create an <a> tag."""
+        atts, content, infoid, link = '', '', '', ''
+        if 'def' in info:
+            link = info['def']['link']
+        backlink_type = link or g_links
+        i_ = self.encode_high(i)
+        allow_inc = i not in self.syms
+        i_ = int(i_)
+
+        if backlink_type == "!":
+            return ''
+        elif backlink_type == '^':
+            return """<sup><a href="#noteref%s">%s</a></sup>""" % (info['refids'][0], i)
+        else:
+            result = []
+            for refid in info['refids']:
+                i_entity = self.decode_high(i_)
+                sup = """<sup><a href="#noteref%s">%s</a></sup>""" % (refid, i_entity)
+                if allow_inc:
+                    i_ += 1
+                result.append(sup)
+            result = ' '.join(result)
+            return result
+
+    def fParseNoteDefs(self, m):
+        """Parse the note definitions and format them as HTML"""
+        label, link, att, content = m.groups()
+
+        # Assign an id if the note reference parse hasn't found the label yet.
+        if label not in self.notes:
+            self.notes[label] = {'id': str(uuid.uuid4()).replace('-', '')}
+
+        # Ignores subsequent defs using the same label
+        if 'def' not in self.notes[label]:
+            self.notes[label]['def'] = {'atts': self.pba(att), 'content':
+                    self.graf(content), 'link': link}
+        return ''
+
+    def noteRef(self, text):
+        """Search the text looking for note references."""
+        text_re = re.compile(r"""
+        \[          # start
+        (%s)        # !atts
+        \#
+        ([^\]!]+)  # !label
+        ([!]?)      # !nolink
+        \]""" % self.c, re.X)
+        text = text_re.sub(self.fParseNoteRefs, text)
+        return text
+
+    def fParseNoteRefs(self, match):
+        """Parse and format the matched text into note references.
+        By the time this function is called, all the defs will have been
+        processed into the notes array. So now we can resolve the link numbers
+        in the order we process the refs..."""
+        atts, label, nolink = match.groups()
+        atts = self.pba(atts)
+        nolink = nolink == '!'
+
+        # Assign a sequence number to this reference if there isn't one already
+        if label in self.notes:
+            num = self.notes[label]['seq']
+        else:
+            self.notes[label] = {'seq': self.note_index, 'refids': [], 'id': ''}
+            num = self.note_index
+            self.note_index += 1
+
+        # Make our anchor point and stash it for possible use in backlinks when
+        # the note list is generated later...
+        refid = str(uuid.uuid4()).replace('-', '')
+        self.notes[label]['refids'].append(refid)
+
+        # If we are referencing a note that hasn't had the definition parsed
+        # yet, then assign it an ID...
+        if not self.notes[label]['id']:
+            self.notes[label]['id'] = str(uuid.uuid4()).replace('-', '')
+        labelid = self.notes[label]['id']
+
+        # Build the link (if any)...
+        result = '<span id="noteref%s">%s</span>' % (refid, num)
+        if not nolink:
+            result = """<a href="#note%s">%s</a>""" % (labelid, result)
+
+        # Build the reference...
+        result = '<sup%s>%s</sup>' % (atts, result)
+        return result
+
+    def encode_high(self, text):
+        """Encode the text so that it is an appropriate HTML entity."""
+        return ord(text)
+
+    def decode_high(self, text):
+        """Decode encoded HTML entities."""
+        h = HTMLParser.HTMLParser()
+        text = '&#%s;' % text
+        return h.unescape(text)
 
 
 def textile(text, head_offset=0, html_type='xhtml', auto_link=False,

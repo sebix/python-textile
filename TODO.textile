@@ -4,10 +4,7 @@ TODO
 ** Not all functions have docstrings or adequate docstrings.
 ** Because the Textile syntax implemented by PyTextile has deviated from the syntax implemented by other implementations of Textile, PyTextile-specific documentation needs to be produced for end-users.
 * Add Textile 2.4 functionality
-** Auto-numbered endnotes
 ** Footnotes:
 *** [\d\+] doesn't work after punctutation
 *** Add new backlink functionality
 *** Add [\d\+!] functionality to disable adding the link.  Although, what exactly is the point of this?
-** Add in support for textile comments: ###
-*** This is low-priority.  Why would one do this?
