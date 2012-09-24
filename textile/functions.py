@@ -1150,9 +1150,6 @@ class Textile(object):
 
         Fixed version of the following code fragment from Stack Overflow:
         http://stackoverflow.com/questions/804336/best-way-to-convert-a-unicode-url-to-ascii-utf-8-percent-escaped-in-python/804380#804380
-
-        >>> t = Textile()
-
         """
         # turn string into unicode
         if not isinstance(url, unicode):
