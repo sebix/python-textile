@@ -1,5 +1,0 @@
-* Improve documentation, both of the code and Textile syntax.
-   Not all functions have docstrings or adequate docstrings.
-   Because the Textile syntax implemented by PyTextile has deviated
-   from the syntax implemented by other implementations of Textile,
-   PyTextile-specific documentation needs to be produced for end-users.

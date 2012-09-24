@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '2.1.5'
+version = __import__('textile').__version__
 
 setup(
     name='textile',
