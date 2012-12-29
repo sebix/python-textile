@@ -454,7 +454,8 @@ class Textile(object):
         colgrp, last_rgrp = '', ''
         c_row = 1
         rows = []
-        for row in [x for x in re.split(r'\|\s*?$', match.group(3), flags=re.M) if x]:
+        split = re.compile(r'\|\s*?$', re.M).split(match.group(3))
+        for row in [x for x in split if x]:
             row = row.lstrip()
 
             # Caption -- only occurs on row 1, otherwise treat '|=. foo |...'
@@ -585,7 +586,7 @@ class Textile(object):
         return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
-        text = re.split(r'\n(?=[*#;:])', match.group(), flags=re.M)
+        text = re.compile(r'\n(?=[*#;:])', re.M).split(match.group())
         pt = ''
         result = []
         ls = OrderedDict()
@@ -1367,7 +1368,7 @@ class Textile(object):
     def fRCList(self, match):
         """Format a definition list."""
         out = []
-        text = re.split(r'\n(?=[-])', match.group(), flags=re.M)
+        text = re.compile(r'\n(?=[-])', re.M).split(match.group())
         for line in text:
             # parse the attributes and content
             m = re.match(r'^[-]+(%s)[ .](.*)$' % self.lc, line, re.M | re.S)
