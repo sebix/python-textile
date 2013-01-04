@@ -134,14 +134,14 @@ class TestKnownValues():
          '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />\nand <a href="http://hobix.com">it&#8217;s</a> '
          '<a href="http://hobix.com">all</a> I ever<br />\n<a href="http://hobix.com">link to</a>!</p>'),
 
-        ('!http://hobix.com/sample.jpg!', '\t<p><img src="http://hobix.com/sample.jpg" alt="" /></p>'),
+        ('!http://hobix.com/sample.jpg!', '\t<p><img alt="" src="http://hobix.com/sample.jpg" /></p>'),
 
-        ('!openwindow1.gif(Bunny.)!', '\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny." /></p>'),
+        ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny." /></p>'),
 
-        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img src="openwindow1.gif" alt="" /></a></p>'),
+        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif" /></a></p>'),
 
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
-         '\t<p><img src="obake.gif" style="float: right;" alt="" /></p>\n\n\t'
+         '\t<p><img align="right" alt="" src="obake.gif" /></p>\n\n\t'
          '<p>And others sat all round the small<br />\nmachine and paid it to sing to them.</p>'),
 
         ('We use CSS(Cascading Style Sheets).', '\t<p>We use <acronym title="Cascading Style Sheets"><span class="caps">CSS</span></acronym>.</p>'),
@@ -176,7 +176,7 @@ class TestKnownValues():
         ('"foo ==(bar)==":#foobar', '\t<p><a href="#foobar">foo (bar)</a></p>'),
 
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
-         '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt="" /></p>'),
+         '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." /></p>'),
 
         ('* Point one\n* Point two\n## Step 1\n## Step 2\n## Step 3\n* Point three\n** Sub point 1\n** Sub point 2',
          '\t<ul>\n\t\t<li>Point one</li>\n\t\t<li>Point two\n\t<ol>\n\t\t<li>Step 1</li>\n\t\t<li>Step 2</li>\n\t\t'
@@ -287,14 +287,14 @@ class TestKnownValues():
         ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
          '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br>\nand <a href="http://hobix.com">it&#8217;s</a> '
          '<a href="http://hobix.com">all</a> I ever<br>\n<a href="http://hobix.com">link to</a>!</p>'),
-        ('!http://hobix.com/sample.jpg!', '\t<p><img src="http://hobix.com/sample.jpg" alt=""></p>'),
-        ('!openwindow1.gif(Bunny.)!', '\t<p><img src="openwindow1.gif" title="Bunny." alt="Bunny."></p>'),
-        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img src="openwindow1.gif" alt=""></a></p>'),
+        ('!http://hobix.com/sample.jpg!', '\t<p><img alt="" src="http://hobix.com/sample.jpg"></p>'),
+        ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny."></p>'),
+        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif"></a></p>'),
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
-         '\t<p><img src="obake.gif" style="float: right;" alt=""></p>\n\n\t'
+         '\t<p><img align="right" alt="" src="obake.gif"></p>\n\n\t'
          '<p>And others sat all round the small<br>\nmachine and paid it to sing to them.</p>'),
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
-         '\t<p><img src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." alt=""></p>'),
+         '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29."></p>'),
         ('notextile. <b> foo bar baz</b>\n\np. quux\n','<b> foo bar baz</b>\n\n\t<p>quux</p>')
     )
 
@@ -316,11 +316,23 @@ class TestKnownValues():
 class Tests():
     def testFootnoteReference(self):
         html = textile.textile('YACC[1]')
-        assert_true(re.search(r'^\t<p><span class="caps">YACC</span><sup class="footnote"><a href="#fn[a-f0-9]{32}">1</a></sup></p>', html))
+        assert_true(re.search(r'^\t<p><span class="caps">YACC</span><sup class="footnote" id="fnrev[a-f0-9]{32}"><a href="#fn[a-f0-9]{32}">1</a></sup></p>', html))
 
     def testFootnote(self):
         html = textile.textile('This is covered elsewhere[1].\n\nfn1. Down here, in fact.\n\nfn2. Here is another footnote.')
-        assert_true(re.search(r'^\t<p>This is covered elsewhere<sup class="footnote"><a href="#fn([a-f0-9]{32})">1</a></sup>.</p>\n\n\t<p id="fn\1" class="footnote"><sup>1</sup>Down here, in fact.</p>\n\n\t<p id="fn2" class="footnote"><sup>2</sup>Here is another footnote.</p>$', html))
+        assert_true(re.search(r'^\t<p>This is covered elsewhere<sup class="footnote" id="fnrev[a-f0-9]{32}"><a href="#fn([a-f0-9]{32})">1</a></sup>.</p>\n\n\t<p class="footnote" id="fn\1"><sup>1</sup> Down here, in fact.</p>\n\n\t<p class="footnote" id="fn2"><sup>2</sup> Here is another footnote.</p>$', html))
+
+        html = textile.textile('''See[1] for details -- or perhaps[100] at a push.\n\nfn1. Here are the details.\n\nfn100(footy#otherid). A totally unrelated footnote.''')
+        assert_true(re.search(r'^\t<p>See<sup class="footnote" id="fnrev[a-f0-9]{32}"><a href="#fn([a-f0-9]{32})">1</a></sup> for details &#8212; or perhaps<sup class="footnote" id="fnrev[a-f0-9]{32}"><a href="#fn([a-f0-9]{32})">100</a></sup> at a push.</p>\n\n\t<p class="footnote" id="fn\1"><sup>1</sup> Here are the details.</p>\n\n\t<p class="footy" id="otherid"><sup id="fn\2">100</sup> A totally unrelated footnote.</p>$', html))
+
+        html = textile.textile('''See[2] for details, and later, reference it again[2].\n\nfn2^(footy#otherid)[en]. Here are the details.''')
+        assert_true(re.search(r'^\t<p>See<sup class="footnote" id="fnrev([a-f0-9]{32})"><a href="#fn([a-f0-9]{32})">2</a></sup> for details, and later, reference it again<sup class="footnote"><a href="#fn\2">2</a></sup>.</p>\n\n\t<p class="footy" id="otherid" lang="en"><sup id="fn\2"><a href="#fnrev\1">2</a></sup> Here are the details.</p>$', html))
+
+        html = textile.textile('''See[3!] for details.\n\nfn3. Here are the details.''')
+        assert_true(re.search(r'^\t<p>See<sup class="footnote" id="fnrev[a-f0-9]{32}">3</sup> for details.</p>\n\n\t<p class="footnote" id="fn[a-f0-9]{32}"><sup>3</sup> Here are the details.</p>$', html))
+
+        html = textile.textile('''See[4!] for details.\n\nfn4^. Here are the details.''')
+        assert_true(re.search(r'^\t<p>See<sup class="footnote" id="fnrev([a-f0-9]{32})">4</sup> for details.</p>\n\n\t<p class="footnote" id="fn[a-f0-9]{32}"><sup><a href="#fnrev\1">4</a></sup> Here are the details.</p>$', html))
 
     def testURLWithHyphens(self):
         eq_(textile.textile('"foo":http://google.com/one--two'), '\t<p><a href="http://google.com/one--two">foo</a></p>')
@@ -428,7 +440,7 @@ class Tests():
 
     def testUnicodeFootnote(self):
         html = textile.textile(u'текст[1]')
-        assert_true(re.compile(u'^\t<p>текст<sup class="footnote"><a href="#fn[a-f0-9]+">1</a></sup></p>', re.U).search(html))
+        assert_true(re.compile(u'^\t<p>текст<sup class="footnote" id="fnrev[a-f0-9]{32}"><a href="#fn[a-f0-9]{32}">1</a></sup></p>', re.U).search(html))
 
     def testAutoLinking(self):
         test = """some text "test":http://www.google.com http://www.google.com "$":http://www.google.com"""
@@ -473,7 +485,7 @@ class Tests():
             raise SkipTest()
 
         test = "!http://www.google.com/intl/en_ALL/images/srpr/logo1w.png!"
-        result = '\t<p><img src="http://www.google.com/intl/en_ALL/images/srpr/logo1w.png" alt="" width="275" height="95" /></p>'
+        result = '\t<p><img alt="" height="95" src="http://www.google.com/intl/en_ALL/images/srpr/logo1w.png" width="275" /></p>'
         expect = textile.Textile(get_sizes=True).textile(test)
         eq_(result, expect)
 
@@ -552,3 +564,18 @@ class Tests():
         result = u'http://user:password@www.example.local:8080/%C3%9Cbermensch'
         eurl = t.encode_url(url)
         eq_(eurl, result)
+
+    def testFootnoteCrosslink(self):
+        html = textile.textile('''See[2] for details, and later, reference it again[2].\n\nfn2^(footy#otherid)[en]. Here are the details.''')
+        searchstring = r'\t<p>See<sup class="footnote" id="fnrev([a-f0-9]{32})"><a href="#fn\1">2</a></sup> for details, and later, reference it again<sup class="footnote"><a href="#fn\1">2</a></sup>.</p>\n\n\t<p class="footy" id="otherid" lang="en"><sup id="fn\1"><a href="#fnrev\1">2</a></sup> Here are the details.</p>$'
+        assert_true(re.compile(searchstring).search(html))
+
+    def testFootnoteWithoutReflink(self):
+        html = textile.textile('''See[3!] for details.\n\nfn3. Here are the details.''')
+        searchstring = r'^\t<p>See<sup class="footnote" id="fnrev([a-f0-9]{32})">3</sup> for details.</p>\n\n\t<p class="footnote" id="fn\1"><sup>3</sup> Here are the details.</p>$'
+        assert_true(re.compile(searchstring).search(html))
+
+    def testSquareBrackets(self):
+        html = textile.textile("""1[^st^], 2[^nd^], 3[^rd^]. 2 log[~n~]\n\nA close[!http://textpattern.com/favicon.ico!]image.\nA tight["text":http://textpattern.com/]link.\nA ["footnoted link":http://textpattern.com/][182].""")
+        searchstring = r'^\t<p>1<sup>st</sup>, 2<sup>nd</sup>, 3<sup>rd</sup>. 2 log<sub>n</sub></p>\n\n\t<p>A close<img alt="" src="http://textpattern.com/favicon.ico" />image.<br />\nA tight<a href="http://textpattern.com/">text</a>link.<br />\nA <a href="http://textpattern.com/">footnoted link</a><sup class="footnote" id="fnrev([a-f0-9]{32})"><a href="#fn\1">182</a></sup>.</p>'
+        assert_true(re.compile(searchstring).search(html))
