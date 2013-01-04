@@ -1,16 +1,13 @@
 def getimagesize(url):
     """
-    Attempts to determine an image's width and height, and returns a string
-    suitable for use in an <img> tag, or an empty string in case of failure.
+    Attempts to determine an image's width and height, and returns a tuple,
+    (width, height), in pixels or an empty string in case of failure.
     Requires that PIL is installed.
 
     >>> getimagesize("http://www.google.com/intl/en_ALL/images/logo.gif")
-    ... #doctest: +ELLIPSIS
-    'width="..." height="..."'
-
+    (276, 110)
     >>> getimagesize("http://bad.domain/")
     ''
-
     """
 
     try:
@@ -28,7 +25,7 @@ def getimagesize(url):
                 break
             p.feed(s)
             if p.image:
-                return 'width="%i" height="%i"' % p.image.size
+                return p.image.size
     except (IOError, ValueError):
         return ''
 
