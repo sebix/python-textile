@@ -426,7 +426,7 @@ class Tests():
 
     def testImageSize(self):
         try:
-            import ImageFile
+            from PIL import ImageFile
         except ImportError:
             raise SkipTest()
 
