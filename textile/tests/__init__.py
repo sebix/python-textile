@@ -211,23 +211,23 @@ class TestKnownValues():
 
         (u"p=. Où est l'école, l'église s'il vous plaît?",
          u"""\t<p style="text-align:center;">Où est l&#8217;école, l&#8217;église s&#8217;il vous plaît?</p>"""),
-        
-        ("p=. *_The_* _*Prisoner*_", 
+
+        ("p=. *_The_* _*Prisoner*_",
          """\t<p style="text-align:center;"><strong><em>The</em></strong> <em><strong>Prisoner</strong></em></p>"""),
 
         ("""p=. "An emphasised _word._" & "*A spanned phrase.*" """,
          """\t<p style="text-align:center;">&#8220;An emphasised <em>word.</em>&#8221; &amp; &#8220;<strong>A spanned phrase.</strong>&#8221; </p>"""),
 
-        ("""p=. "*Here*'s a word!" """, 
+        ("""p=. "*Here*'s a word!" """,
          """\t<p style="text-align:center;">&#8220;<strong>Here</strong>&#8217;s a word!&#8221; </p>"""),
 
         ("""p=. "Please visit our "Textile Test Page":http://textile.sitemonks.com" """,
          """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
-        
+
         (u"""| Foreign EXPÓŅÉNTIAL |""",
          u"""\t<table>\n\t\t<tr>\n\t\t\t<td>Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t\t<td>\n\t\t</tr>\n\t</table>"""),
 
-        (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""", 
+        (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
          u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML">AJAX</acronym>, please?</p>"""),
 
 
@@ -438,5 +438,17 @@ class Tests():
     def testAtSignAndNotextileInTable(self):
         test = "|@<A1>@|@<A2>@ @<A3>@|\n|<notextile>*B1*</notextile>|<notextile>*B2*</notextile> <notextile>*B3*</notextile>|"
         result = "\t<table>\n\t\t<tr>\n\t\t\t<td><code>&#60;A1&#62;</code></td>\n\t\t\t<td><code>&#60;A2&#62;</code> <code>&#60;A3&#62;</code></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>*B1*</td>\n\t\t\t<td>*B2* *B3*</td>\n\t\t</tr>\n\t</table>"
+        expect = textile.textile(test)
+        eq_(result, expect)
+
+    def testIssue011LinksWithStars(self):
+        test = '"Marketing Operations Managers":http://www.linkedin.com/groups?home=&gid=138990&goback=%2Enmp_*1_*1_*1_*1_*1_*1_*1_*1_*1&trk=grp-name'
+        result = '\t<p><a href="http://www.linkedin.com/groups?home=&#38;gid=138990&#38;goback=%2Enmp_*1_*1_*1_*1_*1_*1_*1_*1_*1&#38;trk=grp-name">Marketing Operations Managers</a></p>'
+        expect = textile.textile(test)
+        eq_(result, expect)
+
+    def testIssue011LinksWithCarets(self):
+        test = '"US Government bonds":http://finance.yahoo.com/echarts?s=^TYX+Interactive#chart2:symbol=^tyx;range=6m;indicator=volume;charttype=line;crosshair=on;ohlcvalues=0;logscale=on;source=undefined'
+        result = '\t<p><a href="http://finance.yahoo.com/echarts?s=^TYX+Interactive#chart2:symbol=^tyx;range=6m;indicator=volume;charttype=line;crosshair=on;ohlcvalues=0;logscale=on;source=undefined">US Government bonds</a></p>'
         expect = textile.textile(test)
         eq_(result, expect)
