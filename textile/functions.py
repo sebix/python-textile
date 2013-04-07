@@ -777,8 +777,8 @@ class Textile(object):
             ":                              #closing quote, colon
             (?P<url>(?:ftp|https?)?         #URL
                         (?: :// )?
-                        [-A-Za-z0-9+&@#/?=~_()|!:,.;%%]*
-                        [-A-Za-z0-9+&@#/=~_()|]
+                        [-A-Za-z0-9+&@#/?=~_()|^*!:,.;%%]*
+                        [-A-Za-z0-9+&@#/=~_()|^*]
             )
             (?P<post>[^\w\/;]*?)	    #trailing text
             (?=<|\s|$)
