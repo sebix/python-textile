@@ -1,15 +1,15 @@
-def sanitize(string, html_type):
+def sanitize(string):
     """
-    >>> sanitize("\\t<p>a paragraph</p>","html")
+    >>> sanitize("\\t<p>a paragraph</p>")
     u'\\t<p>a paragraph</p>'
 
-    >>> sanitize("\\t<script>alert('evil script');</script>", "xhtml")
+    >>> sanitize("\\t<script>alert('evil script');</script>")
     u"\\t&lt;script&gt;alert('evil script');&lt;/script&gt;"
 
     """
     try:
         import html5lib
-        from html5lib import sanitizer, serializer, treewalkers, treebuilders
+        from html5lib import sanitizer, serializer, treewalkers
     except ImportError:
         raise Exception("html5lib not available")
 
@@ -19,11 +19,8 @@ def sanitize(string, html_type):
     walker = treewalkers.getTreeWalker("simpletree")
     stream = walker(tree)
 
-    if html_type == 'xhtml':
-        s = serializer.xhtmlserializer.XHTMLSerializer()
-    else:
-        s = serializer.htmlserializer.HTMLSerializer(omit_optional_tags=False,
-                                                     quote_attr_values=True)
+    s = serializer.htmlserializer.HTMLSerializer(omit_optional_tags=False,
+            quote_attr_values=True)
     return s.render(stream)
 
 
