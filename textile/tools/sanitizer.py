@@ -1,11 +1,7 @@
 def sanitize(string):
     """
-    >>> sanitize("\\t<p>a paragraph</p>")
-    u'\\t<p>a paragraph</p>'
-
-    >>> sanitize("\\t<script>alert('evil script');</script>")
-    u"\\t&lt;script&gt;alert('evil script');&lt;/script&gt;"
-
+    Ensure that the text does not contain any malicious HTML code which might
+    break the page.
     """
     try:
         import html5lib
@@ -22,11 +18,3 @@ def sanitize(string):
     s = serializer.htmlserializer.HTMLSerializer(omit_optional_tags=False,
             quote_attr_values=True)
     return s.render(stream)
-
-
-def setup_module(module):
-    from nose.plugins.skip import SkipTest
-    try:
-        import html5lib
-    except ImportError:
-        raise SkipTest()
