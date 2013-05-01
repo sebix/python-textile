@@ -3,7 +3,6 @@ import textile
 import re
 from nose.tools import eq_, assert_true
 from nose.plugins.skip import SkipTest
-import unittest
 
 """
 ('>>> import textile')
