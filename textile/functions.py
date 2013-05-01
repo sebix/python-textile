@@ -1233,7 +1233,7 @@ class Textile(object):
         host = netloc_parsed['host']
         port = netloc_parsed['port'] and netloc_parsed['port']
         path = '/'.join(  # could be encoded slashes!
-            quote(unquote(pce),'')
+            quote(unquote(pce).encode('utf8'),'')
             for pce in parsed.path.split('/')
         )
         query = quote(unquote(parsed.query), '=&?/')
