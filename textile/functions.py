@@ -275,7 +275,7 @@ class Textile(object):
         text = self.retrieve(text)
 
         if sanitize:
-            text = sanitizer.sanitize(text, self.html_type)
+            text = sanitizer.sanitize(text)
 
         breaktag = {'html': '<br>', 'xhtml': '<br />'}
 
