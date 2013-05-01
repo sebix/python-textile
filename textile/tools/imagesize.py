@@ -12,13 +12,17 @@ def getimagesize(url):
 
     try:
         from PIL import ImageFile
-        import urllib2
     except ImportError:
         return ''
 
     try:
+        from urllib.request import urlopen
+    except (ImportError):
+        from urllib2 import urlopen
+
+    try:
         p = ImageFile.Parser()
-        f = urllib2.urlopen(url)
+        f = urlopen(url)
         while True:
             s = f.read(1024)
             if not s:
