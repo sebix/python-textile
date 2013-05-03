@@ -458,7 +458,7 @@ class Tests():
 
     def testSanitize(self):
         try:
-            import html5lib
+            __import__('html5lib')
         except ImportError:
             raise SkipTest()
 
@@ -480,7 +480,7 @@ class Tests():
 
     def testImageSize(self):
         try:
-            from PIL import ImageFile
+            __import__('PIL')
         except ImportError:
             raise SkipTest()
 
