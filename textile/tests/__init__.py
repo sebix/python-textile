@@ -16,7 +16,8 @@ class TestKnownValues():
     xhtml_known_values = (
         ('hello, world', '\t<p>hello, world</p>'),
 
-        ('A single paragraph.\n\nFollowed by another.','\t<p>A single paragraph.</p>\n\n\t<p>Followed by another.</p>'),
+        ('A single paragraph.\n\nFollowed by another.',
+         '\t<p>A single paragraph.</p>\n\n\t<p>Followed by another.</p>'),
 
         ('I am <b>very</b> serious.\n\n<pre>\nI am <b>very</b> serious.\n</pre>',
          '\t<p>I am <b>very</b> serious.</p>\n\n<pre>\nI am &lt;b&gt;very&lt;/b&gt; serious.\n</pre>'),
@@ -196,19 +197,22 @@ class TestKnownValues():
 
         ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\t<p>some text</p>'),
 
-        ('*:(foo)foo bar baz*','\t<p><strong cite="foo">foo bar baz</strong></p>'),
+        ('*:(foo)foo bar baz*',
+         '\t<p><strong cite="foo">foo bar baz</strong></p>'),
 
-        ('pre.. foo bar baz\nquux','<pre>foo bar baz\nquux\n</pre>'),
+        ('pre.. foo bar baz\nquux', '<pre>foo bar baz\nquux\n</pre>'),
 
-        ('line of text\n\n    leading spaces','\t<p>line of text</p>\n\n    leading spaces'),
+        ('line of text\n\n    leading spaces',
+         '\t<p>line of text</p>\n\n    leading spaces'),
 
-        ('"some text":http://www.example.com/?q=foo%20bar and more text','\t<p><a href="http://www.example.com/?q=foo%20bar">some text</a> and more text</p>'),
+        ('"some text":http://www.example.com/?q=foo%20bar and more text',
+         '\t<p><a href="http://www.example.com/?q=foo%20bar">some text</a> and more text</p>'),
 
-        ('(??some text??)','\t<p>(<cite>some text</cite>)</p>'),
+        ('(??some text??)', '\t<p>(<cite>some text</cite>)</p>'),
 
-        ('(*bold text*)','\t<p>(<strong>bold text</strong>)</p>'),
+        ('(*bold text*)', '\t<p>(<strong>bold text</strong>)</p>'),
 
-        ('H[~2~]O','\t<p>H<sub>2</sub>O</p>'),
+        ('H[~2~]O', '\t<p>H<sub>2</sub>O</p>'),
 
         (u"p=. Où est l'école, l'église s'il vous plaît?",
          u"""\t<p style="text-align:center;">Où est l&#8217;école, l&#8217;église s&#8217;il vous plaît?</p>"""),
@@ -229,8 +233,8 @@ class TestKnownValues():
         # test above properly but not this one.
         # In all my testing, textile properly handles the test below according
         # to specification... and the prophecy.
-        #(u"""| Foreign EXPÓŅÉNTIAL |""",
-         #u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
+        # (u"""| Foreign EXPÓŅÉNTIAL |""",
+        #  u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
 
         (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
          u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
@@ -295,7 +299,8 @@ class TestKnownValues():
          '<p>And others sat all round the small<br>\nmachine and paid it to sing to them.</p>'),
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
          '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29."></p>'),
-        ('notextile. <b> foo bar baz</b>\n\np. quux\n','<b> foo bar baz</b>\n\n\t<p>quux</p>')
+        ('notextile. <b> foo bar baz</b>\n\np. quux\n',
+         '<b> foo bar baz</b>\n\n\t<p>quux</p>')
     )
 
     def testKnownValuesXHTML(self):
