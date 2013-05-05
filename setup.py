@@ -20,8 +20,8 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords='textile,text',
-    test_suite = 'nose.collector',
-    tests_require = ['nose'],
+    test_suite='nose.collector',
+    tests_require=['nose'],
     include_package_data=True,
     zip_safe=False,
 )
