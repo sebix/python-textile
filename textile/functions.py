@@ -21,6 +21,9 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 import re
 import uuid
 from sys import maxunicode, version_info
+from collections import OrderedDict
+
+from textile.tools import sanitizer, imagesize
 
 
 try:
@@ -35,15 +38,6 @@ except (ImportError):
     from urllib import quote, unquote
     from urlparse import urlparse, urlsplit, urlunsplit
     from HTMLParser import HTMLParser
-
-from textile.tools import sanitizer, imagesize
-
-# We're going to use the Python 2.7+ OrderedDict data type.  Import it if it's
-# available, otherwise, use the included tool.
-try:
-    from collections import OrderedDict
-except ImportError:
-    from textile.tools import OrderedDict
 
 
 def _normalize_newlines(string):
