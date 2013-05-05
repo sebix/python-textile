@@ -20,7 +20,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import re
 import uuid
-from sys import maxunicode
+from sys import maxunicode, version_info
 
 
 try:
@@ -232,8 +232,10 @@ class Textile(object):
         # characters.
         # we need to know if there are unicode charcters in the text.
         # return True as soon as a unicode character is found, else, False
+        # Python 3 is better equipped to handle unicode data, so this hackery
+        # is version-specific.
         self.text_has_unicode = next((True for c in text if ord(c) > 128),
-                                     False)
+                                     False) and version_info < (3,)
 
         if self.text_has_unicode:
             uppers = []
