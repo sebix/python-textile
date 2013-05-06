@@ -27,12 +27,9 @@ import HTMLParser
 
 from textile.tools import sanitizer, imagesize
 
-# We're going to use the Python 2.7+ OrderedDict data type.  Import it if it's
-# available, otherwise, use the included tool.
-try:
-    from collections import OrderedDict
-except ImportError:
-    from textile.tools import OrderedDict
+# We're going to use the Python 2.7+ OrderedDict data type.  This has been
+# included in textile.tools since it won't be available on Python 2.6
+from textile.tools import OrderedDict
 
 
 def _normalize_newlines(string):
