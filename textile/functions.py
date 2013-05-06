@@ -99,32 +99,6 @@ class Textile(object):
 
     note_index = 1
 
-    glyph_defaults = {
-            'quote_single_open':  '&#8216;',
-            'quote_single_close': '&#8217;',
-            'quote_double_open':  '&#8220;',
-            'quote_double_close': '&#8221;',
-            'apostrophe':         '&#8217;',
-            'prime':              '&#8242;',
-            'prime_double':       '&#8243;',
-            'ellipsis':           '&#8230;',
-            'ampersand':          '&amp;',
-            'emdash':             '&#8212;',
-            'endash':             '&#8211;',
-            'dimension':          '&#215;',
-            'trademark':          '&#8482;',
-            'registered':         '&#174;',
-            'copyright':          '&#169;',
-            'half':               '&#189;',
-            'quarter':            '&#188;',
-            'threequarters':      '&#190;',
-            'degrees':            '&#176;',
-            'plusminus':          '&#177;',
-            'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-            'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
-            'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-        }
-
     # We'll be searching for characters that need to be HTML-encoded to produce
     # properly valid html.
     # These are the defaults that work in most cases.  Below, we'll copy this
@@ -938,9 +912,9 @@ class Textile(object):
 
     def formatFootnote(self, marker, atts='', anchor=True):
         if anchor:
-            pattern = self.glyph_defaults['fn_foot_pattern']
+            pattern = _glyph_defaults['fn_foot_pattern']
         else:
-            pattern = self.glyph_defaults['fn_ref_pattern']
+            pattern = _glyph_defaults['fn_ref_pattern']
         return pattern % {'atts': atts, 'marker': marker}
 
     def footnoteRef(self, text):
