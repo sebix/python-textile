@@ -20,16 +20,31 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import re
 import uuid
-from sys import maxunicode
-import urlparse
-import urllib
-import HTMLParser
+from sys import maxunicode, version_info
 
 from textile.tools import sanitizer, imagesize
 
-# We're going to use the Python 2.7+ OrderedDict data type.  This has been
-# included in textile.tools since it won't be available on Python 2.6
-from textile.tools import OrderedDict
+
+# We're going to use the Python 2.7+ OrderedDict data type. Import it if it's
+# available, otherwise, use the included tool.
+try:
+    from collections import OrderedDict
+except ImportError:
+    from textile.tools import OrderedDict
+
+
+try:
+    # Python 3
+    from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
+    from html.parser import HTMLParser
+    xrange = range
+    unichr = chr
+    unicode = str
+except (ImportError):
+    # Python 2
+    from urllib import quote, unquote
+    from urlparse import urlparse, urlsplit, urlunsplit
+    from HTMLParser import HTMLParser
 
 
 def _normalize_newlines(string):
@@ -218,8 +233,10 @@ class Textile(object):
         # characters.
         # we need to know if there are unicode charcters in the text.
         # return True as soon as a unicode character is found, else, False
+        # Python 3 is better equipped to handle unicode data, so this hackery
+        # is version-specific.
         self.text_has_unicode = next((True for c in text if ord(c) > 128),
-                                     False)
+                                     False) and version_info < (3,)
 
         if self.text_has_unicode:
             uppers = []
@@ -463,7 +480,10 @@ class Textile(object):
         colgrp, last_rgrp = '', ''
         c_row = 1
         rows = []
-        split = re.compile(r'\|\s*?$', re.M).split(match.group(3))
+        try:
+            split = re.split(r'\|\s*?$', match.group(3), flags=re.M)
+        except TypeError:
+            split = re.compile(r'\|\s*?$', re.M).split(match.group(3))
         for row in [x for x in split if x]:
             row = row.lstrip()
 
@@ -598,7 +618,10 @@ class Textile(object):
         return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
-        text = re.compile(r'\n(?=[*#;:])', re.M).split(match.group())
+        try:
+            text = re.split(r'\n(?=[*#;:])', match.group(), flags=re.M)
+        except TypeError:
+            text = re.compile(r'\n(?=[*#;:])', re.M).split(match.group())
         pt = ''
         result = []
         ls = OrderedDict()
@@ -679,7 +702,7 @@ class Textile(object):
                 if len(nl) <= len(tl):
                     line = line + ("</%s>" % litem if showitem else '')
                 # work backward through the list closing nested lists/items
-                for k, v in reversed(ls.items()):
+                for k, v in reversed(list(ls.items())):
                     if len(k) > len(nl):
                         if v != 2:
                             line = line + "\n\t</%sl>" % self.listType(k)
@@ -1032,7 +1055,7 @@ class Textile(object):
         True
 
         """
-        (scheme, netloc) = urlparse.urlparse(url)[0:2]
+        (scheme, netloc) = urlparse(url)[0:2]
         return not scheme and not netloc
 
     def relURL(self, url):
@@ -1045,7 +1068,7 @@ class Textile(object):
         '#'
 
         """
-        scheme = urlparse.urlparse(url)[0]
+        scheme = urlparse(url)[0]
         if self.restricted and scheme and scheme not in self.url_schemes:
             return '#'
         return url
@@ -1214,7 +1237,7 @@ class Textile(object):
             url = url.decode('utf8')
 
         # parse it
-        parsed = urlparse.urlsplit(url)
+        parsed = urlsplit(url)
 
         # divide the netloc further
         netloc_pattern = re.compile(r"""
@@ -1226,17 +1249,17 @@ class Textile(object):
 
         # encode each component
         scheme = parsed.scheme
-        user = netloc_parsed['user'] and urllib.quote(netloc_parsed['user'])
+        user = netloc_parsed['user'] and quote(netloc_parsed['user'])
         password = (netloc_parsed['password'] and
-                    urllib.quote(netloc_parsed['password']))
+                    quote(netloc_parsed['password']))
         host = netloc_parsed['host']
         port = netloc_parsed['port'] and netloc_parsed['port']
         path = '/'.join(  # could be encoded slashes!
-            urllib.quote(urllib.unquote(pce).encode('utf8'), '')
+            quote(unquote(pce).encode('utf8'), '')
             for pce in parsed.path.split('/')
         )
-        query = urllib.quote(urllib.unquote(parsed.query).encode('utf8'), '=&?/')
-        fragment = urllib.quote(urllib.unquote(parsed.fragment).encode('utf8'))
+        query = quote(unquote(parsed.query), '=&?/')
+        fragment = quote(unquote(parsed.fragment))
 
         # put it back together
         netloc = ''
@@ -1248,7 +1271,7 @@ class Textile(object):
         netloc += host
         if port:
             netloc += ':'+port
-        return urlparse.urlunsplit((scheme, netloc, path, query, fragment))
+        return urlunsplit((scheme, netloc, path, query, fragment))
 
     def span(self, text):
         """
@@ -1435,7 +1458,10 @@ class Textile(object):
     def fRCList(self, match):
         """Format a definition list."""
         out = []
-        text = re.compile(r'\n(?=[-])', re.M).split(match.group())
+        try:
+            text = re.split(r'\n(?=[-])', match.group(), flags=re.M)
+        except TypeError:
+            text = re.compile(r'\n(?=[-])', re.M).split(match.group())
         for line in text:
             # parse the attributes and content
             m = re.match(r'^[-]+(%s)[ .](.*)$' % self.lc, line, re.M | re.S)
@@ -1634,7 +1660,7 @@ class Textile(object):
 
     def decode_high(self, text):
         """Decode encoded HTML entities."""
-        h = HTMLParser.HTMLParser()
+        h = HTMLParser()
         text = '&#%s;' % text
         return h.unescape(text)
 
