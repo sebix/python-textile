@@ -4,7 +4,7 @@ python-textile is a Python port of Textile, Dean Allen's humane web text generat
 
 h2. Usage
 
-Install the 'textile' folder on your python path, or @pip install https://github.com/ikirudennis/python-textile/archive/v2.1.6-py26.tar.gz@
+Install the 'textile' folder on your python path, or @pip install https://github.com/ikirudennis/python-textile/archive/v2.1.7.tar.gz@
 
 <pre>
 <code>
@@ -34,5 +34,4 @@ Install the 'textile' folder on your python path, or @pip install https://github
 
 h3. Notes:
 
-* Active development supports Python 2.7 or later (including Python 3.3+).
-* There is a branch that is "compatible with Python 2.6":https://github.com/ikirudennis/python-textile/tree/py26 for those who may need it.
+* Active development supports Python 2.6 or later (including Python 3.3+).
