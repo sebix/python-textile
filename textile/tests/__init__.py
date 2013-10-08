@@ -270,6 +270,8 @@ class TestKnownValues():
          """\t<h2>A definition list</h2>\n\n\t<dl class="class" id="id">\n\t\t<dt>Term 1</dt>\n\t\t<dd>Def 1</dd>\n\t\t<dd>Def 2</dd>\n\t\t<dd>Def 3\n\t<dl>\n\t\t<dt>Center</dt>\n\t\t<dt><acronym title="Why Em Cee Ayy"><span class="caps">NATO</span></acronym></dt>\n\t\t<dd>Subdef 1</dd>\n\t\t<dd>Subdef 2\n\t<dl>\n\t\t<dt>SubSub Term</dt>\n\t\t<dd>SubSub Def 1</dd>\n\t\t<dd>SubSub Def 2</dd>\n\t\t<dd>Subsub Def 3<br />\nWith newline</dd>\n\t\t<dd>Subsub Def 4</dd>\n\t</dl></dd>\n\t\t<dd>Subdef 3</dd>\n\t</dl></dd>\n\t\t<dd><span class="caps">DEF</span> 4</dd>\n\t\t<dt>Term 2</dt>\n\t\t<dd>Another def</dd>\n\t\t<dd>And another</dd>\n\t\t<dd>One more\n\t<dl>\n\t\t<dd>A def without a term</dd>\n\t\t<dd>More defness</dd>\n\t</dl></dd>\n\t\t<dt>Third term for good measure</dt>\n\t\t<dd>My definition of a boombastic jazz</dd>\n\t</dl>"""),
         ("""###. Here's a comment.\n\nh3. Hello\n\n###. And\nanother\none.\n\nGoodbye.""", """\t<h3>Hello</h3>\n\n\t<p>Goodbye.</p>"""),
         ("""h2. A Definition list which covers the instance where a new definition list is created with a term without a definition\n\n- term :=\n- term2 := def""", """\t<h2>A Definition list which covers the instance where a new definition list is created with a term without a definition</h2>\n\n<dl>\n\t<dt>term2</dt>\n\t<dd>def</dd>\n</dl>"""),
+        ('!{height:20px;width:20px;}https://1.gravatar.com/avatar/!',
+         '\t<p><img alt="" src="https://1.gravatar.com/avatar/" style="height:20px; width:20px;" /></p>')
 
     )
 

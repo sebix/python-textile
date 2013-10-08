@@ -1377,6 +1377,8 @@ class Textile(object):
         if size:
             out.append(' height="%s"' % size[1])
         out.append(' src="%s"' % url)
+        if atts:
+            out.append(atts)
         if title:
             out.append(' title="%s"' % title)
         if size:
