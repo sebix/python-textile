@@ -1,17 +1,23 @@
 from setuptools import setup, find_packages
+import sys
 
-version = __import__('textile').__version__
+from textile import __version__
+
+install_requires = []
+
+if 'develop' in sys.argv:
+    install_requires.extend([
+        'tox',
+    ])
 
 setup(
     name='textile',
-    version=version,
+    version=__version__,
     description='Textile processing for python.',
-    author='Chris Drackett',
-    author_email='chris@chrisdrackett.com',
-    url='http://github.com/chrisdrackett/python-textile',
+    url='http://github.com/ikirudennis/python-textile',
     packages=find_packages(),
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -20,8 +26,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords='textile,text',
+    install_requires=install_requires,
     test_suite='nose.collector',
     tests_require=['nose'],
     include_package_data=True,
     zip_safe=False,
 )
+
