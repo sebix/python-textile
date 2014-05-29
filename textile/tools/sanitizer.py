@@ -12,7 +12,7 @@ def sanitize(string):
     p = html5lib.HTMLParser(tokenizer=sanitizer.HTMLSanitizer)
     tree = p.parseFragment(string)
 
-    walker = treewalkers.getTreeWalker("simpletree")
+    walker = treewalkers.getTreeWalker("etree")
     stream = walker(tree)
 
     s = serializer.htmlserializer.HTMLSerializer(omit_optional_tags=False,
