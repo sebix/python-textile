@@ -5,6 +5,11 @@ from textile import __version__
 
 install_requires = []
 
+try:
+    from collections import OrderedDict
+except ImportError:
+    install_requires.extend(['ordereddict>=1.1'])
+
 if 'develop' in sys.argv:
     install_requires.extend([
         'tox',

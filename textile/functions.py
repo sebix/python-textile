@@ -30,7 +30,7 @@ from textile.tools import sanitizer, imagesize
 try:
     from collections import OrderedDict
 except ImportError:
-    from textile.tools import OrderedDict
+    from ordereddict import OrderedDict
 
 
 try:
