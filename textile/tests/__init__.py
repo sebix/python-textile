@@ -481,8 +481,7 @@ class Tests():
 
         test = """<p>a paragraph of benign text<br />and more text</p>"""
         result = '<p>a paragraph of benign text<br>\nand more text</p>'
-        expect = textile.Textile().textile(test, sanitize=True,
-                                           html_type='html')
+        expect = textile.Textile(html_type='html').textile(test, sanitize=True)
         eq_(result, expect)
 
     def testImageSize(self):
@@ -586,3 +585,11 @@ class Tests():
         html = textile.textile("""1[^st^], 2[^nd^], 3[^rd^]. 2 log[~n~]\n\nA close[!http://textpattern.com/favicon.ico!]image.\nA tight["text":http://textpattern.com/]link.\nA ["footnoted link":http://textpattern.com/][182].""")
         searchstring = r'^\t<p>1<sup>st</sup>, 2<sup>nd</sup>, 3<sup>rd</sup>. 2 log<sub>n</sub></p>\n\n\t<p>A close<img alt="" src="http://textpattern.com/favicon.ico" />image.<br />\nA tight<a href="http://textpattern.com/">text</a>link.<br />\nA <a href="http://textpattern.com/">footnoted link</a><sup class="footnote" id="fnrev([a-f0-9]{32})"><a href="#fn\1">182</a></sup>.</p>'
         assert_true(re.compile(searchstring).search(html))
+
+    def testHTML5(self):
+        """docstring for testHTML5"""
+
+        test = 'We use CSS(Cascading Style Sheets).'
+        result = '\t<p>We use <abbr title="Cascading Style Sheets"><span class="caps">CSS</span></abbr>.</p>'
+        expect = textile.textile(test, html_type="html5")
+        eq_(result, expect)

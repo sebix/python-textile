@@ -197,7 +197,7 @@ class Textile(object):
     doctype_whitelist = ['html', 'xhtml', 'html5']
 
     def __init__(self, restricted=False, lite=False, noimage=False,
-                 auto_link=False, get_sizes=False):
+                 auto_link=False, get_sizes=False, html_type='xhtml'):
         """Textile properties that are common to regular textile and
         textile_restricted"""
         self.restricted = restricted
@@ -209,22 +209,18 @@ class Textile(object):
         self.urlrefs = {}
         self.shelf = {}
         self.rel = ''
-        self.html_type = 'xhtml'
+        self.html_type = html_type
         self.max_span_depth = 5
 
         if self.html_type == 'html5':
             self.glyph_replace[19] = r'<abbr title="\2">\1</abbr>'
 
-    def textile(self, text, rel=None, head_offset=0, html_type='xhtml',
-                sanitize=False):
+    def textile(self, text, rel=None, head_offset=0, sanitize=False):
         """
         >>> import textile
         >>> textile.textile('some textile')
         '\\t<p>some textile</p>'
         """
-        html_type = html_type.lower()
-        self.html_type = (html_type in self.doctype_whitelist and html_type or
-                          'xhtml')
         self.notes = OrderedDict()
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
@@ -289,7 +285,7 @@ class Textile(object):
         if sanitize:
             text = sanitizer.sanitize(text)
 
-        breaktag = {'html': '<br>', 'xhtml': '<br />'}
+        breaktag = {'html': '<br>', 'xhtml': '<br />', 'html5': '<br />'}
 
         text = text.replace(breaktag[self.html_type], '%s\n'
                             % breaktag[self.html_type])
@@ -1679,8 +1675,8 @@ def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
     html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
 
     """
-    return Textile(auto_link=auto_link).textile(text, head_offset=head_offset,
-                                                html_type=html_type)
+    return Textile(auto_link=auto_link, html_type=html_type).textile(text,
+            head_offset=head_offset)
 
 
 def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
@@ -1698,6 +1694,6 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
     noimage - disable image tags (default: True)
 
     """
-    return Textile(restricted=True, lite=lite,
-                   noimage=noimage, auto_link=auto_link).textile(
-                       text, rel='nofollow', html_type=html_type)
+    return Textile(restricted=True, lite=lite, noimage=noimage,
+            auto_link=auto_link, html_type=html_type).textile( text,
+                    rel='nofollow')

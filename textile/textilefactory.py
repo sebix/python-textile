@@ -26,10 +26,10 @@ class TextileFactory(object):
     ...
     ValueError: head_offset must be 0-6
 
-    >>> f = TextileFactory(html_type='html5')
+    >>> f = TextileFactory(html_type='invalid')
     Traceback (most recent call last):
     ...
-    ValueError: html_type must be 'html' or 'xhtml'
+    ValueError: html_type must be 'html', 'xhtml', or 'html5'
 
 
     """
@@ -65,10 +65,10 @@ class TextileFactory(object):
         else:
             self.method_parms['head_offset'] = head_offset
 
-        if html_type not in ['html', 'xhtml']:
-            raise ValueError("html_type must be 'html' or 'xhtml'")
+        if html_type not in ['html', 'xhtml', 'html5']:
+            raise ValueError("html_type must be 'html', 'xhtml', or 'html5'")
         else:
-            self.method_parms['html_type'] = html_type
+            self.class_parms['html_type'] = html_type
 
     def process(self, text):
         return Textile(**self.class_parms).textile(text, **self.method_parms)
