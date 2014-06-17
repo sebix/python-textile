@@ -5,7 +5,7 @@
 *.pyo
 *.egg-info
 .coverage
-.noseids
+.noseids*
 docs/build
 docs/coverage
 build
@@ -16,4 +16,4 @@ parts
 develop-eggs
 .DS_Store
 *.swp
-*.tox
+.tox
