@@ -233,8 +233,8 @@ class TestKnownValues():
         # test above properly but not this one.
         # In all my testing, textile properly handles the test below according
         # to specification... and the prophecy.
-        # (u"""| Foreign EXPÓŅÉNTIAL |""",
-        #  u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
+        (u"""| Foreign EXPÓŅÉNTIAL |""",
+         u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
 
         (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
          u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
