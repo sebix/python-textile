@@ -114,86 +114,6 @@ class Textile(object):
 
     note_index = 1
 
-    # We'll be searching for characters that need to be HTML-encoded to produce
-    # properly valid html.
-    # These are the defaults that work in most cases.  Below, we'll copy this
-    # and modify the necessary pieces to make it work for characters at the
-    # beginning of the string.
-    glyph_search = [
-        # apostrophe's
-        re.compile(r"(^|\w)'(\w)", re.U),
-        # back in '88
-        re.compile(r"(\s)'(\d+\w?)\b(?!')", re.U),
-        # single closing
-        re.compile(r"(^|\S)'(?=\s|%s|$)" % pnct, re.U),
-        # single opening
-        re.compile(r"'", re.U),
-        # double closing
-        re.compile(r'(^|\S)"(?=\s|%s|$)' % pnct, re.U),
-        # double opening
-        re.compile(r'"'),
-        # ellipsis
-        re.compile(r'([^.]?)\.{3}', re.U),
-        # ampersand
-        re.compile(r'(\s)&(\s)', re.U),
-        # em dash
-        re.compile(r'(\s?)--(\s?)', re.U),
-        # en dash
-        re.compile(r'\s-(?:\s|$)', re.U),
-        # dimension sign
-        re.compile(r'(\d+)( ?)x( ?)(?=\d+)', re.U),
-        # trademark
-        re.compile(r'\b ?[([]TM[])]', re.I | re.U),
-        # registered
-        re.compile(r'\b ?[([]R[])]', re.I | re.U),
-        # copyright
-        re.compile(r'\b ?[([]C[])]', re.I | re.U),
-        # 1/2
-        re.compile(r'[([]1\/2[])]', re.I | re.U),
-        # 1/4
-        re.compile(r'[([]1\/4[])]', re.I | re.U),
-        # 3/4
-        re.compile(r'[([]3\/4[])]', re.I | re.U),
-        # degrees
-        re.compile(r'[([]o[])]', re.I | re.U),
-        # plus/minus
-        re.compile(r'[([]\+\/-[])]', re.I | re.U),
-    ]
-
-    # These are the changes that need to be made for characters that occur at
-    # the beginning of the string.
-    glyph_search_initial = list(glyph_search)
-    # apostrophe's
-    glyph_search_initial[0] = re.compile(r"(\w)'(\w)", re.U)
-    # single closing
-    glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|%s|$)" % pnct, re.U)
-    # double closing
-    glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' % pnct, re.U)
-
-    glyph_replace = [x % _glyph_defaults for x in (
-        r'\1%(apostrophe)s\2',                # apostrophe's
-        r'\1%(apostrophe)s\2',                # back in '88
-        r'\1%(quote_single_close)s',          # single closing
-        r'%(quote_single_open)s',             # single opening
-        r'\1%(quote_double_close)s',          # double closing
-        r'%(quote_double_open)s',             # double opening
-        r'\1%(ellipsis)s',                    # ellipsis
-        r'\1%(ampersand)s\2',                 # ampersand
-        r'\1%(emdash)s\2',                    # em dash
-        r' %(endash)s ',                      # en dash
-        r'\1\2%(dimension)s\3',               # dimension sign
-        r'%(trademark)s',                     # trademark
-        r'%(registered)s',                    # registered
-        r'%(copyright)s',                     # copyright
-        r'%(half)s',                          # 1/2
-        r'%(quarter)s',                       # 1/4
-        r'%(threequarters)s',                 # 3/4
-        r'%(degrees)s',                       # degrees
-        r'%(plusminus)s',                     # plus/minus
-        r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
-        r'<span class="caps">\1</span>\2',    # 3+ uppercase
-    )]
-
     doctype_whitelist = ['html', 'xhtml', 'html5']
 
     def __init__(self, restricted=False, lite=False, noimage=False,
@@ -211,6 +131,86 @@ class Textile(object):
         self.rel = ''
         self.html_type = html_type
         self.max_span_depth = 5
+
+        # We'll be searching for characters that need to be HTML-encoded to produce
+        # properly valid html.
+        # These are the defaults that work in most cases.  Below, we'll copy this
+        # and modify the necessary pieces to make it work for characters at the
+        # beginning of the string.
+        self.glyph_search = [
+            # apostrophe's
+            re.compile(r"(^|\w)'(\w)", re.U),
+            # back in '88
+            re.compile(r"(\s)'(\d+\w?)\b(?!')", re.U),
+            # single closing
+            re.compile(r"(^|\S)'(?=\s|%s|$)" % self.pnct, re.U),
+            # single opening
+            re.compile(r"'", re.U),
+            # double closing
+            re.compile(r'(^|\S)"(?=\s|%s|$)' % self.pnct, re.U),
+            # double opening
+            re.compile(r'"'),
+            # ellipsis
+            re.compile(r'([^.]?)\.{3}', re.U),
+            # ampersand
+            re.compile(r'(\s)&(\s)', re.U),
+            # em dash
+            re.compile(r'(\s?)--(\s?)', re.U),
+            # en dash
+            re.compile(r'\s-(?:\s|$)', re.U),
+            # dimension sign
+            re.compile(r'(\d+)( ?)x( ?)(?=\d+)', re.U),
+            # trademark
+            re.compile(r'\b ?[([]TM[])]', re.I | re.U),
+            # registered
+            re.compile(r'\b ?[([]R[])]', re.I | re.U),
+            # copyright
+            re.compile(r'\b ?[([]C[])]', re.I | re.U),
+            # 1/2
+            re.compile(r'[([]1\/2[])]', re.I | re.U),
+            # 1/4
+            re.compile(r'[([]1\/4[])]', re.I | re.U),
+            # 3/4
+            re.compile(r'[([]3\/4[])]', re.I | re.U),
+            # degrees
+            re.compile(r'[([]o[])]', re.I | re.U),
+            # plus/minus
+            re.compile(r'[([]\+\/-[])]', re.I | re.U),
+        ]
+
+        # These are the changes that need to be made for characters that occur at
+        # the beginning of the string.
+        self.glyph_search_initial = list(self.glyph_search)
+        # apostrophe's
+        self.glyph_search_initial[0] = re.compile(r"(\w)'(\w)", re.U)
+        # single closing
+        self.glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|%s|$)" % self.pnct, re.U)
+        # double closing
+        self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' % self.pnct, re.U)
+
+        self.glyph_replace = [x % _glyph_defaults for x in (
+            r'\1%(apostrophe)s\2',                # apostrophe's
+            r'\1%(apostrophe)s\2',                # back in '88
+            r'\1%(quote_single_close)s',          # single closing
+            r'%(quote_single_open)s',             # single opening
+            r'\1%(quote_double_close)s',          # double closing
+            r'%(quote_double_open)s',             # double opening
+            r'\1%(ellipsis)s',                    # ellipsis
+            r'\1%(ampersand)s\2',                 # ampersand
+            r'\1%(emdash)s\2',                    # em dash
+            r' %(endash)s ',                      # en dash
+            r'\1\2%(dimension)s\3',               # dimension sign
+            r'%(trademark)s',                     # trademark
+            r'%(registered)s',                    # registered
+            r'%(copyright)s',                     # copyright
+            r'%(half)s',                          # 1/2
+            r'%(quarter)s',                       # 1/4
+            r'%(threequarters)s',                 # 3/4
+            r'%(degrees)s',                       # degrees
+            r'%(plusminus)s',                     # plus/minus
+            r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
+            r'<span class="caps">\1</span>\2',    # 3+ uppercase
+        )]
 
         if self.html_type == 'html5':
             self.glyph_replace[19] = r'<abbr title="\2">\1</abbr>'
