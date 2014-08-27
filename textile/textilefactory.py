@@ -71,4 +71,4 @@ class TextileFactory(object):
             self.class_parms['html_type'] = html_type
 
     def process(self, text):
-        return Textile(**self.class_parms).textile(text, **self.method_parms)
+        return Textile(**self.class_parms).parse(text, **self.method_parms)

@@ -215,7 +215,7 @@ class Textile(object):
         if self.html_type == 'html5':
             self.glyph_replace[19] = r'<abbr title="\2">\1</abbr>'
 
-    def textile(self, text, rel=None, head_offset=0, sanitize=False):
+    def parse(self, text, rel=None, head_offset=0, sanitize=False):
         """
         >>> import textile
         >>> textile.textile('some textile')
@@ -1675,7 +1675,7 @@ def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
     html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
 
     """
-    return Textile(auto_link=auto_link, html_type=html_type).textile(text,
+    return Textile(auto_link=auto_link, html_type=html_type).parse(text,
             head_offset=head_offset)
 
 
@@ -1695,5 +1695,5 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
 
     """
     return Textile(restricted=True, lite=lite, noimage=noimage,
-            auto_link=auto_link, html_type=html_type).textile( text,
+            auto_link=auto_link, html_type=html_type).parse( text,
                     rel='nofollow')

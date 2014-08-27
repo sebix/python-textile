@@ -228,11 +228,6 @@ class TestKnownValues():
 
         ("""p=. "Please visit our "Textile Test Page":http://textile.sitemonks.com" """,
          """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
-        # nose doesn't handle unicode correctly, and reports this as a failure
-        # no matter what I try. It's strange that textile handles the unicode
-        # test above properly but not this one.
-        # In all my testing, textile properly handles the test below according
-        # to specification... and the prophecy.
         (u"""| Foreign EXPÓŅÉNTIAL |""",
          u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
 
@@ -471,17 +466,17 @@ class Tests():
 
         test = "a paragraph of benign text"
         result = "\t<p>a paragraph of benign text</p>"
-        expect = textile.Textile().textile(test, sanitize=True)
+        expect = textile.Textile().parse(test, sanitize=True)
         eq_(result, expect)
 
         test = """<p style="width: expression(alert('evil'));">a paragraph of evil text</p>"""
         result = '<p style="">a paragraph of evil text</p>'
-        expect = textile.Textile().textile(test, sanitize=True)
+        expect = textile.Textile().parse(test, sanitize=True)
         eq_(result, expect)
 
         test = """<p>a paragraph of benign text<br />and more text</p>"""
         result = '<p>a paragraph of benign text<br>\nand more text</p>'
-        expect = textile.Textile(html_type='html').textile(test, sanitize=True)
+        expect = textile.Textile(html_type='html').parse(test, sanitize=True)
         eq_(result, expect)
 
     def testImageSize(self):
@@ -492,7 +487,7 @@ class Tests():
 
         test = "!http://www.google.com/intl/en_ALL/images/srpr/logo1w.png!"
         result = '\t<p><img alt="" height="95" src="http://www.google.com/intl/en_ALL/images/srpr/logo1w.png" width="275" /></p>'
-        expect = textile.Textile(get_sizes=True).textile(test)
+        expect = textile.Textile(get_sizes=True).parse(test)
         eq_(result, expect)
 
     def testAtSignAndNotextileInTable(self):
