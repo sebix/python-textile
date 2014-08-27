@@ -84,24 +84,29 @@ _glyph_defaults = {
 
 
 class Textile(object):
-    horizontal_align_re = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
-    vertical_align_re = r'[\-^~]'
-    class_re = r'(?:\([^)\n]+\))'       # Don't allow classes/ids,
-    language_re = r'(?:\[[^\]\n]+\])'   # languages,
-    style_re = r'(?:\{[^}\n]+\})'       # or styles to span across newlines
-    colspan_re = r'(?:\\\d+)'
-    rowspan_re = r'(?:\/\d+)'
-    align_re = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
-    table_span_re = r'(?:%s|%s)*' % (colspan_re, rowspan_re)
-    c = r'(?:%s)*' % '|'.join([class_re, style_re, language_re,
-        horizontal_align_re])
-    lc = r'(?:%s)*' % '|'.join([class_re, style_re, language_re])
+    halign_re_s = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
+    valign_re_s = r'[\-^~]'
+    class_re_s = r'(?:\([^)\n]+\))'       # Don't allow classes/ids,
+    language_re_s = r'(?:\[[^\]\n]+\])'   # languages,
+    style_re_s = r'(?:\{[^}\n]+\})'       # or styles to span across newlines
+    colspan_re_s = r'(?:\\\d+)'
+    rowspan_re_s = r'(?:\/\d+)'
+    align_re_s = r'(?:%s|%s)*' % (halign_re_s, valign_re_s)
+    table_span_re_s = r'(?:%s|%s)*' % (colspan_re_s, rowspan_re_s)
+    # regex string to match class, style, language and horizontal alignment
+    # attributes
+    cslh_re_s = r'(?:%s)*' % '|'.join([class_re_s, style_re_s, language_re_s,
+        halign_re_s])
+    # regex string to match class, style and language attributes
+    csl_re_s = r'(?:%s)*' % '|'.join([class_re_s, style_re_s, language_re_s])
 
-    pnct = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
-    urlch = r'[\w"$\-_.+!*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
-    syms = u'¤§µ¶†‡•∗∴◊♠♣♥♦'
+    pnct_re_s = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
+    urlchar_re_s = r'[\w"$\-_.+!*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
+    syms_re_s = u'¤§µ¶†‡•∗∴◊♠♣♥♦'
 
-    url_schemes = ('http', 'https', 'ftp', 'mailto')
+    restricted_url_schemes = ('http', 'https', 'ftp', 'mailto')
+    unrestricted_url_schemes = restricted_url_schemes + ('file', 'tel',
+            'callto', 'sftp')
 
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p', '###')
     btag_lite = ('bq', 'bc', 'p')
@@ -132,22 +137,22 @@ class Textile(object):
         self.html_type = html_type
         self.max_span_depth = 5
 
-        # We'll be searching for characters that need to be HTML-encoded to produce
-        # properly valid html.
-        # These are the defaults that work in most cases.  Below, we'll copy this
-        # and modify the necessary pieces to make it work for characters at the
-        # beginning of the string.
+        # We'll be searching for characters that need to be HTML-encoded to
+        # produce properly valid html.
+        # These are the defaults that work in most cases.  Below, we'll copy
+        # this and modify the necessary pieces to make it work for characters
+        # at the beginning of the string.
         self.glyph_search = [
             # apostrophe's
             re.compile(r"(^|\w)'(\w)", re.U),
             # back in '88
             re.compile(r"(\s)'(\d+\w?)\b(?!')", re.U),
             # single closing
-            re.compile(r"(^|\S)'(?=\s|%s|$)" % self.pnct, re.U),
+            re.compile(r"(^|\S)'(?=\s|%s|$)" % self.pnct_re_s, re.U),
             # single opening
             re.compile(r"'", re.U),
             # double closing
-            re.compile(r'(^|\S)"(?=\s|%s|$)' % self.pnct, re.U),
+            re.compile(r'(^|\S)"(?=\s|%s|$)' % self.pnct_re_s, re.U),
             # double opening
             re.compile(r'"'),
             # ellipsis
@@ -178,15 +183,17 @@ class Textile(object):
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
         ]
 
-        # These are the changes that need to be made for characters that occur at
-        # the beginning of the string.
+        # These are the changes that need to be made for characters that occur
+        # at the beginning of the string.
         self.glyph_search_initial = list(self.glyph_search)
         # apostrophe's
         self.glyph_search_initial[0] = re.compile(r"(\w)'(\w)", re.U)
         # single closing
-        self.glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|%s|$)" % self.pnct, re.U)
+        self.glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|%s|$)" %
+                self.pnct_re_s, re.U)
         # double closing
-        self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' % self.pnct, re.U)
+        self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' %
+                self.pnct_re_s, re.U)
 
         self.glyph_replace = [x % _glyph_defaults for x in (
             r'\1%(apostrophe)s\2',                # apostrophe's
@@ -215,6 +222,12 @@ class Textile(object):
         if self.html_type == 'html5':
             self.glyph_replace[19] = r'<abbr title="\2">\1</abbr>'
 
+        if self.restricted is True:
+            self.url_schemes = self.restricted_url_schemes
+        else:
+            self.url_schemes = self.unrestricted_url_schemes
+
+
     def parse(self, text, rel=None, head_offset=0, sanitize=False):
         """
         >>> import textile
@@ -241,23 +254,23 @@ class Textile(object):
                 if c.isupper():
                     uppers.append(c)
             uppers = r''.join(uppers)
-            uppers_re_patterns = [
+            uppers_re_s_list = [
                 # 3+ uppercase acronym
                 r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers, uppers),
                 # 3+ uppercase
                 (r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                 % (uppers, self.pnct)),
+                 % (uppers, self.pnct_re_s)),
             ]
         else:
-            uppers_re_patterns = [
+            uppers_re_s_list = [
                 # 3+ uppercase acronym
                 r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
                 # 3+ uppercase
                 (r"""(?:(?<=^)|(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                    % self.pnct),
+                    % self.pnct_re_s),
             ]
 
-        uppers_re = [re.compile(x, re.U) for x in uppers_re_patterns]
+        uppers_re = [re.compile(x, re.U) for x in uppers_re_s_list]
 
         self.glyph_search += uppers_re
         self.glyph_search_initial += uppers_re
@@ -365,7 +378,7 @@ class Textile(object):
                 rowspan = m.group(1)
 
         if element == 'td' or element == 'tr':
-            m = re.search(r'(%s)' % self.vertical_align_re, matched)
+            m = re.search(r'(%s)' % self.valign_re_s, matched)
             if m:
                 style.append("vertical-align:%s" % self.vAlign[m.group(1)])
 
@@ -394,7 +407,7 @@ class Textile(object):
             style.append("padding-right:%sem" % len(m.group(1)))
             matched = matched.replace(m.group(0), '')
 
-        m = re.search(r'(%s)' % self.horizontal_align_re, matched)
+        m = re.search(r'(%s)' % self.halign_re_s, matched)
         if m:
             style.append("text-align:%s" % self.hAlign[m.group(1)])
 
@@ -460,11 +473,9 @@ class Textile(object):
         '\t<table>\n\t\t<tr class="rowclass">\n\t\t\t<td>one</td>\n\t\t\t<td>two</td>\n\t\t\t<td>three</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>a</td>\n\t\t\t<td>b</td>\n\t\t\t<td>c</td>\n\t\t</tr>\n\t</table>\n\n'
         """
         text = text + "\n\n"
-        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\.(.*?)\n)?^(%(a)s%(c)s\.? ?\|.*\|)[\s]*\n\n'
-                             % {'s': self.table_span_re,
-                                'a': self.align_re,
-                                'c': self.c},
-                             re.S | re.M | re.U)
+        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\.(.*?)\n)?^(%(a)s%(c)s\.? ?\|.*\|)[\s]*\n\n' %
+                {'s': self.table_span_re_s, 'a': self.align_re_s, 'c':
+                    self.cslh_re_s}, re.S | re.M | re.U)
         return pattern.sub(self.fTable, text)
 
     def fTable(self, match):
@@ -485,9 +496,9 @@ class Textile(object):
 
             # Caption -- only occurs on row 1, otherwise treat '|=. foo |...'
             # as a normal center-aligned cell.
-            captionpattern = r"^\|\=(%(s)s%(a)s%(c)s)\. ([^\n]*)(.*)" % {
-                's': self.table_span_re, 'a': self.align_re, 'c': self.c
-            }
+            captionpattern = r"^\|\=(%(s)s%(a)s%(c)s)\. ([^\n]*)(.*)" % {'s':
+                    self.table_span_re_s, 'a': self.align_re_s, 'c':
+                    self.cslh_re_s}
             caption_re = re.compile(captionpattern, re.S)
             cmtch = caption_re.match(row)
             if c_row == 1 and cmtch:
@@ -501,9 +512,9 @@ class Textile(object):
             c_row += 1
 
             # Colgroup
-            grppattern = r"^\|:(%(s)s%(a)s%(c)s\. .*)" % {
-                's': self.table_span_re, 'a': self.align_re, 'c': self.c
-            }
+            grppattern = r"^\|:(%(s)s%(a)s%(c)s\. .*)" % {'s':
+                    self.table_span_re_s, 'a': self.align_re_s, 'c':
+                    self.cslh_re_s}
             grp_re = re.compile(grppattern, re.M)
             gmtch = grp_re.match(row.lstrip())
             if gmtch:
@@ -527,9 +538,8 @@ class Textile(object):
                     row = row[row.index('\n'):].lstrip()
 
             grpmatchpattern = (r"(:?^\|(%(v)s)(%(s)s%(a)s%(c)s)\.\s*$\n)?^(.*)"
-                               % {'v': self.vertical_align_re, 's':
-                                  self.table_span_re, 'a': self.align_re, 'c':
-                                  self.c})
+                    % {'v': self.valign_re_s, 's': self.table_span_re_s, 'a':
+                        self.align_re_s, 'c': self.cslh_re_s})
             grpmatch_re = re.compile(grpmatchpattern, re.S | re.M)
             grpmatch = grpmatch_re.match(row.lstrip())
 
@@ -541,8 +551,8 @@ class Textile(object):
             rgrpatts = self.pba(grpmatch.group(3))
             row = grpmatch.group(4)
 
-            rmtch = re.search(r'^(%s%s\. )(.*)'
-                              % (self.align_re, self.c), row.lstrip())
+            rmtch = re.search(r'^(%s%s\. )(.*)' % (self.align_re_s,
+                self.cslh_re_s), row.lstrip())
             if rmtch:
                 ratts = self.pba(rmtch.group(1), 'tr')
                 row = rmtch.group(2)
@@ -556,7 +566,8 @@ class Textile(object):
                 if re.search(r'^_', cell):
                     ctyp = "h"
                 cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (
-                    self.table_span_re, self.align_re, self.c), cell)
+                    self.table_span_re_s, self.align_re_s, self.cslh_re_s),
+                    cell)
                 if cmtch:
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
@@ -610,7 +621,7 @@ class Textile(object):
         bullet_pattern = re.compile(u'^•', re.U | re.M)
 
         pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?)%s[ .].*)$(?![^#*;:])'
-                             % self.lc, re.U | re.M | re.S)
+                             % self.csl_re_s, re.U | re.M | re.S)
         return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
@@ -627,8 +638,8 @@ class Textile(object):
             except IndexError:
                 nextline = ''
 
-            m = re.search(r"^([#*;:]+)(_|\d+)?(%s)[ .](.*)$" % self.lc, line,
-                          re.S)
+            m = re.search(r"^([#*;:]+)(_|\d+)?(%s)[ .](.*)$" % self.csl_re_s,
+                    line, re.S)
             if m:
                 tl, start, atts, content = m.groups()
                 content = content.strip()
@@ -668,7 +679,7 @@ class Textile(object):
                     if showitem:
                         self.olstarts[tl] += 1
 
-                nm = re.match("^([#\*;:]+)(_|[\d]+)?%s[ .].*" % self.lc,
+                nm = re.match("^([#\*;:]+)(_|[\d]+)?%s[ .].*" % self.csl_re_s,
                               nextline)
                 if nm:
                     nl = nm.group(1)
@@ -761,7 +772,7 @@ class Textile(object):
         anon = False
         for line in text:
             pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (
-                tre, self.align_re, self.c
+                tre, self.align_re_s, self.cslh_re_s
             )
             match = re.search(pattern, line, re.S)
             if match:
@@ -848,7 +859,7 @@ class Textile(object):
             (%s)                    # !att
             \.?                     # optional period.
             [\s]+                   # whitespace ends def marker
-            (.*)$                   # !content""" % (self.c), re.X)
+            (.*)$                   # !content""" % (self.cslh_re_s), re.X)
             notedef = notedef_re.sub(self.fParseNoteDefs, content)
 
             # It will be empty if the regex matched and ate it.
@@ -1065,7 +1076,7 @@ class Textile(object):
 
         """
         scheme = urlparse(url)[0]
-        if self.restricted and scheme and scheme not in self.url_schemes:
+        if scheme and scheme not in self.url_schemes:
             return '#'
         return url
 
@@ -1169,7 +1180,7 @@ class Textile(object):
             (?P<slash>\/)?                      # slash
             (?P<post>[^\w\/]*?)                 # trailing text
             (?P<tail>[\]})]|(?=\s|$|\|))        # tail
-        ''' % (self.c, self.urlch)
+        ''' % (self.cslh_re_s, self.urlchar_re_s)
 
         text = re.compile(pattern, re.X | re.U).sub(self.fLink, text)
 
@@ -1289,8 +1300,8 @@ class Textile(object):
                 ([%(pnct)s]*)
                 %(qtag)s
                 (?:$|([\]}])|(?=%(selfpnct)s{1,2}|\s))
-            """ % {'qtag': qtag, 'c': self.c, 'pnct': pnct,
-                   'selfpnct': self.pnct}, re.X)
+            """ % {'qtag': qtag, 'c': self.cslh_re_s, 'pnct': pnct,
+                   'selfpnct': self.pnct_re_s}, re.X)
             text = pattern.sub(self.fSpan, text)
         return text
 
@@ -1340,7 +1351,7 @@ class Textile(object):
             \!                 # closing
             (?::(\S+))?        # optional href
             (?:[\]}]|(?=\s|$)) # lookahead: space or end of string
-        """ % self.c, re.U | re.X)
+        """ % self.cslh_re_s, re.U | re.X)
         return pattern.sub(self.fImage, text)
 
     def fImage(self, match):
@@ -1449,7 +1460,7 @@ class Textile(object):
     def redcloth_list(self, text):
         """Parse the text for definition lists and send them to be
         formatted."""
-        pattern = re.compile(r"^([-]+%s[ .].*:=.*)$(?![^-])" % self.lc,
+        pattern = re.compile(r"^([-]+%s[ .].*:=.*)$(?![^-])" % self.csl_re_s,
                              re.M | re.U | re.S)
         return pattern.sub(self.fRCList, text)
 
@@ -1462,7 +1473,8 @@ class Textile(object):
             text = re.compile(r'\n(?=[-])', re.M).split(match.group())
         for line in text:
             # parse the attributes and content
-            m = re.match(r'^[-]+(%s)[ .](.*)$' % self.lc, line, re.M | re.S)
+            m = re.match(r'^[-]+(%s)[ .](.*)$' % self.csl_re_s, line, re.M |
+                    re.S)
 
             atts, content = m.groups()
             # cleanup
@@ -1517,7 +1529,7 @@ class Textile(object):
                 o = OrderedDict(sorted(o.items(), key=lambda t: t[0]))
             self.notes = o
         text_re = re.compile('<p>notelist(%s)(?:\:([\w|%s]))?([\^!]?)(\+?)\.?[\s]*</p>'
-                             % (self.c, self.syms), re.U)
+                             % (self.cslh_re_s, self.syms_re_s), re.U)
         text = text_re.sub(self.fNoteLists, text)
         return text
 
@@ -1565,22 +1577,20 @@ class Textile(object):
             link = info['def']['link']
         backlink_type = link or g_links
         i_ = self.encode_high(i)
-        allow_inc = i not in self.syms
+        allow_inc = i not in self.syms_re_s
         i_ = int(i_)
 
         if backlink_type == "!":
             return ''
         elif backlink_type == '^':
             return """<sup><a href="#noteref%s">%s</a></sup>""" % (
-                info['refids'][0], i
-            )
+                info['refids'][0], i)
         else:
             result = []
             for refid in info['refids']:
                 i_entity = self.decode_high(i_)
-                sup = """<sup><a href="#noteref%s">%s</a></sup>""" % (
-                    refid, i_entity
-                )
+                sup = """<sup><a href="#noteref%s">%s</a></sup>""" % (refid,
+                        i_entity)
                 if allow_inc:
                     i_ += 1
                 result.append(sup)
@@ -1609,7 +1619,7 @@ class Textile(object):
         \#
         ([^\]!]+)  # !label
         ([!]?)      # !nolink
-        \]""" % self.c, re.X)
+        \]""" % self.cslh_re_s, re.X)
         text = text_re.sub(self.fParseNoteRefs, text)
         return text
 
