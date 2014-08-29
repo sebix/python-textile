@@ -119,7 +119,7 @@ class Textile(object):
 
     note_index = 1
 
-    doctype_whitelist = ['html', 'xhtml', 'html5']
+    doctype_whitelist = ['xhtml', 'html5']
 
     def __init__(self, restricted=False, lite=False, noimage=False,
                  auto_link=False, get_sizes=False, html_type='xhtml'):
@@ -275,7 +275,6 @@ class Textile(object):
         self.glyph_search += uppers_re
         self.glyph_search_initial += uppers_re
 
-        # text = unicode(text)
         text = _normalize_newlines(text)
 
         if self.restricted:
@@ -298,10 +297,9 @@ class Textile(object):
         if sanitize:
             text = sanitizer.sanitize(text)
 
-        breaktag = {'html': '<br>', 'xhtml': '<br />', 'html5': '<br />'}
-
-        text = text.replace(breaktag[self.html_type], '%s\n'
-                            % breaktag[self.html_type])
+        # if the text contains a break tag (<br> or <br />) not followed by
+        # a newline, replace it with a new style break tag and a newline.
+        text = re.sub(r'<br( /)?>(?!\n)', '<br />\n', text)
 
         return text
 
@@ -809,11 +807,7 @@ class Textile(object):
                     line = self.graf(line)
 
             line = self.doPBr(line)
-            if self.html_type == 'xhtml':
-                line = re.sub(r'<br>', '<br />', line)
-
-            if self.html_type == 'html':
-                line = re.sub(r'<br />', '<br>', line)
+            line = re.sub(r'<br>', '<br />', line)
 
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
@@ -1390,10 +1384,7 @@ class Textile(object):
             out.append(' title="%s"' % title)
         if size:
             out.append(' width="%s"' % size[0])
-        if self.html_type == 'html':
-            out.append('>')
-        else:
-            out.append(' />')
+        out.append(' />')
         if href:
             out.append('</a>')
 
@@ -1682,7 +1673,7 @@ def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
 
     auto_link - enable automatic linking of URLs (default: False)
     head_offset - offset to apply to heading levels (default: 0)
-    html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
+    html_type - 'xhtml' or 'html5' style tags (default: 'xhtml')
 
     """
     return Textile(auto_link=auto_link, html_type=html_type).parse(text,
@@ -1699,7 +1690,7 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
     This function takes the following additional parameters:
 
     auto_link - enable automatic linking of URLs (default: False)
-    html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
+    html_type - 'xhtml' or 'html5' style tags (default: 'xhtml')
     lite - restrict block tags to p, bq, and bc, disable tables (default: True)
     noimage - disable image tags (default: True)
 

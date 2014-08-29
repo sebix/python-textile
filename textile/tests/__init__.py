@@ -272,30 +272,30 @@ class TestKnownValues():
 
     # A few extra cases for HTML4
     html_known_values = (
-        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br>\nAnd none replied.</p>'),
-        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br>\nI <b>really</b> <i>know</i>.</p>'),
-        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br>\nof most soft drinks.</p>'),
+        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br />\nAnd none replied.</p>'),
+        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br />\nI <b>really</b> <i>know</i>.</p>'),
+        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br />\nof most soft drinks.</p>'),
         ('I seriously *{color:red}blushed*\nwhen I _(big)sprouted_ that\ncorn stalk from my\n%[es]cabeza%.',
-        '\t<p>I seriously <strong style="color:red;">blushed</strong><br>\nwhen I <em class="big">sprouted</em>'
-        ' that<br>\ncorn stalk from my<br>\n<span lang="es">cabeza</span>.</p>'),
+        '\t<p>I seriously <strong style="color:red;">blushed</strong><br />\nwhen I <em class="big">sprouted</em>'
+        ' that<br />\ncorn stalk from my<br />\n<span lang="es">cabeza</span>.</p>'),
         ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
          '<pre>\n<code>\na.gsub!( /&lt;/, "" )\n</code>\n</pre>'),
         ('<div style="float:right;">\n\nh3. Sidebar\n\n"Hobix":http://hobix.com/\n"Ruby":http://ruby-lang.org/\n\n</div>\n\n'
          'The main text of the\npage goes here and will\nstay to the left of the\nsidebar.',
-         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br>\n'
-         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br>\n'
-         'page goes here and will<br>\nstay to the left of the<br>\nsidebar.</p>'),
+         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br />\n'
+         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br />\n'
+         'page goes here and will<br />\nstay to the left of the<br />\nsidebar.</p>'),
         ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
-         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br>\nand <a href="http://hobix.com">it&#8217;s</a> '
-         '<a href="http://hobix.com">all</a> I ever<br>\n<a href="http://hobix.com">link to</a>!</p>'),
-        ('!http://hobix.com/sample.jpg!', '\t<p><img alt="" src="http://hobix.com/sample.jpg"></p>'),
-        ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny."></p>'),
-        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif"></a></p>'),
+         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />\nand <a href="http://hobix.com">it&#8217;s</a> '
+         '<a href="http://hobix.com">all</a> I ever<br />\n<a href="http://hobix.com">link to</a>!</p>'),
+        ('!http://hobix.com/sample.jpg!', '\t<p><img alt="" src="http://hobix.com/sample.jpg" /></p>'),
+        ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny." /></p>'),
+        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif" /></a></p>'),
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
-         '\t<p><img align="right" alt="" src="obake.gif"></p>\n\n\t'
-         '<p>And others sat all round the small<br>\nmachine and paid it to sing to them.</p>'),
+         '\t<p><img align="right" alt="" src="obake.gif" /></p>\n\n\t'
+         '<p>And others sat all round the small<br />\nmachine and paid it to sing to them.</p>'),
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
-         '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29."></p>'),
+         '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." /></p>'),
         ('notextile. <b> foo bar baz</b>\n\np. quux\n',
          '<b> foo bar baz</b>\n\n\t<p>quux</p>')
     )
@@ -306,9 +306,9 @@ class TestKnownValues():
             yield self.check_textile, t, h, 'xhtml'
 
     def testKnownValuesHTML(self):
-        # HTML4
+        # HTML5
         for t, h in self.html_known_values:
-            yield self.check_textile, t, h, 'html'
+            yield self.check_textile, t, h, 'html5'
 
     def check_textile(self, input, expected_output, html_type):
         output = textile.textile(input, html_type=html_type)
@@ -475,8 +475,8 @@ class Tests():
         eq_(result, expect)
 
         test = """<p>a paragraph of benign text<br />and more text</p>"""
-        result = '<p>a paragraph of benign text<br>\nand more text</p>'
-        expect = textile.Textile(html_type='html').parse(test, sanitize=True)
+        result = '<p>a paragraph of benign text<br />\nand more text</p>'
+        expect = textile.Textile(html_type='html5').parse(test, sanitize=True)
         eq_(result, expect)
 
     def testImageSize(self):
