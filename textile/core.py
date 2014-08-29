@@ -957,7 +957,7 @@ class Textile(object):
             space = ''
         backref = ' class="footnote"'
         if footnoteNum not in self.fn:
-            a = str(uuid.uuid4()).replace('-', '')
+            a = uuid.uuid4().get_hex()
             self.fn[footnoteNum] = a
             backref = '%s id="fnrev%s"' % (backref, a)
         footnoteID = self.fn[footnoteNum]
@@ -1075,7 +1075,7 @@ class Textile(object):
         return url
 
     def shelve(self, text):
-        itemID = str(uuid.uuid4()).replace('-', '')
+        itemID = uuid.uuid4().get_hex()
         self.shelf[itemID] = text
         return itemID
 
@@ -1594,7 +1594,7 @@ class Textile(object):
 
         # Assign an id if the note reference parse hasn't found the label yet.
         if label not in self.notes:
-            self.notes[label] = {'id': str(uuid.uuid4()).replace('-', '')}
+            self.notes[label] = {'id': uuid.uuid4().get_hex()}
 
         # Ignores subsequent defs using the same label
         if 'def' not in self.notes[label]:
@@ -1635,13 +1635,13 @@ class Textile(object):
 
         # Make our anchor point and stash it for possible use in backlinks when
         # the note list is generated later...
-        refid = str(uuid.uuid4()).replace('-', '')
+        refid = uuid.uuid4().get_hex()
         self.notes[label]['refids'].append(refid)
 
         # If we are referencing a note that hasn't had the definition parsed
         # yet, then assign it an ID...
         if not self.notes[label]['id']:
-            self.notes[label]['id'] = str(uuid.uuid4()).replace('-', '')
+            self.notes[label]['id'] = uuid.uuid4().get_hex()
         labelid = self.notes[label]['id']
 
         # Build the link (if any)...
