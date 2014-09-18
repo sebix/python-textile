@@ -590,3 +590,22 @@ class Tests():
         result = '\t<p>We use <abbr title="Cascading Style Sheets"><span class="caps">CSS</span></abbr>.</p>'
         expect = textile.textile(test, html_type="html5")
         eq_(result, expect)
+
+
+class SubclassingTests():
+    """Test Textile subclassing ability."""
+    def testChangeGlyphs(self):
+        class TextilePL(textile.Textile):
+            glyph_definitions = dict(textile.Textile.glyph_definitions,
+                quote_double_open = '&#8222;'
+            )
+
+        test = 'Test "quotes".'
+        expect = '\t<p>Test &#8222;quotes&#8221;'
+        result = TextilePL().parse(test)
+        eq_(expect, result)
+
+        # Base Textile is unchanged.
+        expect = '\t<p>Test &#8220;quotes&#8221;'
+        result = textile.textile(test)
+        eq_(expect, result)

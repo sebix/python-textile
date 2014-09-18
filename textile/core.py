@@ -56,33 +56,6 @@ def _normalize_newlines(string):
     return out
 
 
-_glyph_defaults = {
-    'quote_single_open':  '&#8216;',
-    'quote_single_close': '&#8217;',
-    'quote_double_open':  '&#8220;',
-    'quote_double_close': '&#8221;',
-    'apostrophe':         '&#8217;',
-    'prime':              '&#8242;',
-    'prime_double':       '&#8243;',
-    'ellipsis':           '&#8230;',
-    'ampersand':          '&amp;',
-    'emdash':             '&#8212;',
-    'endash':             '&#8211;',
-    'dimension':          '&#215;',
-    'trademark':          '&#8482;',
-    'registered':         '&#174;',
-    'copyright':          '&#169;',
-    'half':               '&#189;',
-    'quarter':            '&#188;',
-    'threequarters':      '&#190;',
-    'degrees':            '&#176;',
-    'plusminus':          '&#177;',
-    'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-    'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
-    'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-}
-
-
 class Textile(object):
     halign_re_s = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
     valign_re_s = r'[\-^~]'
@@ -120,6 +93,32 @@ class Textile(object):
     note_index = 1
 
     doctype_whitelist = ['xhtml', 'html5']
+
+    glyph_definitions = {
+        'quote_single_open':  '&#8216;',
+        'quote_single_close': '&#8217;',
+        'quote_double_open':  '&#8220;',
+        'quote_double_close': '&#8221;',
+        'apostrophe':         '&#8217;',
+        'prime':              '&#8242;',
+        'prime_double':       '&#8243;',
+        'ellipsis':           '&#8230;',
+        'ampersand':          '&amp;',
+        'emdash':             '&#8212;',
+        'endash':             '&#8211;',
+        'dimension':          '&#215;',
+        'trademark':          '&#8482;',
+        'registered':         '&#174;',
+        'copyright':          '&#169;',
+        'half':               '&#189;',
+        'quarter':            '&#188;',
+        'threequarters':      '&#190;',
+        'degrees':            '&#176;',
+        'plusminus':          '&#177;',
+        'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
+        'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
+        'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
+    }
 
     def __init__(self, restricted=False, lite=False, noimage=False,
                  auto_link=False, get_sizes=False, html_type='xhtml'):
@@ -200,7 +199,7 @@ class Textile(object):
         self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' %
                 self.pnct_re_s, re.U)
 
-        self.glyph_replace = [x % _glyph_defaults for x in (
+        self.glyph_replace = [x % self.glyph_definitions for x in (
             r'\1%(apostrophe)s\2',                # apostrophe's
             r'\1%(apostrophe)s\2',                # back in '88
             r'\1%(quote_single_close)s',          # single closing
@@ -904,9 +903,9 @@ class Textile(object):
 
     def formatFootnote(self, marker, atts='', anchor=True):
         if anchor:
-            pattern = _glyph_defaults['fn_foot_pattern']
+            pattern = self.glyph_definitions['fn_foot_pattern']
         else:
-            pattern = _glyph_defaults['fn_ref_pattern']
+            pattern = self.glyph_definitions['fn_ref_pattern']
         return pattern % {'atts': atts, 'marker': marker}
 
     def footnoteRef(self, text):
