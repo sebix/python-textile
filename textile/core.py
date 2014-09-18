@@ -19,8 +19,8 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 
 import re
+import regex
 import uuid
-from sys import maxunicode, version_info
 
 from textile.tools import sanitizer, imagesize
 
@@ -54,33 +54,6 @@ def _normalize_newlines(string):
     out = re.sub(r'\n\s*\n', '\n\n', out)
     out = re.sub(r'"$', '" ', out)
     return out
-
-
-_glyph_defaults = {
-    'quote_single_open':  '&#8216;',
-    'quote_single_close': '&#8217;',
-    'quote_double_open':  '&#8220;',
-    'quote_double_close': '&#8221;',
-    'apostrophe':         '&#8217;',
-    'prime':              '&#8242;',
-    'prime_double':       '&#8243;',
-    'ellipsis':           '&#8230;',
-    'ampersand':          '&amp;',
-    'emdash':             '&#8212;',
-    'endash':             '&#8211;',
-    'dimension':          '&#215;',
-    'trademark':          '&#8482;',
-    'registered':         '&#174;',
-    'copyright':          '&#169;',
-    'half':               '&#189;',
-    'quarter':            '&#188;',
-    'threequarters':      '&#190;',
-    'degrees':            '&#176;',
-    'plusminus':          '&#177;',
-    'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-    'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
-    'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-}
 
 
 class Textile(object):
@@ -120,6 +93,32 @@ class Textile(object):
     note_index = 1
 
     doctype_whitelist = ['xhtml', 'html5']
+
+    glyph_definitions = {
+        'quote_single_open':  '&#8216;',
+        'quote_single_close': '&#8217;',
+        'quote_double_open':  '&#8220;',
+        'quote_double_close': '&#8221;',
+        'apostrophe':         '&#8217;',
+        'prime':              '&#8242;',
+        'prime_double':       '&#8243;',
+        'ellipsis':           '&#8230;',
+        'ampersand':          '&amp;',
+        'emdash':             '&#8212;',
+        'endash':             '&#8211;',
+        'dimension':          '&#215;',
+        'trademark':          '&#8482;',
+        'registered':         '&#174;',
+        'copyright':          '&#169;',
+        'half':               '&#189;',
+        'quarter':            '&#188;',
+        'threequarters':      '&#190;',
+        'degrees':            '&#176;',
+        'plusminus':          '&#177;',
+        'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
+        'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
+        'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
+    }
 
     def __init__(self, restricted=False, lite=False, noimage=False,
                  auto_link=False, get_sizes=False, html_type='xhtml'):
@@ -181,6 +180,11 @@ class Textile(object):
             re.compile(r'[([]o[])]', re.I | re.U),
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
+            # 3+ uppercase acronym
+            regex.compile(u'\\b([\\p{Lu}][\\p{Lu}0-9]{2,})\\b(?:[(]([^)]*)[)])'),
+            # 3+ uppercase
+            regex.compile(u"""(?:(?<=^)|(?<=\\s)|(?<=[>\\(;-]))([\\p{Lu}]{3,})(\\w*)(?=\\s|%s|$)(?=[^">]*?(<|$))""" %
+                self.pnct_re_s),
         ]
 
         # These are the changes that need to be made for characters that occur
@@ -195,7 +199,7 @@ class Textile(object):
         self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' %
                 self.pnct_re_s, re.U)
 
-        self.glyph_replace = [x % _glyph_defaults for x in (
+        self.glyph_replace = [x % self.glyph_definitions for x in (
             r'\1%(apostrophe)s\2',                # apostrophe's
             r'\1%(apostrophe)s\2',                # back in '88
             r'\1%(quote_single_close)s',          # single closing
@@ -237,43 +241,6 @@ class Textile(object):
         self.notes = OrderedDict()
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
-
-        # regular expressions get hairy when trying to search for unicode
-        # characters.
-        # we need to know if there are unicode charcters in the text.
-        # return True as soon as a unicode character is found, else, False
-        # Python 3 is better equipped to handle unicode data, so this hackery
-        # is version-specific.
-        self.text_has_unicode = next((True for c in text if ord(c) > 128),
-                                     False) and version_info < (3,)
-
-        if self.text_has_unicode:
-            uppers = []
-            for i in xrange(maxunicode):
-                c = unichr(i)
-                if c.isupper():
-                    uppers.append(c)
-            uppers = r''.join(uppers)
-            uppers_re_s_list = [
-                # 3+ uppercase acronym
-                r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers, uppers),
-                # 3+ uppercase
-                (r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                 % (uppers, self.pnct_re_s)),
-            ]
-        else:
-            uppers_re_s_list = [
-                # 3+ uppercase acronym
-                r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
-                # 3+ uppercase
-                (r"""(?:(?<=^)|(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                    % self.pnct_re_s),
-            ]
-
-        uppers_re = [re.compile(x, re.U) for x in uppers_re_s_list]
-
-        self.glyph_search += uppers_re
-        self.glyph_search_initial += uppers_re
 
         text = _normalize_newlines(text)
 
@@ -936,9 +903,9 @@ class Textile(object):
 
     def formatFootnote(self, marker, atts='', anchor=True):
         if anchor:
-            pattern = _glyph_defaults['fn_foot_pattern']
+            pattern = self.glyph_definitions['fn_foot_pattern']
         else:
-            pattern = _glyph_defaults['fn_ref_pattern']
+            pattern = self.glyph_definitions['fn_ref_pattern']
         return pattern % {'atts': atts, 'marker': marker}
 
     def footnoteRef(self, text):
@@ -957,7 +924,7 @@ class Textile(object):
             space = ''
         backref = ' class="footnote"'
         if footnoteNum not in self.fn:
-            a = uuid.uuid4().get_hex()
+            a = uuid.uuid4().hex
             self.fn[footnoteNum] = a
             backref = '%s id="fnrev%s"' % (backref, a)
         footnoteID = self.fn[footnoteNum]
@@ -1075,7 +1042,7 @@ class Textile(object):
         return url
 
     def shelve(self, text):
-        itemID = uuid.uuid4().get_hex()
+        itemID = uuid.uuid4().hex
         self.shelf[itemID] = text
         return itemID
 
@@ -1594,7 +1561,7 @@ class Textile(object):
 
         # Assign an id if the note reference parse hasn't found the label yet.
         if label not in self.notes:
-            self.notes[label] = {'id': uuid.uuid4().get_hex()}
+            self.notes[label] = {'id': uuid.uuid4().hex}
 
         # Ignores subsequent defs using the same label
         if 'def' not in self.notes[label]:
@@ -1635,13 +1602,13 @@ class Textile(object):
 
         # Make our anchor point and stash it for possible use in backlinks when
         # the note list is generated later...
-        refid = uuid.uuid4().get_hex()
+        refid = uuid.uuid4().hex
         self.notes[label]['refids'].append(refid)
 
         # If we are referencing a note that hasn't had the definition parsed
         # yet, then assign it an ID...
         if not self.notes[label]['id']:
-            self.notes[label]['id'] = uuid.uuid4().get_hex()
+            self.notes[label]['id'] = uuid.uuid4().hex
         labelid = self.notes[label]['id']
 
         # Build the link (if any)...

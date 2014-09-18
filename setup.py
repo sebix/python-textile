@@ -1,9 +1,8 @@
 from setuptools import setup, find_packages
+import os
 import sys
 
-from textile import __version__
-
-install_requires = []
+install_requires = ['regex']
 
 try:
     from collections import OrderedDict
@@ -15,9 +14,17 @@ if 'develop' in sys.argv:
         'tox',
     ])
 
+def get_version():
+    basedir = os.path.dirname(__file__)
+    with open(os.path.join(basedir, 'textile/version.py')) as f:
+        VERSION = None
+        exec(f.read())
+        return VERSION
+    raise RuntimeError('No version info found.')
+
 setup(
     name='textile',
-    version=__version__,
+    version=get_version(),
     description='Textile processing for python.',
     url='http://github.com/ikirudennis/python-textile',
     packages=find_packages(),

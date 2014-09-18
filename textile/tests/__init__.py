@@ -230,6 +230,8 @@ class TestKnownValues():
          """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
         (u"""| Foreign EXPÓŅÉNTIAL |""",
          u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
+        (u"""Piękne ŹDŹBŁO""",
+         u"""\t<p>Piękne <span class="caps">ŹDŹBŁO</span></p>"""),
 
         (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
          u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
@@ -588,3 +590,22 @@ class Tests():
         result = '\t<p>We use <abbr title="Cascading Style Sheets"><span class="caps">CSS</span></abbr>.</p>'
         expect = textile.textile(test, html_type="html5")
         eq_(result, expect)
+
+
+class SubclassingTests():
+    """Test Textile subclassing ability."""
+    def testChangeGlyphs(self):
+        class TextilePL(textile.Textile):
+            glyph_definitions = dict(textile.Textile.glyph_definitions,
+                quote_double_open = '&#8222;'
+            )
+
+        test = 'Test "quotes".'
+        expect = '\t<p>Test &#8222;quotes&#8221;'
+        result = TextilePL().parse(test)
+        eq_(expect, result)
+
+        # Base Textile is unchanged.
+        expect = '\t<p>Test &#8220;quotes&#8221;'
+        result = textile.textile(test)
+        eq_(expect, result)
