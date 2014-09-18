@@ -19,8 +19,8 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 
 import re
+import regex
 import uuid
-from sys import maxunicode, version_info
 
 from textile.tools import sanitizer, imagesize
 
@@ -181,6 +181,11 @@ class Textile(object):
             re.compile(r'[([]o[])]', re.I | re.U),
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
+            # 3+ uppercase acronym
+            regex.compile(u'\\b([\\p{Lu}][\\p{Lu}0-9]{2,})\\b(?:[(]([^)]*)[)])'),
+            # 3+ uppercase
+            regex.compile(u"""(?:(?<=^)|(?<=\\s)|(?<=[>\\(;-]))([\\p{Lu}]{3,})(\\w*)(?=\\s|%s|$)(?=[^">]*?(<|$))""" %
+                self.pnct_re_s),
         ]
 
         # These are the changes that need to be made for characters that occur
@@ -237,43 +242,6 @@ class Textile(object):
         self.notes = OrderedDict()
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
-
-        # regular expressions get hairy when trying to search for unicode
-        # characters.
-        # we need to know if there are unicode charcters in the text.
-        # return True as soon as a unicode character is found, else, False
-        # Python 3 is better equipped to handle unicode data, so this hackery
-        # is version-specific.
-        self.text_has_unicode = next((True for c in text if ord(c) > 128),
-                                     False) and version_info < (3,)
-
-        if self.text_has_unicode:
-            uppers = []
-            for i in xrange(maxunicode):
-                c = unichr(i)
-                if c.isupper():
-                    uppers.append(c)
-            uppers = r''.join(uppers)
-            uppers_re_s_list = [
-                # 3+ uppercase acronym
-                r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers, uppers),
-                # 3+ uppercase
-                (r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                 % (uppers, self.pnct_re_s)),
-            ]
-        else:
-            uppers_re_s_list = [
-                # 3+ uppercase acronym
-                r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
-                # 3+ uppercase
-                (r"""(?:(?<=^)|(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                    % self.pnct_re_s),
-            ]
-
-        uppers_re = [re.compile(x, re.U) for x in uppers_re_s_list]
-
-        self.glyph_search += uppers_re
-        self.glyph_search_initial += uppers_re
 
         text = _normalize_newlines(text)
 

@@ -230,6 +230,8 @@ class TestKnownValues():
          """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
         (u"""| Foreign EXPÓŅÉNTIAL |""",
          u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
+        (u"""Piękne ŹDŹBŁO""",
+         u"""\t<p>Piękne <span class="caps">ŹDŹBŁO</span></p>"""),
 
         (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
          u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
