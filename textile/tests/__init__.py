@@ -592,7 +592,7 @@ class Tests():
         eq_(result, expect)
 
 
-class SubclassingTests():
+class TestSubclassing():
     """Test Textile subclassing ability."""
     def testChangeGlyphs(self):
         class TextilePL(textile.Textile):
@@ -601,11 +601,11 @@ class SubclassingTests():
             )
 
         test = 'Test "quotes".'
-        expect = '\t<p>Test &#8222;quotes&#8221;'
+        expect = '\t<p>Test &#8222;quotes&#8221;.</p>'
         result = TextilePL().parse(test)
         eq_(expect, result)
 
         # Base Textile is unchanged.
-        expect = '\t<p>Test &#8220;quotes&#8221;'
+        expect = '\t<p>Test &#8220;quotes&#8221;.</p>'
         result = textile.textile(test)
         eq_(expect, result)
