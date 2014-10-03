@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 __copyright__ = """
 Copyright (c) 2009, Jason Samsa, http://jsamsa.com/
@@ -75,7 +76,7 @@ class Textile(object):
 
     pnct_re_s = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
     urlchar_re_s = r'[\w"$\-_.+!*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
-    syms_re_s = u'¤§µ¶†‡•∗∴◊♠♣♥♦'
+    syms_re_s = '¤§µ¶†‡•∗∴◊♠♣♥♦'
 
     restricted_url_schemes = ('http', 'https', 'ftp', 'mailto')
     unrestricted_url_schemes = restricted_url_schemes + ('file', 'tel',
@@ -181,9 +182,9 @@ class Textile(object):
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
             # 3+ uppercase acronym
-            regex.compile(u'\\b([\\p{Lu}][\\p{Lu}0-9]{2,})\\b(?:[(]([^)]*)[)])'),
+            regex.compile(r'\b([\p{Lu}][\p{Lu}0-9]{2,})\b(?:[(]([^)]*)[)])'),
             # 3+ uppercase
-            regex.compile(u"""(?:(?<=^)|(?<=\\s)|(?<=[>\\(;-]))([\\p{Lu}]{3,})(\\w*)(?=\\s|%s|$)(?=[^">]*?(<|$))""" %
+            regex.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([\p{Lu}]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))""" %
                 self.pnct_re_s),
         ]
 
@@ -235,7 +236,7 @@ class Textile(object):
     def parse(self, text, rel=None, head_offset=0, sanitize=False):
         """
         >>> import textile
-        >>> textile.textile('some textile')
+        >>> Py3 << textile.textile('some textile')
         '\\t<p>some textile</p>'
         """
         self.notes = OrderedDict()
@@ -275,48 +276,48 @@ class Textile(object):
         Parse block attributes.
 
         >>> t = Textile()
-        >>> t.pba(r'\3')
+        >>> Py3 << t.pba(r'\3')
         ''
-        >>> t.pba(r'\\3', element='td')
+        >>> Py3 << t.pba(r'\\3', element='td')
         ' colspan="3"'
-        >>> t.pba(r'/4', element='td')
+        >>> Py3 << t.pba(r'/4', element='td')
         ' rowspan="4"'
-        >>> t.pba(r'\\3/4', element='td')
+        >>> Py3 << t.pba(r'\\3/4', element='td')
         ' colspan="3" rowspan="4"'
 
-        >>> t.pba('^', element='td')
+        >>> Py3 << t.pba('^', element='td')
         ' style="vertical-align:top;"'
 
-        >>> t.pba('{line-height:18px}')
+        >>> Py3 << t.pba('{line-height:18px}')
         ' style="line-height:18px;"'
 
-        >>> t.pba('(foo-bar)')
+        >>> Py3 << t.pba('(foo-bar)')
         ' class="foo-bar"'
 
-        >>> t.pba('(#myid)')
+        >>> Py3 << t.pba('(#myid)')
         ' id="myid"'
 
-        >>> t.pba('(foo-bar#myid)')
+        >>> Py3 << t.pba('(foo-bar#myid)')
         ' class="foo-bar" id="myid"'
 
-        >>> t.pba('((((')
+        >>> Py3 << t.pba('((((')
         ' style="padding-left:4em;"'
 
-        >>> t.pba(')))')
+        >>> Py3 << t.pba(')))')
         ' style="padding-right:3em;"'
 
-        >>> t.pba('[fr]')
+        >>> Py3 << t.pba('[fr]')
         ' lang="fr"'
 
-        >>> t.pba(r'\\5 80', 'col')
+        >>> Py3 << t.pba(r'\\5 80', 'col')
         ' span="5" width="80"'
 
         >>> rt = Textile()
         >>> rt.restricted = True
-        >>> rt.pba('[en]')
+        >>> Py3 << rt.pba('[en]')
         ' lang="en"'
 
-        >>> rt.pba('(#id)')
+        >>> Py3 << rt.pba('(#id)')
         ''
 
         """
@@ -434,7 +435,7 @@ class Textile(object):
     def table(self, text):
         r"""
         >>> t = Textile()
-        >>> t.table('(rowclass). |one|two|three|\n|a|b|c|')
+        >>> Py3 << t.table('(rowclass). |one|two|three|\n|a|b|c|')
         '\t<table>\n\t\t<tr class="rowclass">\n\t\t\t<td>one</td>\n\t\t\t<td>two</td>\n\t\t\t<td>three</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>a</td>\n\t\t\t<td>b</td>\n\t\t\t<td>c</td>\n\t\t</tr>\n\t</table>\n\n'
         """
         text = text + "\n\n"
@@ -578,12 +579,12 @@ class Textile(object):
     def lists(self, text):
         """
         >>> t = Textile()
-        >>> t.lists("* one\\n* two\\n* three")
+        >>> Py3 << t.lists("* one\\n* two\\n* three")
         '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
         """
 
         #Replace line-initial bullets with asterisks
-        bullet_pattern = re.compile(u'^•', re.U | re.M)
+        bullet_pattern = re.compile('^•', re.U | re.M)
 
         pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?)%s[ .].*)$(?![^#*;:])'
                              % self.csl_re_s, re.U | re.M | re.S)
@@ -719,7 +720,7 @@ class Textile(object):
     def block(self, text, head_offset=0):
         """
         >>> t = Textile()
-        >>> t.block('h1. foobar baby')
+        >>> Py3 << t.block('h1. foobar baby')
         '\\t<h1>foobar baby</h1>'
         """
         if not self.lite:
@@ -794,16 +795,16 @@ class Textile(object):
     def fBlock(self, tag, atts, ext, cite, content):
         """
         >>> t = Textile()
-        >>> t.fBlock("bq", "", None, "", "Hello BlockQuote")
+        >>> Py3 << t.fBlock("bq", "", None, "", "Hello BlockQuote")
         ('\\t<blockquote>\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
 
-        >>> t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
+        >>> Py3 << t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
         ('\\t<blockquote cite="http://google.com">\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
 
-        >>> t.fBlock("bc", "", None, "", 'printf "Hello, World";') # doctest: +ELLIPSIS
+        >>> Py3 << t.fBlock("bc", "", None, "", 'printf "Hello, World";') # doctest: +ELLIPSIS
         ('<pre>', '<code>', ..., '</code>', '</pre>', False)
 
-        >>> t.fBlock("h1", "", None, "", "foobar")
+        >>> Py3 << t.fBlock("h1", "", None, "", "foobar")
         ('', '\\t<h1>', 'foobar', '</h1>', '', False)
         """
         att = atts
@@ -911,7 +912,7 @@ class Textile(object):
     def footnoteRef(self, text):
         """
         >>> t = Textile()
-        >>> t.footnoteRef('foo[1] ') # doctest: +ELLIPSIS
+        >>> Py3 << t.footnoteRef('foo[1] ') # doctest: +ELLIPSIS
         'foo<sup class="footnote" id="fnrev..."><a href="#fn...">1</a></sup> '
         """
         return re.compile(r'(?<=\S)\[(\d+)(!?)\](\s)?', re.U).sub(
@@ -954,22 +955,22 @@ class Textile(object):
 
         >>> t = Textile()
 
-        >>> t.glyphs("apostrophe's")
+        >>> Py3 << t.glyphs("apostrophe's")
         'apostrophe&#8217;s'
 
-        >>> t.glyphs("back in '88")
+        >>> Py3 << t.glyphs("back in '88")
         'back in &#8217;88'
 
-        >>> t.glyphs('foo ...')
+        >>> Py3 << t.glyphs('foo ...')
         'foo &#8230;'
 
-        >>> t.glyphs('--')
+        >>> Py3 << t.glyphs('--')
         '&#8212;'
 
-        >>> t.glyphs('FooBar[tm]')
+        >>> Py3 << t.glyphs('FooBar[tm]')
         'FooBar&#8482;'
 
-        >>> t.glyphs("<p><cite>Cat's Cradle</cite> by Vonnegut</p>")
+        >>> Py3 << t.glyphs("<p><cite>Cat's Cradle</cite> by Vonnegut</p>")
         '<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'
 
         """
@@ -993,9 +994,9 @@ class Textile(object):
         Capture and store URL references in self.urlrefs.
 
         >>> t = Textile()
-        >>> t.getRefs("some text [Google]http://www.google.com")
+        >>> Py3 << t.getRefs("some text [Google]http://www.google.com")
         'some text '
-        >>> t.urlrefs
+        >>> Py3 << t.urlrefs
         {'Google': 'http://www.google.com'}
 
         """
@@ -1029,10 +1030,10 @@ class Textile(object):
     def relURL(self, url):
         """
         >>> t = Textile()
-        >>> t.relURL("http://www.google.com/")
+        >>> Py3 << t.relURL("http://www.google.com/")
         'http://www.google.com/'
         >>> t.restricted = True
-        >>> t.relURL("gopher://gopher.com/")
+        >>> Py3 << t.relURL("gopher://gopher.com/")
         '#'
 
         """
@@ -1050,7 +1051,7 @@ class Textile(object):
         """
         >>> t = Textile()
         >>> id = t.shelve("foobar")
-        >>> t.retrieve(id)
+        >>> Py3 << t.retrieve(id)
         'foobar'
         """
         while True:
@@ -1064,7 +1065,7 @@ class Textile(object):
     def encode_html(self, text, quotes=True):
         """Return text that's safe for an HTML attribute.
         >>> t = Textile()
-        >>> t.encode_html('this is a "test" of text that\\\'s safe to put in an <html> attribute.')
+        >>> Py3 << t.encode_html('this is a "test" of text that\\\'s safe to put in an <html> attribute.')
         'this is a &#34;test&#34; of text that&#39;s safe to put in an &lt;html&gt; attribute.'
         """
         a = (
@@ -1111,7 +1112,7 @@ class Textile(object):
     def autoLink(self, text):
         """
         >>> t = Textile()
-        >>> t.autoLink("http://www.ya.ru")
+        >>> Py3 << t.autoLink("http://www.ya.ru")
         '"$":http://www.ya.ru'
         """
 
@@ -1122,7 +1123,7 @@ class Textile(object):
     def links(self, text):
         """
         >>> t = Textile()
-        >>> t.links('fooobar "Google":http://google.com/foobar/ and hello world "flickr":http://flickr.com/photos/jsamsa/ ') # doctest: +ELLIPSIS
+        >>> Py3 << t.links('fooobar "Google":http://google.com/foobar/ and hello world "flickr":http://flickr.com/photos/jsamsa/ ') # doctest: +ELLIPSIS
         'fooobar ... and hello world ...'
         """
 
@@ -1223,10 +1224,10 @@ class Textile(object):
         host = netloc_parsed['host']
         port = netloc_parsed['port'] and netloc_parsed['port']
         path = '/'.join(  # could be encoded slashes!
-            quote(unquote(pce).encode('utf8'), '')
+            quote(unquote(pce).encode('utf8'), b'')
             for pce in parsed.path.split('/')
         )
-        query = quote(unquote(parsed.query), '=&?/')
+        query = quote(unquote(parsed.query), b'=&?/')
         fragment = quote(unquote(parsed.fragment))
 
         # put it back together
@@ -1244,7 +1245,7 @@ class Textile(object):
     def span(self, text):
         """
         >>> t = Textile()
-        >>> t.span(r"hello %(bob)span *strong* and **bold**% goodbye")
+        >>> Py3 << t.span(r"hello %(bob)span *strong* and **bold**% goodbye")
         'hello <span class="bob">span <strong>strong</strong> and <b>bold</b></span> goodbye'
         """
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
@@ -1295,9 +1296,9 @@ class Textile(object):
     def image(self, text):
         """
         >>> t = Textile()
-        >>> t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
+        >>> Py3 << t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
         '<a href="http://jsamsa.com" class="img"><img alt="" src="/imgs/myphoto.jpg" /></a>'
-        >>> t.image('!</imgs/myphoto.jpg!')
+        >>> Py3 << t.image('!</imgs/myphoto.jpg!')
         '<img align="left" alt="" src="/imgs/myphoto.jpg" />'
         """
         pattern = re.compile(r"""
@@ -1521,7 +1522,7 @@ class Textile(object):
                         content = info['def']['content']
                         li = """\t<li%s>%s</li>""" % (atts, content)
                     o.append(li)
-            self.notelist_cache[index] = u"\n".join(o)
+            self.notelist_cache[index] = "\n".join(o)
             result = self.notelist_cache[index]
         if result:
             list_atts = self.pba(att)
@@ -1665,3 +1666,13 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
     return Textile(restricted=True, lite=lite, noimage=noimage,
             auto_link=auto_link, html_type=html_type).parse( text,
                     rel='nofollow')
+
+
+def setup_module(mod):
+    """Inject Py3 to builtins for doctests."""
+    try:
+        import builtins
+    except ImportError:
+        import __builtin__ as builtins
+    from textile.tools.doctest_utils import Py3
+    builtins.Py3 = Py3
