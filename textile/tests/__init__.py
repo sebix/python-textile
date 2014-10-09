@@ -120,7 +120,7 @@ class TestKnownValues():
         ('* A first item\n* A second item\n* A third',
          '\t<ul>\n\t\t<li>A first item</li>\n\t\t<li>A second item</li>\n\t\t<li>A third</li>\n\t</ul>'),
 
-        (u'• A first item\n• A second item\n• A third',
+        ('• A first item\n• A second item\n• A third',
          '\t<ul>\n\t\t<li>A first item</li>\n\t\t<li>A second item</li>\n\t\t<li>A third</li>\n\t</ul>'),
 
         ('* Fuel could be:\n** Coal\n** Gasoline\n** Electricity\n* Humans need only:\n** Water\n** Protein',
@@ -214,8 +214,8 @@ class TestKnownValues():
 
         ('H[~2~]O', '\t<p>H<sub>2</sub>O</p>'),
 
-        (u"p=. Où est l'école, l'église s'il vous plaît?",
-         u"""\t<p style="text-align:center;">Où est l&#8217;école, l&#8217;église s&#8217;il vous plaît?</p>"""),
+        ("p=. Où est l'école, l'église s'il vous plaît?",
+         """\t<p style="text-align:center;">Où est l&#8217;école, l&#8217;église s&#8217;il vous plaît?</p>"""),
 
         ("p=. *_The_* _*Prisoner*_",
          """\t<p style="text-align:center;"><strong><em>The</em></strong> <em><strong>Prisoner</strong></em></p>"""),
@@ -228,19 +228,16 @@ class TestKnownValues():
 
         ("""p=. "Please visit our "Textile Test Page":http://textile.sitemonks.com" """,
          """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
-        # nose doesn't handle unicode correctly, and reports this as a failure
-        # no matter what I try. It's strange that textile handles the unicode
-        # test above properly but not this one.
-        # In all my testing, textile properly handles the test below according
-        # to specification... and the prophecy.
-        (u"""| Foreign EXPÓŅÉNTIAL |""",
-         u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
+        ("""| Foreign EXPÓŅÉNTIAL |""",
+         """\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
+        ("""Piękne ŹDŹBŁO""",
+         """\t<p>Piękne <span class="caps">ŹDŹBŁO</span></p>"""),
 
-        (u"""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
-         u"""\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
+        ("""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
+         """\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
         ('p{font-size:0.8em}. *TxStyle* is a documentation project of Textile 2.4 for "Textpattern CMS":http://texpattern.com.',
          '\t<p style="font-size:0.8em;"><strong>TxStyle</strong> is a documentation project of Textile 2.4 for <a href="http://texpattern.com">Textpattern <span class="caps">CMS</span></a>.</p>'),
-        (u""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", u"""\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
+        (""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", """\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
         ("""Here is some text with a <!-- Commented out[1] --> block.\n\n<!-- Here is a single <span>line</span> comment block -->\n\n<!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n-->\n\nbc. <!-- Here is a comment block in a code block. -->""",
          """\t<p>Here is some text with a<!-- Commented out[1] --> block.</p>\n\n\t<p><!-- Here is a single <span>line</span> comment block --></p>\n\n\t<p><!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n--></p>\n\n<pre><code>&lt;!-- Here is a comment block in a code block. --&gt;\n</code></pre>"""),
         (""""Textile(c)" is a registered(r) 'trademark' of Textpattern(tm) -- or TXP(That's textpattern!) -- at least it was - back in '88 when 2x4 was (+/-)5(o)C ... QED!\n\np{font-size: 200%;}. 2(1/4) 3(1/2) 4(3/4)""",
@@ -277,30 +274,30 @@ class TestKnownValues():
 
     # A few extra cases for HTML4
     html_known_values = (
-        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br>\nAnd none replied.</p>'),
-        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br>\nI <b>really</b> <i>know</i>.</p>'),
-        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br>\nof most soft drinks.</p>'),
+        ('I spoke.\nAnd none replied.', '\t<p>I spoke.<br />\nAnd none replied.</p>'),
+        ('I __know__.\nI **really** __know__.', '\t<p>I <i>know</i>.<br />\nI <b>really</b> <i>know</i>.</p>'),
+        ("I'm %{color:red}unaware%\nof most soft drinks.", '\t<p>I&#8217;m <span style="color:red;">unaware</span><br />\nof most soft drinks.</p>'),
         ('I seriously *{color:red}blushed*\nwhen I _(big)sprouted_ that\ncorn stalk from my\n%[es]cabeza%.',
-        '\t<p>I seriously <strong style="color:red;">blushed</strong><br>\nwhen I <em class="big">sprouted</em>'
-        ' that<br>\ncorn stalk from my<br>\n<span lang="es">cabeza</span>.</p>'),
+        '\t<p>I seriously <strong style="color:red;">blushed</strong><br />\nwhen I <em class="big">sprouted</em>'
+        ' that<br />\ncorn stalk from my<br />\n<span lang="es">cabeza</span>.</p>'),
         ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
          '<pre>\n<code>\na.gsub!( /&lt;/, "" )\n</code>\n</pre>'),
         ('<div style="float:right;">\n\nh3. Sidebar\n\n"Hobix":http://hobix.com/\n"Ruby":http://ruby-lang.org/\n\n</div>\n\n'
          'The main text of the\npage goes here and will\nstay to the left of the\nsidebar.',
-         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br>\n'
-         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br>\n'
-         'page goes here and will<br>\nstay to the left of the<br>\nsidebar.</p>'),
+         '\t<p><div style="float:right;"></p>\n\n\t<h3>Sidebar</h3>\n\n\t<p><a href="http://hobix.com/">Hobix</a><br />\n'
+         '<a href="http://ruby-lang.org/">Ruby</a></p>\n\n\t<p></div></p>\n\n\t<p>The main text of the<br />\n'
+         'page goes here and will<br />\nstay to the left of the<br />\nsidebar.</p>'),
         ('I am crazy about "Hobix":hobix\nand "it\'s":hobix "all":hobix I ever\n"link to":hobix!\n\n[hobix]http://hobix.com',
-         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br>\nand <a href="http://hobix.com">it&#8217;s</a> '
-         '<a href="http://hobix.com">all</a> I ever<br>\n<a href="http://hobix.com">link to</a>!</p>'),
-        ('!http://hobix.com/sample.jpg!', '\t<p><img alt="" src="http://hobix.com/sample.jpg"></p>'),
-        ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny."></p>'),
-        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif"></a></p>'),
+         '\t<p>I am crazy about <a href="http://hobix.com">Hobix</a><br />\nand <a href="http://hobix.com">it&#8217;s</a> '
+         '<a href="http://hobix.com">all</a> I ever<br />\n<a href="http://hobix.com">link to</a>!</p>'),
+        ('!http://hobix.com/sample.jpg!', '\t<p><img alt="" src="http://hobix.com/sample.jpg" /></p>'),
+        ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny." /></p>'),
+        ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif" /></a></p>'),
         ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
-         '\t<p><img align="right" alt="" src="obake.gif"></p>\n\n\t'
-         '<p>And others sat all round the small<br>\nmachine and paid it to sing to them.</p>'),
+         '\t<p><img align="right" alt="" src="obake.gif" /></p>\n\n\t'
+         '<p>And others sat all round the small<br />\nmachine and paid it to sing to them.</p>'),
         ('!http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29.!',
-         '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29."></p>'),
+         '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." /></p>'),
         ('notextile. <b> foo bar baz</b>\n\np. quux\n',
          '<b> foo bar baz</b>\n\n\t<p>quux</p>')
     )
@@ -311,9 +308,9 @@ class TestKnownValues():
             yield self.check_textile, t, h, 'xhtml'
 
     def testKnownValuesHTML(self):
-        # HTML4
+        # HTML5
         for t, h in self.html_known_values:
-            yield self.check_textile, t, h, 'html'
+            yield self.check_textile, t, h, 'html5'
 
     def check_textile(self, input, expected_output, html_type):
         output = textile.textile(input, html_type=html_type)
@@ -446,8 +443,8 @@ class Tests():
         eq_(result, expect)
 
     def testUnicodeFootnote(self):
-        html = textile.textile(u'текст[1]')
-        assert_true(re.compile(u'^\t<p>текст<sup class="footnote" id="fnrev[a-f0-9]{32}"><a href="#fn[a-f0-9]{32}">1</a></sup></p>', re.U).search(html))
+        html = textile.textile('текст[1]')
+        assert_true(re.compile('^\t<p>текст<sup class="footnote" id="fnrev[a-f0-9]{32}"><a href="#fn[a-f0-9]{32}">1</a></sup></p>', re.U).search(html))
 
     def testAutoLinking(self):
         test = """some text "test":http://www.google.com http://www.google.com "$":http://www.google.com"""
@@ -471,17 +468,17 @@ class Tests():
 
         test = "a paragraph of benign text"
         result = "\t<p>a paragraph of benign text</p>"
-        expect = textile.Textile().textile(test, sanitize=True)
+        expect = textile.Textile().parse(test, sanitize=True)
         eq_(result, expect)
 
         test = """<p style="width: expression(alert('evil'));">a paragraph of evil text</p>"""
         result = '<p style="">a paragraph of evil text</p>'
-        expect = textile.Textile().textile(test, sanitize=True)
+        expect = textile.Textile().parse(test, sanitize=True)
         eq_(result, expect)
 
         test = """<p>a paragraph of benign text<br />and more text</p>"""
-        result = '<p>a paragraph of benign text<br>\nand more text</p>'
-        expect = textile.Textile(html_type='html').textile(test, sanitize=True)
+        result = '<p>a paragraph of benign text<br />\nand more text</p>'
+        expect = textile.Textile(html_type='html5').parse(test, sanitize=True)
         eq_(result, expect)
 
     def testImageSize(self):
@@ -492,7 +489,7 @@ class Tests():
 
         test = "!http://www.google.com/intl/en_ALL/images/srpr/logo1w.png!"
         result = '\t<p><img alt="" height="95" src="http://www.google.com/intl/en_ALL/images/srpr/logo1w.png" width="275" /></p>'
-        expect = textile.Textile(get_sizes=True).textile(test)
+        expect = textile.Textile(get_sizes=True).parse(test)
         eq_(result, expect)
 
     def testAtSignAndNotextileInTable(self):
@@ -502,30 +499,30 @@ class Tests():
         eq_(result, expect)
 
     def testEndnotesSimple(self):
-        test = u"""Scientists say the moon is slowly shrinking[#my_first_label].\n\nnotelist!.\n\nnote#my_first_label Over the past billion years, about a quarter of the moon's 4.5 billion-year lifespan, it has shrunk about 200 meters (700 feet) in diameter."""
+        test = """Scientists say the moon is slowly shrinking[#my_first_label].\n\nnotelist!.\n\nnote#my_first_label Over the past billion years, about a quarter of the moon's 4.5 billion-year lifespan, it has shrunk about 200 meters (700 feet) in diameter."""
         html = textile.textile(test)
         result_pattern = r"""\t<p>Scientists say the moon is slowly shrinking<sup><a href="#(note[a-f0-9]{32})"><span id="noteref[a-f0-9]{32}">1</span></a></sup>.</p>\n\n\t<ol>\n\t<li><span id="\1"> </span>Over the past billion years, about a quarter of the moon&#8217;s 4.5 billion-year lifespan, it has shrunk about 200 meters \(700 feet\) in diameter.</li>\n</ol>$"""
         result_re = re.compile(result_pattern)
         assert_true(result_re.search(html))
 
     def testEndnotesComplex(self):
-        test = u"""Tim Berners-Lee is one of the pioneer voices in favour of Net Neutrality[#netneutral] and has expressed the view that ISPs should supply "connectivity with no strings attached"[#netneutral!] [#tbl_quote]\n\nBerners-Lee admitted that the forward slashes ("//") in a web address were actually unnecessary.  He told the newspaper that he could easily have designed URLs not to have the forward slashes.  "... it seemed like a good idea at the time,"[#slashes]\n\nnote#netneutral. "Web creator rejects net tracking":http://news.bbc.co.uk/2/hi/technology/7613201.stm. BBC. 15 September 2008\n\nnote#tbl_quote. "Web inventor's warning on spy software":http://www.telegraph.co.uk/news/uknews/1581938/Web-inventor%27s-warning-on-spy-software.html. The Daily Telegraph (London). 25 May 2008\n\nnote#slashes. "Berners-Lee 'sorry' for slashes":http://news.bbc.co.uk/1/hi/technology/8306631.stm. BBC. 14 October 2009\n\nnotelist."""
+        test = """Tim Berners-Lee is one of the pioneer voices in favour of Net Neutrality[#netneutral] and has expressed the view that ISPs should supply "connectivity with no strings attached"[#netneutral!] [#tbl_quote]\n\nBerners-Lee admitted that the forward slashes ("//") in a web address were actually unnecessary.  He told the newspaper that he could easily have designed URLs not to have the forward slashes.  "... it seemed like a good idea at the time,"[#slashes]\n\nnote#netneutral. "Web creator rejects net tracking":http://news.bbc.co.uk/2/hi/technology/7613201.stm. BBC. 15 September 2008\n\nnote#tbl_quote. "Web inventor's warning on spy software":http://www.telegraph.co.uk/news/uknews/1581938/Web-inventor%27s-warning-on-spy-software.html. The Daily Telegraph (London). 25 May 2008\n\nnote#slashes. "Berners-Lee 'sorry' for slashes":http://news.bbc.co.uk/1/hi/technology/8306631.stm. BBC. 14 October 2009\n\nnotelist."""
         html = textile.textile(test)
         result_pattern = r"""\t<p>Tim Berners-Lee is one of the pioneer voices in favour of Net Neutrality<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">1</span></a></sup> and has expressed the view that <span class="caps">ISP</span>s should supply &#8220;connectivity with no strings attached&#8221;<sup><span id="(noteref[a-f0-9]{32})">1</span></sup> <sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">2</span></a></sup></p>\n\n\t<p>Berners-Lee admitted that the forward slashes \(&#8221;//&#8221;\) in a web address were actually unnecessary.  He told the newspaper that he could easily have designed <span class="caps">URL</span>s not to have the forward slashes.  &#8220;&#8230; it seemed like a good idea at the time,&#8221;<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">3</span></a></sup></p>\n\n\t<ol>\n\t<li><sup><a href="#\2">a</a></sup> <sup><a href="#\3">b</a></sup><span id="\1"> </span><a href="http://news.bbc.co.uk/2/hi/technology/7613201.stm">Web creator rejects net tracking</a>. <span class="caps">BBC</span>. 15 September 2008</li>\n\t<li><sup><a href="#\5">a</a></sup><span id="\4"> </span><a href="http://www.telegraph.co.uk/news/uknews/1581938/Web-inventor%27s-warning-on-spy-software.html">Web inventor&#8217;s warning on spy software</a>. The Daily Telegraph \(London\). 25 May 2008</li>\n\t<li><sup><a href="#\7">a</a></sup><span id="\6"> </span><a href="http://news.bbc.co.uk/1/hi/technology/8306631.stm">Berners-Lee &#8216;sorry&#8217; for slashes</a>. <span class="caps">BBC</span>. 14 October 2009</li>\n</ol>$"""
         result_re = re.compile(result_pattern)
         assert_true(result_re.search(html))
 
     def testEndnotesUnreferencedNote(self):
-        test = u"""Scientists say[#lavader] the moon is quite small. But I, for one, don't believe them. Others claim it to be made of cheese[#aardman]. If this proves true I suspect we are in for troubled times[#apollo13] as people argue over their "share" of the moon's cheese. In the end, its limited size[#lavader] may prove problematic.\n\nnote#lavader(noteclass). "Proof of the small moon hypothesis":http://antwrp.gsfc.nasa.gov/apod/ap080801.html. Copyright(c) Laurent Laveder\n\nnote#aardman(#noteid). "Proof of a cheese moon":http://www.imdb.com/title/tt0104361\n\nnote#apollo13. After all, things do go "wrong":http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}:§^.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}:‡"""
+        test = """Scientists say[#lavader] the moon is quite small. But I, for one, don't believe them. Others claim it to be made of cheese[#aardman]. If this proves true I suspect we are in for troubled times[#apollo13] as people argue over their "share" of the moon's cheese. In the end, its limited size[#lavader] may prove problematic.\n\nnote#lavader(noteclass). "Proof of the small moon hypothesis":http://antwrp.gsfc.nasa.gov/apod/ap080801.html. Copyright(c) Laurent Laveder\n\nnote#aardman(#noteid). "Proof of a cheese moon":http://www.imdb.com/title/tt0104361\n\nnote#apollo13. After all, things do go "wrong":http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}:§^.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}:‡"""
         html = textile.textile(test)
-        result_pattern = r"""\t<p>Scientists say<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">1</span></a></sup> the moon is quite small. But I, for one, don&#8217;t believe them. Others claim it to be made of cheese<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">2</span></a></sup>. If this proves true I suspect we are in for troubled times<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">3</span></a></sup> as people argue over their &#8220;share&#8221; of the moon&#8217;s cheese. In the end, its limited size<sup><a href="#\1"><span id="(noteref[a-f0-9]{32})">1</span></a></sup> may prove problematic.</p>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li class="noteclass"><sup><a href="#\2">a</a></sup> <sup><a href="#\7">b</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li id="noteid"><sup><a href="#\4">a</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\6">a</a></sup><span id="\5"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n</ol>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li class="noteclass"><sup><a href="#\2">\xa7</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li id="noteid"><sup><a href="#\4">\xa7</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\6">\xa7</a></sup><span id="\5"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n</ol>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li class="noteclass"><sup><a href="#\2">\u2021</a></sup> <sup><a href="#\7">\u2021</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li id="noteid"><sup><a href="#\4">\u2021</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\6">\u2021</a></sup><span id="\5"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n</ol>"""
+        result_pattern = r"""\t<p>Scientists say<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">1</span></a></sup> the moon is quite small. But I, for one, don&#8217;t believe them. Others claim it to be made of cheese<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">2</span></a></sup>. If this proves true I suspect we are in for troubled times<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">3</span></a></sup> as people argue over their &#8220;share&#8221; of the moon&#8217;s cheese. In the end, its limited size<sup><a href="#\1"><span id="(noteref[a-f0-9]{32})">1</span></a></sup> may prove problematic.</p>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li class="noteclass"><sup><a href="#\2">a</a></sup> <sup><a href="#\7">b</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li id="noteid"><sup><a href="#\4">a</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\6">a</a></sup><span id="\5"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n</ol>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li class="noteclass"><sup><a href="#\2">\xa7</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li id="noteid"><sup><a href="#\4">\xa7</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\6">\xa7</a></sup><span id="\5"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n</ol>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li class="noteclass"><sup><a href="#\2">‡</a></sup> <sup><a href="#\7">‡</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li id="noteid"><sup><a href="#\4">‡</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\6">‡</a></sup><span id="\5"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n</ol>"""
         result_re = re.compile(result_pattern, re.U)
         assert_true(result_re.search(html))
 
     def testEndnotesMalformed(self):
-        test = u"""Scientists say[#lavader] the moon is quite small. But I, for one, don't believe them. Others claim it to be made of cheese[#aardman]. If this proves true I suspect we are in for troubled times[#apollo13!] as people argue over their "share" of the moon's cheese. In the end, its limited size[#lavader] may prove problematic.\n\nnote#unused An unreferenced note.\n\nnote#lavader^ "Proof of the small moon hypothesis":http://antwrp.gsfc.nasa.gov/apod/ap080801.html. Copyright(c) Laurent Laveder\n\nnote#aardman^ "Proof of a cheese moon":http://www.imdb.com/title/tt0104361\n\nnote#apollo13^ After all, things do go "wrong":http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}:α!+"""
+        test = """Scientists say[#lavader] the moon is quite small. But I, for one, don't believe them. Others claim it to be made of cheese[#aardman]. If this proves true I suspect we are in for troubled times[#apollo13!] as people argue over their "share" of the moon's cheese. In the end, its limited size[#lavader] may prove problematic.\n\nnote#unused An unreferenced note.\n\nnote#lavader^ "Proof of the small moon hypothesis":http://antwrp.gsfc.nasa.gov/apod/ap080801.html. Copyright(c) Laurent Laveder\n\nnote#aardman^ "Proof of a cheese moon":http://www.imdb.com/title/tt0104361\n\nnote#apollo13^ After all, things do go "wrong":http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident.\n\nnotelist{padding:1em; margin:1em; border-bottom:1px solid gray}:α!+"""
         html = textile.textile(test)
-        result_pattern = r"""^\t<p>Scientists say<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">1</span></a></sup> the moon is quite small. But I, for one, don&#8217;t believe them. Others claim it to be made of cheese<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">2</span></a></sup>. If this proves true I suspect we are in for troubled times<sup><span id="(noteref[a-f0-9]{32})">3</span></sup> as people argue over their &#8220;share&#8221; of the moon&#8217;s cheese. In the end, its limited size<sup><a href="#\1"><span id="noteref[a-f0-9]{32}">1</span></a></sup> may prove problematic.</p>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li><sup><a href="#\2">\u03b1</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li><sup><a href="#\4">\u03b1</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\5">\u03b1</a></sup><span id="note[a-f0-9]{32}"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n\t<li>An unreferenced note.</li>\n</ol>$"""
+        result_pattern = r"""^\t<p>Scientists say<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">1</span></a></sup> the moon is quite small. But I, for one, don&#8217;t believe them. Others claim it to be made of cheese<sup><a href="#(note[a-f0-9]{32})"><span id="(noteref[a-f0-9]{32})">2</span></a></sup>. If this proves true I suspect we are in for troubled times<sup><span id="(noteref[a-f0-9]{32})">3</span></sup> as people argue over their &#8220;share&#8221; of the moon&#8217;s cheese. In the end, its limited size<sup><a href="#\1"><span id="noteref[a-f0-9]{32}">1</span></a></sup> may prove problematic.</p>\n\n\t<ol style="padding:1em; margin:1em; border-bottom:1px solid gray;">\n\t<li><sup><a href="#\2">α</a></sup><span id="\1"> </span><a href="http://antwrp.gsfc.nasa.gov/apod/ap080801.html">Proof of the small moon hypothesis</a>. Copyright&#169; Laurent Laveder</li>\n\t<li><sup><a href="#\4">α</a></sup><span id="\3"> </span><a href="http://www.imdb.com/title/tt0104361">Proof of a cheese moon</a></li>\n\t<li><sup><a href="#\5">α</a></sup><span id="note[a-f0-9]{32}"> </span>After all, things do go <a href="http://en.wikipedia.org/wiki/Apollo_13#The_oxygen_tank_incident">wrong</a>.</li>\n\t<li>An unreferenced note.</li>\n</ol>$"""
         result_re = re.compile(result_pattern, re.U)
         assert_true(result_re.search(html))
 
@@ -561,13 +558,13 @@ class Tests():
         eurl = t.encode_url(url)
         eq_(eurl, result)
 
-        url = u"http://user:password@www.example.local/Übermensch"
-        result = u"http://user:password@www.example.local/%C3%9Cbermensch"
+        url = "http://user:password@www.example.local/Übermensch"
+        result = "http://user:password@www.example.local/%C3%9Cbermensch"
         eurl = t.encode_url(url)
         eq_(eurl, result)
 
-        url = u'http://user:password@www.example.local:8080/Übermensch'
-        result = u'http://user:password@www.example.local:8080/%C3%9Cbermensch'
+        url = 'http://user:password@www.example.local:8080/Übermensch'
+        result = 'http://user:password@www.example.local:8080/%C3%9Cbermensch'
         eurl = t.encode_url(url)
         eq_(eurl, result)
 
@@ -593,3 +590,22 @@ class Tests():
         result = '\t<p>We use <abbr title="Cascading Style Sheets"><span class="caps">CSS</span></abbr>.</p>'
         expect = textile.textile(test, html_type="html5")
         eq_(result, expect)
+
+
+class TestSubclassing():
+    """Test Textile subclassing ability."""
+    def testChangeGlyphs(self):
+        class TextilePL(textile.Textile):
+            glyph_definitions = dict(textile.Textile.glyph_definitions,
+                quote_double_open = '&#8222;'
+            )
+
+        test = 'Test "quotes".'
+        expect = '\t<p>Test &#8222;quotes&#8221;.</p>'
+        result = TextilePL().parse(test)
+        eq_(expect, result)
+
+        # Base Textile is unchanged.
+        expect = '\t<p>Test &#8220;quotes&#8221;.</p>'
+        result = textile.textile(test)
+        eq_(expect, result)

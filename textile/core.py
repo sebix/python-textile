@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 __copyright__ = """
 Copyright (c) 2009, Jason Samsa, http://jsamsa.com/
@@ -19,8 +20,8 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 
 import re
+import regex
 import uuid
-from sys import maxunicode, version_info
 
 from textile.tools import sanitizer, imagesize
 
@@ -56,52 +57,30 @@ def _normalize_newlines(string):
     return out
 
 
-_glyph_defaults = {
-    'quote_single_open':  '&#8216;',
-    'quote_single_close': '&#8217;',
-    'quote_double_open':  '&#8220;',
-    'quote_double_close': '&#8221;',
-    'apostrophe':         '&#8217;',
-    'prime':              '&#8242;',
-    'prime_double':       '&#8243;',
-    'ellipsis':           '&#8230;',
-    'ampersand':          '&amp;',
-    'emdash':             '&#8212;',
-    'endash':             '&#8211;',
-    'dimension':          '&#215;',
-    'trademark':          '&#8482;',
-    'registered':         '&#174;',
-    'copyright':          '&#169;',
-    'half':               '&#189;',
-    'quarter':            '&#188;',
-    'threequarters':      '&#190;',
-    'degrees':            '&#176;',
-    'plusminus':          '&#177;',
-    'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-    'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
-    'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-}
-
-
 class Textile(object):
-    horizontal_align_re = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
-    vertical_align_re = r'[\-^~]'
-    class_re = r'(?:\([^)\n]+\))'       # Don't allow classes/ids,
-    language_re = r'(?:\[[^\]\n]+\])'   # languages,
-    style_re = r'(?:\{[^}\n]+\})'       # or styles to span across newlines
-    colspan_re = r'(?:\\\d+)'
-    rowspan_re = r'(?:\/\d+)'
-    align_re = r'(?:%s|%s)*' % (horizontal_align_re, vertical_align_re)
-    table_span_re = r'(?:%s|%s)*' % (colspan_re, rowspan_re)
-    c = r'(?:%s)*' % '|'.join([class_re, style_re, language_re,
-        horizontal_align_re])
-    lc = r'(?:%s)*' % '|'.join([class_re, style_re, language_re])
+    halign_re_s = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
+    valign_re_s = r'[\-^~]'
+    class_re_s = r'(?:\([^)\n]+\))'       # Don't allow classes/ids,
+    language_re_s = r'(?:\[[^\]\n]+\])'   # languages,
+    style_re_s = r'(?:\{[^}\n]+\})'       # or styles to span across newlines
+    colspan_re_s = r'(?:\\\d+)'
+    rowspan_re_s = r'(?:\/\d+)'
+    align_re_s = r'(?:%s|%s)*' % (halign_re_s, valign_re_s)
+    table_span_re_s = r'(?:%s|%s)*' % (colspan_re_s, rowspan_re_s)
+    # regex string to match class, style, language and horizontal alignment
+    # attributes
+    cslh_re_s = r'(?:%s)*' % '|'.join([class_re_s, style_re_s, language_re_s,
+        halign_re_s])
+    # regex string to match class, style and language attributes
+    csl_re_s = r'(?:%s)*' % '|'.join([class_re_s, style_re_s, language_re_s])
 
-    pnct = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
-    urlch = r'[\w"$\-_.+!*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
-    syms = u'¤§µ¶†‡•∗∴◊♠♣♥♦'
+    pnct_re_s = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
+    urlchar_re_s = r'[\w"$\-_.+!*\'(),";\/?:@=&%#{}|\\^~\[\]`]'
+    syms_re_s = '¤§µ¶†‡•∗∴◊♠♣♥♦'
 
-    url_schemes = ('http', 'https', 'ftp', 'mailto')
+    restricted_url_schemes = ('http', 'https', 'ftp', 'mailto')
+    unrestricted_url_schemes = restricted_url_schemes + ('file', 'tel',
+            'callto', 'sftp')
 
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p', '###')
     btag_lite = ('bq', 'bc', 'p')
@@ -114,7 +93,33 @@ class Textile(object):
 
     note_index = 1
 
-    doctype_whitelist = ['html', 'xhtml', 'html5']
+    doctype_whitelist = ['xhtml', 'html5']
+
+    glyph_definitions = {
+        'quote_single_open':  '&#8216;',
+        'quote_single_close': '&#8217;',
+        'quote_double_open':  '&#8220;',
+        'quote_double_close': '&#8221;',
+        'apostrophe':         '&#8217;',
+        'prime':              '&#8242;',
+        'prime_double':       '&#8243;',
+        'ellipsis':           '&#8230;',
+        'ampersand':          '&amp;',
+        'emdash':             '&#8212;',
+        'endash':             '&#8211;',
+        'dimension':          '&#215;',
+        'trademark':          '&#8482;',
+        'registered':         '&#174;',
+        'copyright':          '&#169;',
+        'half':               '&#189;',
+        'quarter':            '&#188;',
+        'threequarters':      '&#190;',
+        'degrees':            '&#176;',
+        'plusminus':          '&#177;',
+        'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
+        'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
+        'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
+    }
 
     def __init__(self, restricted=False, lite=False, noimage=False,
                  auto_link=False, get_sizes=False, html_type='xhtml'):
@@ -132,22 +137,21 @@ class Textile(object):
         self.html_type = html_type
         self.max_span_depth = 5
 
-        # We'll be searching for characters that need to be HTML-encoded to produce
-        # properly valid html.
-        # These are the defaults that work in most cases.  Below, we'll copy this
-        # and modify the necessary pieces to make it work for characters at the
-        # beginning of the string.
+        # We'll be searching for characters that need to be HTML-encoded to
+        # produce properly valid html.  These are the defaults that work in
+        # most cases.  Below, we'll copy this and modify the necessary pieces
+        # to make it work for characters at the beginning of the string.
         self.glyph_search = [
             # apostrophe's
             re.compile(r"(^|\w)'(\w)", re.U),
             # back in '88
             re.compile(r"(\s)'(\d+\w?)\b(?!')", re.U),
             # single closing
-            re.compile(r"(^|\S)'(?=\s|%s|$)" % self.pnct, re.U),
+            re.compile(r"(^|\S)'(?=\s|%s|$)" % self.pnct_re_s, re.U),
             # single opening
             re.compile(r"'", re.U),
             # double closing
-            re.compile(r'(^|\S)"(?=\s|%s|$)' % self.pnct, re.U),
+            re.compile(r'(^|\S)"(?=\s|%s|$)' % self.pnct_re_s, re.U),
             # double opening
             re.compile(r'"'),
             # ellipsis
@@ -176,19 +180,26 @@ class Textile(object):
             re.compile(r'[([]o[])]', re.I | re.U),
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
+            # 3+ uppercase acronym
+            regex.compile(r'\b([\p{Lu}][\p{Lu}0-9]{2,})\b(?:[(]([^)]*)[)])'),
+            # 3+ uppercase
+            regex.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([\p{Lu}]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))""" %
+                self.pnct_re_s),
         ]
 
-        # These are the changes that need to be made for characters that occur at
-        # the beginning of the string.
+        # These are the changes that need to be made for characters that occur
+        # at the beginning of the string.
         self.glyph_search_initial = list(self.glyph_search)
         # apostrophe's
         self.glyph_search_initial[0] = re.compile(r"(\w)'(\w)", re.U)
         # single closing
-        self.glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|%s|$)" % self.pnct, re.U)
+        self.glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|%s|$)" %
+                self.pnct_re_s, re.U)
         # double closing
-        self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' % self.pnct, re.U)
+        self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|%s|$)' %
+                self.pnct_re_s, re.U)
 
-        self.glyph_replace = [x % _glyph_defaults for x in (
+        self.glyph_replace = [x % self.glyph_definitions for x in (
             r'\1%(apostrophe)s\2',                # apostrophe's
             r'\1%(apostrophe)s\2',                # back in '88
             r'\1%(quote_single_close)s',          # single closing
@@ -215,54 +226,22 @@ class Textile(object):
         if self.html_type == 'html5':
             self.glyph_replace[19] = r'<abbr title="\2">\1</abbr>'
 
-    def textile(self, text, rel=None, head_offset=0, sanitize=False):
+        if self.restricted is True:
+            self.url_schemes = self.restricted_url_schemes
+        else:
+            self.url_schemes = self.unrestricted_url_schemes
+
+
+    def parse(self, text, rel=None, head_offset=0, sanitize=False):
         """
         >>> import textile
-        >>> textile.textile('some textile')
+        >>> Py3 << textile.textile('some textile')
         '\\t<p>some textile</p>'
         """
         self.notes = OrderedDict()
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
 
-        # regular expressions get hairy when trying to search for unicode
-        # characters.
-        # we need to know if there are unicode charcters in the text.
-        # return True as soon as a unicode character is found, else, False
-        # Python 3 is better equipped to handle unicode data, so this hackery
-        # is version-specific.
-        self.text_has_unicode = next((True for c in text if ord(c) > 128),
-                                     False) and version_info < (3,)
-
-        if self.text_has_unicode:
-            uppers = []
-            for i in xrange(maxunicode):
-                c = unichr(i)
-                if c.isupper():
-                    uppers.append(c)
-            uppers = r''.join(uppers)
-            uppers_re_patterns = [
-                # 3+ uppercase acronym
-                r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (uppers, uppers),
-                # 3+ uppercase
-                (r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                 % (uppers, self.pnct)),
-            ]
-        else:
-            uppers_re_patterns = [
-                # 3+ uppercase acronym
-                r'\b([A-Z][A-Z0-9]{2,})\b(?:[(]([^)]*)[)])',
-                # 3+ uppercase
-                (r"""(?:(?<=^)|(?<=\s)|(?<=[\>\(;-]))([A-Z]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))"""
-                    % self.pnct),
-            ]
-
-        uppers_re = [re.compile(x, re.U) for x in uppers_re_patterns]
-
-        self.glyph_search += uppers_re
-        self.glyph_search_initial += uppers_re
-
-        # text = unicode(text)
         text = _normalize_newlines(text)
 
         if self.restricted:
@@ -285,10 +264,9 @@ class Textile(object):
         if sanitize:
             text = sanitizer.sanitize(text)
 
-        breaktag = {'html': '<br>', 'xhtml': '<br />', 'html5': '<br />'}
-
-        text = text.replace(breaktag[self.html_type], '%s\n'
-                            % breaktag[self.html_type])
+        # if the text contains a break tag (<br> or <br />) not followed by
+        # a newline, replace it with a new style break tag and a newline.
+        text = re.sub(r'<br( /)?>(?!\n)', '<br />\n', text)
 
         return text
 
@@ -297,48 +275,48 @@ class Textile(object):
         Parse block attributes.
 
         >>> t = Textile()
-        >>> t.pba(r'\3')
+        >>> Py3 << t.pba(r'\3')
         ''
-        >>> t.pba(r'\\3', element='td')
+        >>> Py3 << t.pba(r'\\3', element='td')
         ' colspan="3"'
-        >>> t.pba(r'/4', element='td')
+        >>> Py3 << t.pba(r'/4', element='td')
         ' rowspan="4"'
-        >>> t.pba(r'\\3/4', element='td')
+        >>> Py3 << t.pba(r'\\3/4', element='td')
         ' colspan="3" rowspan="4"'
 
-        >>> t.pba('^', element='td')
+        >>> Py3 << t.pba('^', element='td')
         ' style="vertical-align:top;"'
 
-        >>> t.pba('{line-height:18px}')
+        >>> Py3 << t.pba('{line-height:18px}')
         ' style="line-height:18px;"'
 
-        >>> t.pba('(foo-bar)')
+        >>> Py3 << t.pba('(foo-bar)')
         ' class="foo-bar"'
 
-        >>> t.pba('(#myid)')
+        >>> Py3 << t.pba('(#myid)')
         ' id="myid"'
 
-        >>> t.pba('(foo-bar#myid)')
+        >>> Py3 << t.pba('(foo-bar#myid)')
         ' class="foo-bar" id="myid"'
 
-        >>> t.pba('((((')
+        >>> Py3 << t.pba('((((')
         ' style="padding-left:4em;"'
 
-        >>> t.pba(')))')
+        >>> Py3 << t.pba(')))')
         ' style="padding-right:3em;"'
 
-        >>> t.pba('[fr]')
+        >>> Py3 << t.pba('[fr]')
         ' lang="fr"'
 
-        >>> t.pba(r'\\5 80', 'col')
+        >>> Py3 << t.pba(r'\\5 80', 'col')
         ' span="5" width="80"'
 
         >>> rt = Textile()
         >>> rt.restricted = True
-        >>> rt.pba('[en]')
+        >>> Py3 << rt.pba('[en]')
         ' lang="en"'
 
-        >>> rt.pba('(#id)')
+        >>> Py3 << rt.pba('(#id)')
         ''
 
         """
@@ -365,7 +343,7 @@ class Textile(object):
                 rowspan = m.group(1)
 
         if element == 'td' or element == 'tr':
-            m = re.search(r'(%s)' % self.vertical_align_re, matched)
+            m = re.search(r'(%s)' % self.valign_re_s, matched)
             if m:
                 style.append("vertical-align:%s" % self.vAlign[m.group(1)])
 
@@ -394,7 +372,7 @@ class Textile(object):
             style.append("padding-right:%sem" % len(m.group(1)))
             matched = matched.replace(m.group(0), '')
 
-        m = re.search(r'(%s)' % self.horizontal_align_re, matched)
+        m = re.search(r'(%s)' % self.halign_re_s, matched)
         if m:
             style.append("text-align:%s" % self.hAlign[m.group(1)])
 
@@ -456,15 +434,13 @@ class Textile(object):
     def table(self, text):
         r"""
         >>> t = Textile()
-        >>> t.table('(rowclass). |one|two|three|\n|a|b|c|')
+        >>> Py3 << t.table('(rowclass). |one|two|three|\n|a|b|c|')
         '\t<table>\n\t\t<tr class="rowclass">\n\t\t\t<td>one</td>\n\t\t\t<td>two</td>\n\t\t\t<td>three</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>a</td>\n\t\t\t<td>b</td>\n\t\t\t<td>c</td>\n\t\t</tr>\n\t</table>\n\n'
         """
         text = text + "\n\n"
-        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\.(.*?)\n)?^(%(a)s%(c)s\.? ?\|.*\|)[\s]*\n\n'
-                             % {'s': self.table_span_re,
-                                'a': self.align_re,
-                                'c': self.c},
-                             re.S | re.M | re.U)
+        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\.(.*?)\n)?^(%(a)s%(c)s\.? ?\|.*\|)[\s]*\n\n' %
+                {'s': self.table_span_re_s, 'a': self.align_re_s, 'c':
+                    self.cslh_re_s}, re.S | re.M | re.U)
         return pattern.sub(self.fTable, text)
 
     def fTable(self, match):
@@ -485,9 +461,9 @@ class Textile(object):
 
             # Caption -- only occurs on row 1, otherwise treat '|=. foo |...'
             # as a normal center-aligned cell.
-            captionpattern = r"^\|\=(%(s)s%(a)s%(c)s)\. ([^\n]*)(.*)" % {
-                's': self.table_span_re, 'a': self.align_re, 'c': self.c
-            }
+            captionpattern = r"^\|\=(%(s)s%(a)s%(c)s)\. ([^\n]*)(.*)" % {'s':
+                    self.table_span_re_s, 'a': self.align_re_s, 'c':
+                    self.cslh_re_s}
             caption_re = re.compile(captionpattern, re.S)
             cmtch = caption_re.match(row)
             if c_row == 1 and cmtch:
@@ -501,9 +477,9 @@ class Textile(object):
             c_row += 1
 
             # Colgroup
-            grppattern = r"^\|:(%(s)s%(a)s%(c)s\. .*)" % {
-                's': self.table_span_re, 'a': self.align_re, 'c': self.c
-            }
+            grppattern = r"^\|:(%(s)s%(a)s%(c)s\. .*)" % {'s':
+                    self.table_span_re_s, 'a': self.align_re_s, 'c':
+                    self.cslh_re_s}
             grp_re = re.compile(grppattern, re.M)
             gmtch = grp_re.match(row.lstrip())
             if gmtch:
@@ -527,9 +503,8 @@ class Textile(object):
                     row = row[row.index('\n'):].lstrip()
 
             grpmatchpattern = (r"(:?^\|(%(v)s)(%(s)s%(a)s%(c)s)\.\s*$\n)?^(.*)"
-                               % {'v': self.vertical_align_re, 's':
-                                  self.table_span_re, 'a': self.align_re, 'c':
-                                  self.c})
+                    % {'v': self.valign_re_s, 's': self.table_span_re_s, 'a':
+                        self.align_re_s, 'c': self.cslh_re_s})
             grpmatch_re = re.compile(grpmatchpattern, re.S | re.M)
             grpmatch = grpmatch_re.match(row.lstrip())
 
@@ -541,8 +516,8 @@ class Textile(object):
             rgrpatts = self.pba(grpmatch.group(3))
             row = grpmatch.group(4)
 
-            rmtch = re.search(r'^(%s%s\. )(.*)'
-                              % (self.align_re, self.c), row.lstrip())
+            rmtch = re.search(r'^(%s%s\. )(.*)' % (self.align_re_s,
+                self.cslh_re_s), row.lstrip())
             if rmtch:
                 ratts = self.pba(rmtch.group(1), 'tr')
                 row = rmtch.group(2)
@@ -556,7 +531,8 @@ class Textile(object):
                 if re.search(r'^_', cell):
                     ctyp = "h"
                 cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (
-                    self.table_span_re, self.align_re, self.c), cell)
+                    self.table_span_re_s, self.align_re_s, self.cslh_re_s),
+                    cell)
                 if cmtch:
                     catts = self.pba(cmtch.group(1), 'td')
                     cell = cmtch.group(2)
@@ -602,15 +578,15 @@ class Textile(object):
     def lists(self, text):
         """
         >>> t = Textile()
-        >>> t.lists("* one\\n* two\\n* three")
+        >>> Py3 << t.lists("* one\\n* two\\n* three")
         '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
         """
 
         #Replace line-initial bullets with asterisks
-        bullet_pattern = re.compile(u'^•', re.U | re.M)
+        bullet_pattern = re.compile('^•', re.U | re.M)
 
         pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?)%s[ .].*)$(?![^#*;:])'
-                             % self.lc, re.U | re.M | re.S)
+                             % self.csl_re_s, re.U | re.M | re.S)
         return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
@@ -627,8 +603,8 @@ class Textile(object):
             except IndexError:
                 nextline = ''
 
-            m = re.search(r"^([#*;:]+)(_|\d+)?(%s)[ .](.*)$" % self.lc, line,
-                          re.S)
+            m = re.search(r"^([#*;:]+)(_|\d+)?(%s)[ .](.*)$" % self.csl_re_s,
+                    line, re.S)
             if m:
                 tl, start, atts, content = m.groups()
                 content = content.strip()
@@ -668,7 +644,7 @@ class Textile(object):
                     if showitem:
                         self.olstarts[tl] += 1
 
-                nm = re.match("^([#\*;:]+)(_|[\d]+)?%s[ .].*" % self.lc,
+                nm = re.match("^([#\*;:]+)(_|[\d]+)?%s[ .].*" % self.csl_re_s,
                               nextline)
                 if nm:
                     nl = nm.group(1)
@@ -743,7 +719,7 @@ class Textile(object):
     def block(self, text, head_offset=0):
         """
         >>> t = Textile()
-        >>> t.block('h1. foobar baby')
+        >>> Py3 << t.block('h1. foobar baby')
         '\\t<h1>foobar baby</h1>'
         """
         if not self.lite:
@@ -761,7 +737,7 @@ class Textile(object):
         anon = False
         for line in text:
             pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (
-                tre, self.align_re, self.c
+                tre, self.align_re_s, self.cslh_re_s
             )
             match = re.search(pattern, line, re.S)
             if match:
@@ -798,11 +774,7 @@ class Textile(object):
                     line = self.graf(line)
 
             line = self.doPBr(line)
-            if self.html_type == 'xhtml':
-                line = re.sub(r'<br>', '<br />', line)
-
-            if self.html_type == 'html':
-                line = re.sub(r'<br />', '<br>', line)
+            line = re.sub(r'<br>', '<br />', line)
 
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
@@ -822,16 +794,16 @@ class Textile(object):
     def fBlock(self, tag, atts, ext, cite, content):
         """
         >>> t = Textile()
-        >>> t.fBlock("bq", "", None, "", "Hello BlockQuote")
+        >>> Py3 << t.fBlock("bq", "", None, "", "Hello BlockQuote")
         ('\\t<blockquote>\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
 
-        >>> t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
+        >>> Py3 << t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
         ('\\t<blockquote cite="http://google.com">\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
 
-        >>> t.fBlock("bc", "", None, "", 'printf "Hello, World";') # doctest: +ELLIPSIS
+        >>> Py3 << t.fBlock("bc", "", None, "", 'printf "Hello, World";') # doctest: +ELLIPSIS
         ('<pre>', '<code>', ..., '</code>', '</pre>', False)
 
-        >>> t.fBlock("h1", "", None, "", "foobar")
+        >>> Py3 << t.fBlock("h1", "", None, "", "foobar")
         ('', '\\t<h1>', 'foobar', '</h1>', '', False)
         """
         att = atts
@@ -848,7 +820,7 @@ class Textile(object):
             (%s)                    # !att
             \.?                     # optional period.
             [\s]+                   # whitespace ends def marker
-            (.*)$                   # !content""" % (self.c), re.X)
+            (.*)$                   # !content""" % (self.cslh_re_s), re.X)
             notedef = notedef_re.sub(self.fParseNoteDefs, content)
 
             # It will be empty if the regex matched and ate it.
@@ -931,15 +903,15 @@ class Textile(object):
 
     def formatFootnote(self, marker, atts='', anchor=True):
         if anchor:
-            pattern = _glyph_defaults['fn_foot_pattern']
+            pattern = self.glyph_definitions['fn_foot_pattern']
         else:
-            pattern = _glyph_defaults['fn_ref_pattern']
+            pattern = self.glyph_definitions['fn_ref_pattern']
         return pattern % {'atts': atts, 'marker': marker}
 
     def footnoteRef(self, text):
         """
         >>> t = Textile()
-        >>> t.footnoteRef('foo[1] ') # doctest: +ELLIPSIS
+        >>> Py3 << t.footnoteRef('foo[1] ') # doctest: +ELLIPSIS
         'foo<sup class="footnote" id="fnrev..."><a href="#fn...">1</a></sup> '
         """
         return re.compile(r'(?<=\S)\[(\d+)(!?)\](\s)?', re.U).sub(
@@ -952,7 +924,7 @@ class Textile(object):
             space = ''
         backref = ' class="footnote"'
         if footnoteNum not in self.fn:
-            a = str(uuid.uuid4()).replace('-', '')
+            a = uuid.uuid4().hex
             self.fn[footnoteNum] = a
             backref = '%s id="fnrev%s"' % (backref, a)
         footnoteID = self.fn[footnoteNum]
@@ -982,22 +954,22 @@ class Textile(object):
 
         >>> t = Textile()
 
-        >>> t.glyphs("apostrophe's")
+        >>> Py3 << t.glyphs("apostrophe's")
         'apostrophe&#8217;s'
 
-        >>> t.glyphs("back in '88")
+        >>> Py3 << t.glyphs("back in '88")
         'back in &#8217;88'
 
-        >>> t.glyphs('foo ...')
+        >>> Py3 << t.glyphs('foo ...')
         'foo &#8230;'
 
-        >>> t.glyphs('--')
+        >>> Py3 << t.glyphs('--')
         '&#8212;'
 
-        >>> t.glyphs('FooBar[tm]')
+        >>> Py3 << t.glyphs('FooBar[tm]')
         'FooBar&#8482;'
 
-        >>> t.glyphs("<p><cite>Cat's Cradle</cite> by Vonnegut</p>")
+        >>> Py3 << t.glyphs("<p><cite>Cat's Cradle</cite> by Vonnegut</p>")
         '<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'
 
         """
@@ -1021,9 +993,9 @@ class Textile(object):
         Capture and store URL references in self.urlrefs.
 
         >>> t = Textile()
-        >>> t.getRefs("some text [Google]http://www.google.com")
+        >>> Py3 << t.getRefs("some text [Google]http://www.google.com")
         'some text '
-        >>> t.urlrefs
+        >>> Py3 << t.urlrefs
         {'Google': 'http://www.google.com'}
 
         """
@@ -1057,20 +1029,20 @@ class Textile(object):
     def relURL(self, url):
         """
         >>> t = Textile()
-        >>> t.relURL("http://www.google.com/")
+        >>> Py3 << t.relURL("http://www.google.com/")
         'http://www.google.com/'
         >>> t.restricted = True
-        >>> t.relURL("gopher://gopher.com/")
+        >>> Py3 << t.relURL("gopher://gopher.com/")
         '#'
 
         """
         scheme = urlparse(url)[0]
-        if self.restricted and scheme and scheme not in self.url_schemes:
+        if scheme and scheme not in self.url_schemes:
             return '#'
         return url
 
     def shelve(self, text):
-        itemID = str(uuid.uuid4()).replace('-', '')
+        itemID = uuid.uuid4().hex
         self.shelf[itemID] = text
         return itemID
 
@@ -1078,7 +1050,7 @@ class Textile(object):
         """
         >>> t = Textile()
         >>> id = t.shelve("foobar")
-        >>> t.retrieve(id)
+        >>> Py3 << t.retrieve(id)
         'foobar'
         """
         while True:
@@ -1092,7 +1064,7 @@ class Textile(object):
     def encode_html(self, text, quotes=True):
         """Return text that's safe for an HTML attribute.
         >>> t = Textile()
-        >>> t.encode_html('this is a "test" of text that\\\'s safe to put in an <html> attribute.')
+        >>> Py3 << t.encode_html('this is a "test" of text that\\\'s safe to put in an <html> attribute.')
         'this is a &#34;test&#34; of text that&#39;s safe to put in an &lt;html&gt; attribute.'
         """
         a = (
@@ -1139,7 +1111,7 @@ class Textile(object):
     def autoLink(self, text):
         """
         >>> t = Textile()
-        >>> t.autoLink("http://www.ya.ru")
+        >>> Py3 << t.autoLink("http://www.ya.ru")
         '"$":http://www.ya.ru'
         """
 
@@ -1150,7 +1122,7 @@ class Textile(object):
     def links(self, text):
         """
         >>> t = Textile()
-        >>> t.links('fooobar "Google":http://google.com/foobar/ and hello world "flickr":http://flickr.com/photos/jsamsa/ ') # doctest: +ELLIPSIS
+        >>> Py3 << t.links('fooobar "Google":http://google.com/foobar/ and hello world "flickr":http://flickr.com/photos/jsamsa/ ') # doctest: +ELLIPSIS
         'fooobar ... and hello world ...'
         """
 
@@ -1169,7 +1141,7 @@ class Textile(object):
             (?P<slash>\/)?                      # slash
             (?P<post>[^\w\/]*?)                 # trailing text
             (?P<tail>[\]})]|(?=\s|$|\|))        # tail
-        ''' % (self.c, self.urlch)
+        ''' % (self.cslh_re_s, self.urlchar_re_s)
 
         text = re.compile(pattern, re.X | re.U).sub(self.fLink, text)
 
@@ -1251,10 +1223,10 @@ class Textile(object):
         host = netloc_parsed['host']
         port = netloc_parsed['port'] and netloc_parsed['port']
         path = '/'.join(  # could be encoded slashes!
-            quote(unquote(pce).encode('utf8'), '')
+            quote(unquote(pce).encode('utf8'), b'')
             for pce in parsed.path.split('/')
         )
-        query = quote(unquote(parsed.query), '=&?/')
+        query = quote(unquote(parsed.query), b'=&?/')
         fragment = quote(unquote(parsed.fragment))
 
         # put it back together
@@ -1272,7 +1244,7 @@ class Textile(object):
     def span(self, text):
         """
         >>> t = Textile()
-        >>> t.span(r"hello %(bob)span *strong* and **bold**% goodbye")
+        >>> Py3 << t.span(r"hello %(bob)span *strong* and **bold**% goodbye")
         'hello <span class="bob">span <strong>strong</strong> and <b>bold</b></span> goodbye'
         """
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
@@ -1289,8 +1261,8 @@ class Textile(object):
                 ([%(pnct)s]*)
                 %(qtag)s
                 (?:$|([\]}])|(?=%(selfpnct)s{1,2}|\s))
-            """ % {'qtag': qtag, 'c': self.c, 'pnct': pnct,
-                   'selfpnct': self.pnct}, re.X)
+            """ % {'qtag': qtag, 'c': self.cslh_re_s, 'pnct': pnct,
+                   'selfpnct': self.pnct_re_s}, re.X)
             text = pattern.sub(self.fSpan, text)
         return text
 
@@ -1323,9 +1295,9 @@ class Textile(object):
     def image(self, text):
         """
         >>> t = Textile()
-        >>> t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
+        >>> Py3 << t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
         '<a href="http://jsamsa.com" class="img"><img alt="" src="/imgs/myphoto.jpg" /></a>'
-        >>> t.image('!</imgs/myphoto.jpg!')
+        >>> Py3 << t.image('!</imgs/myphoto.jpg!')
         '<img align="left" alt="" src="/imgs/myphoto.jpg" />'
         """
         pattern = re.compile(r"""
@@ -1340,7 +1312,7 @@ class Textile(object):
             \!                 # closing
             (?::(\S+))?        # optional href
             (?:[\]}]|(?=\s|$)) # lookahead: space or end of string
-        """ % self.c, re.U | re.X)
+        """ % self.cslh_re_s, re.U | re.X)
         return pattern.sub(self.fImage, text)
 
     def fImage(self, match):
@@ -1379,10 +1351,7 @@ class Textile(object):
             out.append(' title="%s"' % title)
         if size:
             out.append(' width="%s"' % size[0])
-        if self.html_type == 'html':
-            out.append('>')
-        else:
-            out.append(' />')
+        out.append(' />')
         if href:
             out.append('</a>')
 
@@ -1449,7 +1418,7 @@ class Textile(object):
     def redcloth_list(self, text):
         """Parse the text for definition lists and send them to be
         formatted."""
-        pattern = re.compile(r"^([-]+%s[ .].*:=.*)$(?![^-])" % self.lc,
+        pattern = re.compile(r"^([-]+%s[ .].*:=.*)$(?![^-])" % self.csl_re_s,
                              re.M | re.U | re.S)
         return pattern.sub(self.fRCList, text)
 
@@ -1462,7 +1431,8 @@ class Textile(object):
             text = re.compile(r'\n(?=[-])', re.M).split(match.group())
         for line in text:
             # parse the attributes and content
-            m = re.match(r'^[-]+(%s)[ .](.*)$' % self.lc, line, re.M | re.S)
+            m = re.match(r'^[-]+(%s)[ .](.*)$' % self.csl_re_s, line, re.M |
+                    re.S)
 
             atts, content = m.groups()
             # cleanup
@@ -1517,7 +1487,7 @@ class Textile(object):
                 o = OrderedDict(sorted(o.items(), key=lambda t: t[0]))
             self.notes = o
         text_re = re.compile('<p>notelist(%s)(?:\:([\w|%s]))?([\^!]?)(\+?)\.?[\s]*</p>'
-                             % (self.c, self.syms), re.U)
+                             % (self.cslh_re_s, self.syms_re_s), re.U)
         text = text_re.sub(self.fNoteLists, text)
         return text
 
@@ -1551,7 +1521,7 @@ class Textile(object):
                         content = info['def']['content']
                         li = """\t<li%s>%s</li>""" % (atts, content)
                     o.append(li)
-            self.notelist_cache[index] = u"\n".join(o)
+            self.notelist_cache[index] = "\n".join(o)
             result = self.notelist_cache[index]
         if result:
             list_atts = self.pba(att)
@@ -1565,22 +1535,20 @@ class Textile(object):
             link = info['def']['link']
         backlink_type = link or g_links
         i_ = self.encode_high(i)
-        allow_inc = i not in self.syms
+        allow_inc = i not in self.syms_re_s
         i_ = int(i_)
 
         if backlink_type == "!":
             return ''
         elif backlink_type == '^':
             return """<sup><a href="#noteref%s">%s</a></sup>""" % (
-                info['refids'][0], i
-            )
+                info['refids'][0], i)
         else:
             result = []
             for refid in info['refids']:
                 i_entity = self.decode_high(i_)
-                sup = """<sup><a href="#noteref%s">%s</a></sup>""" % (
-                    refid, i_entity
-                )
+                sup = """<sup><a href="#noteref%s">%s</a></sup>""" % (refid,
+                        i_entity)
                 if allow_inc:
                     i_ += 1
                 result.append(sup)
@@ -1593,7 +1561,7 @@ class Textile(object):
 
         # Assign an id if the note reference parse hasn't found the label yet.
         if label not in self.notes:
-            self.notes[label] = {'id': str(uuid.uuid4()).replace('-', '')}
+            self.notes[label] = {'id': uuid.uuid4().hex}
 
         # Ignores subsequent defs using the same label
         if 'def' not in self.notes[label]:
@@ -1609,7 +1577,7 @@ class Textile(object):
         \#
         ([^\]!]+)  # !label
         ([!]?)      # !nolink
-        \]""" % self.c, re.X)
+        \]""" % self.cslh_re_s, re.X)
         text = text_re.sub(self.fParseNoteRefs, text)
         return text
 
@@ -1634,13 +1602,13 @@ class Textile(object):
 
         # Make our anchor point and stash it for possible use in backlinks when
         # the note list is generated later...
-        refid = str(uuid.uuid4()).replace('-', '')
+        refid = uuid.uuid4().hex
         self.notes[label]['refids'].append(refid)
 
         # If we are referencing a note that hasn't had the definition parsed
         # yet, then assign it an ID...
         if not self.notes[label]['id']:
-            self.notes[label]['id'] = str(uuid.uuid4()).replace('-', '')
+            self.notes[label]['id'] = uuid.uuid4().hex
         labelid = self.notes[label]['id']
 
         # Build the link (if any)...
@@ -1672,10 +1640,10 @@ def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
 
     auto_link - enable automatic linking of URLs (default: False)
     head_offset - offset to apply to heading levels (default: 0)
-    html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
+    html_type - 'xhtml' or 'html5' style tags (default: 'xhtml')
 
     """
-    return Textile(auto_link=auto_link, html_type=html_type).textile(text,
+    return Textile(auto_link=auto_link, html_type=html_type).parse(text,
             head_offset=head_offset)
 
 
@@ -1689,11 +1657,21 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
     This function takes the following additional parameters:
 
     auto_link - enable automatic linking of URLs (default: False)
-    html_type - 'xhtml' or 'html' style tags (default: 'xhtml')
+    html_type - 'xhtml' or 'html5' style tags (default: 'xhtml')
     lite - restrict block tags to p, bq, and bc, disable tables (default: True)
     noimage - disable image tags (default: True)
 
     """
     return Textile(restricted=True, lite=lite, noimage=noimage,
-            auto_link=auto_link, html_type=html_type).textile( text,
+            auto_link=auto_link, html_type=html_type).parse( text,
                     rel='nofollow')
+
+
+def setup_module(mod):
+    """Inject Py3 to builtins for doctests."""
+    try:
+        import builtins
+    except ImportError:
+        import __builtin__ as builtins
+    from textile.tools.doctest_utils import Py3
+    builtins.Py3 = Py3
