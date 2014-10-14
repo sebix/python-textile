@@ -26,7 +26,7 @@ setup(
     name='textile',
     version=get_version(),
     description='Textile processing for python.',
-    url='http://github.com/ikirudennis/python-textile',
+    url='http://github.com/textile/python-textile',
     packages=find_packages(),
     classifiers=[
         'Development Status :: 5 - Production/Stable',

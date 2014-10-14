@@ -1,3 +1,5 @@
+!https://travis-ci.org/textile/python-textile.svg?branch=develop!:https://travis-ci.org/textile/python-textile
+
 h1. python-textile
 
 python-textile is a Python port of Textile, Dean Allen's humane web text generator.
