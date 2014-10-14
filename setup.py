@@ -7,7 +7,7 @@ install_requires = ['regex']
 try:
     from collections import OrderedDict
 except ImportError:
-    install_requires.extend(['ordereddict>=1.1'])
+    install_requires.extend(['ordereddict'])
 
 if 'develop' in sys.argv:
     install_requires.extend([
