@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-install_requires = ['regex']
+install_requires = []
 
 try:
     from collections import OrderedDict

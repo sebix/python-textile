@@ -6,7 +6,9 @@ python-textile is a Python port of Textile, Dean Allen's humane web text generat
 
 h2. Installation
 
-Install the 'textile' folder on your python path, or @pip install textile@
+Install the 'textile' folder on your python path, or @pip install textile@.
+Optional dependencies require PIL/Pillow (for checking images size)
+and regex (for faster unicode-aware string matching).
 
 h2. Usage
 
