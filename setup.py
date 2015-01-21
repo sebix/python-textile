@@ -2,12 +2,8 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-install_requires = ['regex']
+install_requires = []
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    install_requires.extend(['ordereddict>=1.1'])
 
 if 'develop' in sys.argv:
     install_requires.extend([
@@ -39,6 +35,9 @@ setup(
     ],
     keywords='textile,text',
     install_requires=install_requires,
+    extras_require={
+        ':python_version=="2.6"': ['ordereddict>=1.1'],
+    },
     test_suite='nose.collector',
     tests_require=['nose'],
     include_package_data=True,
