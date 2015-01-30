@@ -148,10 +148,9 @@ class Textile(object):
         self.max_span_depth = 5
 
         # We'll be searching for characters that need to be HTML-encoded to
-        # produce properly valid html.
-        # These are the defaults that work in most cases.  Below, we'll copy
-        # this and modify the necessary pieces to make it work for characters
-        # at the beginning of the string.
+        # produce properly valid html.  These are the defaults that work in
+        # most cases.  Below, we'll copy this and modify the necessary pieces
+        # to make it work for characters at the beginning of the string.
         self.glyph_search = [
             # apostrophe's
             re.compile(r"(^|\w)'(\w)", re.U),
@@ -192,7 +191,7 @@ class Textile(object):
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
             # 3+ uppercase acronym
-            re.compile(r'\b([%s%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (upper_re_s, upper_re_s)),
+            re.compile(r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (upper_re_s, upper_re_s)),
             # 3+ uppercase
             re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))""" %
                 (upper_re_s, self.pnct_re_s)),
