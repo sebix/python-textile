@@ -19,8 +19,6 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 """
 
-import re
-import regex
 import uuid
 
 from textile.tools import sanitizer, imagesize
@@ -46,6 +44,18 @@ except (ImportError):
     from urllib import quote, unquote
     from urlparse import urlparse, urlsplit, urlunsplit
     from HTMLParser import HTMLParser
+
+
+try:
+    # Use regex module for matching uppercase characters if installed,
+    # otherwise fall back to finding all the uppercase chars in a loop.
+    import regex as re
+    upper_re_s = r'\p{Lu}'
+except ImportError:
+    import re
+    from sys import maxunicode
+    upper_re_s = "".join([unichr(c) for c in xrange(maxunicode) if
+        unichr(c).isupper()])
 
 
 def _normalize_newlines(string):
@@ -182,10 +192,10 @@ class Textile(object):
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
             # 3+ uppercase acronym
-            regex.compile(r'\b([\p{Lu}][\p{Lu}0-9]{2,})\b(?:[(]([^)]*)[)])'),
+            re.compile(r'\b([%s%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (upper_re_s, upper_re_s)),
             # 3+ uppercase
-            regex.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([\p{Lu}]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))""" %
-                self.pnct_re_s),
+            re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))""" %
+                (upper_re_s, self.pnct_re_s)),
         ]
 
         # These are the changes that need to be made for characters that occur
@@ -427,7 +437,7 @@ class Textile(object):
         True
 
         """
-        r = re.compile(r'<(p|blockquote|div|form|table|ul|ol|dl|pre|h\d)[^>]*?>.*</\1>',
+        r = re.compile(r'<(pre|p|blockquote|div|form|table|ul|ol|dl|h[1-6])[^>]*?>.*</\1>',
                        re.S).sub('', text.strip()).strip()
         r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
         return '' != r
