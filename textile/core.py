@@ -54,8 +54,8 @@ try:
 except ImportError:
     import re
     from sys import maxunicode
-    upper_re_s = "".join([unichr(c) for c in xrange(maxunicode) if
-        unichr(c).isupper()])
+    upper_re_s = "".join([unichr(c) for c in
+        xrange(maxunicode) if unichr(c).isupper()])
 
 
 def _normalize_newlines(string):
