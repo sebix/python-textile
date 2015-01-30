@@ -436,7 +436,11 @@ class Textile(object):
         True
 
         """
-        r = re.compile(r'<(p|blockquote|div|form|table|ul|ol|dl|pre|h\d)[^>]*?>.*</\1>',
+        # The php version has orders the below list of tags differently.  The
+        # important thing to note here is that the pre must occur before the
+        # p or else the regex module doesn't properly match pre-s. It only
+        # matches the p in pre.
+        r = re.compile(r'<(pre|p|blockquote|div|form|table|ul|ol|dl|h[1-6])[^>]*?>.*</\1>',
                        re.S).sub('', text.strip()).strip()
         r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
         return '' != r
