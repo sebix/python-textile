@@ -38,8 +38,7 @@ setup(
     extras_require={
         ':python_version=="2.6"': ['ordereddict>=1.1'],
     },
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    tests_require=['pytest'],
     include_package_data=True,
     zip_safe=False,
 )
