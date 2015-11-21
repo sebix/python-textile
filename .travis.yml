@@ -9,8 +9,11 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
   - python setup.py -q install
   - if [[ ! $TRAVIS_PYTHON_VERSION == pypy ]] ; then pip install regex; fi
 # command to run tests
 script: py.test
 sudo: false
+after_success:
+  - coveralls
