@@ -1,7 +1,7 @@
 language: python
 env:
-  - REQUIREMENTS = true
-  - REQUIREMENTS = false
+  - REQUIREMENTS=true
+  - REQUIREMENTS=false
 python:
   - "2.6"
   - "2.7"
