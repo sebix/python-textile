@@ -11,7 +11,7 @@ python:
   - "pypy"
 # command to install dependencies
 install:
-  - if [[ $REQUIREMENTS]] ; then pip install -r requirements.txt; fi
+  - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
   - pip install coveralls
   - python setup.py -q install
   - if [[ ! $TRAVIS_PYTHON_VERSION == pypy ]] ; then pip install regex; fi
