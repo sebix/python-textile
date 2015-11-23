@@ -98,7 +98,8 @@ def test_sanitize():
         expect = textile.Textile(html_type='html5').parse(test, sanitize=True)
         assert result == expect
     except Exception as e:
-        assert "html5lib not available" in e.message
+        message = '{0}'.format(e)
+        assert "html5lib not available" in message
 
 def test_imagesize():
     PIL = pytest.importorskip('PIL')
