@@ -42,7 +42,7 @@ def test_issue_35():
     expect = '\t<p>&#8220; z&#8221; </p>'
     assert result == expect
 
-def testRestricted():
+def test_restricted():
     test = "this is \"some\" *bold text*."
     result = textile.textile_restricted(test)
     expect = "\t<p>this is &#8220;some&#8221; <strong>bold text</strong>.</p>"
@@ -60,6 +60,12 @@ def testRestricted():
     test = "Here's some <!-- commented *out* --> text."
     result = textile.textile_restricted(test)
     expect = "\t<p>Here&#8217;s some &lt;!&#8212; commented <strong>out</strong> &#8212;&gt; text.</p>"
+
+    assert result == expect
+
+    test = "p[fr]. Partir, c'est toujours mourir un peu."
+    result = textile.textile_restricted(test)
+    expect = '\t<p lang="fr">Partir, c&#8217;est toujours mourir un peu.</p>'
 
     assert result == expect
 

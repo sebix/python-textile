@@ -396,12 +396,6 @@ class Textile(object):
             csp = re.match(pattern, matched)
             span, width = csp.groups()
 
-        if self.restricted:
-            if lang:
-                return ' lang="%s"' % lang
-            else:
-                return ''
-
         result = []
         if style:
             # Previous splits that created style may have introduced extra
