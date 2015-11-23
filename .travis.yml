@@ -1,4 +1,7 @@
 language: python
+env:
+  - REQUIREMENTS = true
+  - REQUIREMENTS = false
 python:
   - "2.6"
   - "2.7"
@@ -8,7 +11,7 @@ python:
   - "pypy"
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
+  - if [[ $REQUIREMENTS]] ; then pip install -r requirements.txt; fi
   - pip install coveralls
   - python setup.py -q install
   - if [[ ! $TRAVIS_PYTHON_VERSION == pypy ]] ; then pip install regex; fi
