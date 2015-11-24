@@ -1,4 +1,5 @@
 from textile import Textile
+import re
 
 def test_urls():
     t = Textile()
