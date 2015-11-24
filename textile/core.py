@@ -914,11 +914,7 @@ class Textile(object):
         return text
 
     def encode_html(self, text, quotes=True):
-        """Return text that's safe for an HTML attribute.
-        >>> t = Textile()
-        >>> Py3 << t.encode_html('this is a "test" of text that\\\'s safe to put in an <html> attribute.')
-        'this is a &#34;test&#34; of text that&#39;s safe to put in an &lt;html&gt; attribute.'
-        """
+        """Return text that's safe for an HTML attribute."""
         a = (
             ('&', '&amp;'),
             ('<', '&lt;'),
