@@ -515,12 +515,6 @@ class Textile(object):
         return tbl
 
     def lists(self, text):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.lists("* one\\n* two\\n* three")
-        '\\t<ul>\\n\\t\\t<li>one</li>\\n\\t\\t<li>two</li>\\n\\t\\t<li>three</li>\\n\\t</ul>'
-        """
-
         #Replace line-initial bullets with asterisks
         bullet_pattern = re.compile('^•', re.U | re.M)
 
