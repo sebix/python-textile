@@ -820,11 +820,6 @@ class Textile(object):
         return pattern % {'atts': atts, 'marker': marker}
 
     def footnoteRef(self, text):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.footnoteRef('foo[1] ') # doctest: +ELLIPSIS
-        'foo<sup class="footnote" id="fnrev..."><a href="#fn...">1</a></sup> '
-        """
         return re.compile(r'(?<=\S)\[(\d+)(!?)\](\s)?', re.U).sub(
             self.footnoteID, text
         )
