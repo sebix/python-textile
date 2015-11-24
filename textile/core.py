@@ -1486,13 +1486,3 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
     return Textile(restricted=True, lite=lite, noimage=noimage,
             auto_link=auto_link, html_type=html_type).parse( text,
                     rel='nofollow')
-
-
-def setup_module(mod):
-    """Inject Py3 to builtins for doctests."""
-    try:
-        import builtins
-    except ImportError:
-        import __builtin__ as builtins
-    from textile.tools.doctest_utils import Py3
-    builtins.Py3 = Py3
