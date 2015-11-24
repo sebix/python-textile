@@ -905,12 +905,6 @@ class Textile(object):
         return itemID
 
     def retrieve(self, text):
-        """
-        >>> t = Textile()
-        >>> id = t.shelve("foobar")
-        >>> Py3 << t.retrieve(id)
-        'foobar'
-        """
         while True:
             old = text
             for k, v in self.shelf.items():
