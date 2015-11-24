@@ -243,11 +243,7 @@ class Textile(object):
 
 
     def parse(self, text, rel=None, head_offset=0, sanitize=False):
-        """
-        >>> import textile
-        >>> Py3 << textile.textile('some textile')
-        '\\t<p>some textile</p>'
-        """
+        """Parse the input text as textile and return html output."""
         self.notes = OrderedDict()
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
@@ -281,55 +277,7 @@ class Textile(object):
         return text
 
     def pba(self, block_attributes, element=None):
-        """
-        Parse block attributes.
-
-        >>> t = Textile()
-        >>> Py3 << t.pba(r'\3')
-        ''
-        >>> Py3 << t.pba(r'\\3', element='td')
-        ' colspan="3"'
-        >>> Py3 << t.pba(r'/4', element='td')
-        ' rowspan="4"'
-        >>> Py3 << t.pba(r'\\3/4', element='td')
-        ' colspan="3" rowspan="4"'
-
-        >>> Py3 << t.pba('^', element='td')
-        ' style="vertical-align:top;"'
-
-        >>> Py3 << t.pba('{line-height:18px}')
-        ' style="line-height:18px;"'
-
-        >>> Py3 << t.pba('(foo-bar)')
-        ' class="foo-bar"'
-
-        >>> Py3 << t.pba('(#myid)')
-        ' id="myid"'
-
-        >>> Py3 << t.pba('(foo-bar#myid)')
-        ' class="foo-bar" id="myid"'
-
-        >>> Py3 << t.pba('((((')
-        ' style="padding-left:4em;"'
-
-        >>> Py3 << t.pba(')))')
-        ' style="padding-right:3em;"'
-
-        >>> Py3 << t.pba('[fr]')
-        ' lang="fr"'
-
-        >>> Py3 << t.pba(r'\\5 80', 'col')
-        ' span="5" width="80"'
-
-        >>> rt = Textile()
-        >>> rt.restricted = True
-        >>> Py3 << rt.pba('[en]')
-        ' lang="en"'
-
-        >>> Py3 << rt.pba('(#id)')
-        ''
-
-        """
+        """Parse block attributes."""
         style = []
         aclass = ''
         lang = ''
@@ -404,7 +352,7 @@ class Textile(object):
             result.append(' style="%s;"' % "; ".join(style))
         if aclass:
             result.append(' class="%s"' % aclass)
-        if block_id:
+        if block_id and not self.restricted:
             result.append(' id="%s"' % block_id)
         if lang:
             result.append(' lang="%s"' % lang)
