@@ -313,6 +313,8 @@ html_known_values = (
     ("<pre>some preformatted text</pre>other text", "\t<p><pre>some preformatted text</pre>other text</p>"),
     # at sign and notextile in table
     ("|@<A1>@|@<A2>@ @<A3>@|\n|<notextile>*B1*</notextile>|<notextile>*B2*</notextile> <notextile>*B3*</notextile>|", "\t<table>\n\t\t<tr>\n\t\t\t<td><code>&lt;A1&gt;</code></td>\n\t\t\t<td><code>&lt;A2&gt;</code> <code>&lt;A3&gt;</code></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>*B1*</td>\n\t\t\t<td>*B2* *B3*</td>\n\t\t</tr>\n\t</table>"),
+    # cite attribute
+    ('bq.:http://textism.com/ Text...', '\t<blockquote cite="http://textism.com/">\n\t\t<p>Text&#8230;</p>\n\t</blockquote>'),
 )
 
 @pytest.mark.parametrize("input, expected_output", xhtml_known_values)
