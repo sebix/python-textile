@@ -874,16 +874,7 @@ class Textile(object):
         return ''.join(result)
 
     def getRefs(self, text):
-        """
-        Capture and store URL references in self.urlrefs.
-
-        >>> t = Textile()
-        >>> Py3 << t.getRefs("some text [Google]http://www.google.com")
-        'some text '
-        >>> Py3 << t.urlrefs
-        {'Google': 'http://www.google.com'}
-
-        """
+        """Capture and store URL references in self.urlrefs."""
         pattern = re.compile(r'(?:(?<=^)|(?<=\s))\[(.+)\]((?:http(?:s?):\/\/|\/)\S+)(?=\s|$)',
                              re.U)
         text = pattern.sub(self.refs, text)
