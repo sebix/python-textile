@@ -962,15 +962,9 @@ class Textile(object):
         return pattern.sub(r'"$":\1', text)
 
     def links(self, text):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.links('fooobar "Google":http://google.com/foobar/ and hello world "flickr":http://flickr.com/photos/jsamsa/ ') # doctest: +ELLIPSIS
-        'fooobar ... and hello world ...'
-        """
-
-        # For some reason, the part of the regex below that matches the url
-        # does not match a trailing parenthesis.  It gets caught by tail, and
-        # we check later to see if it should be included as part of the url.
+        """For some reason, the part of the regex below that matches the url
+        does not match a trailing parenthesis.  It gets caught by tail, and
+        we check later to see if it should be included as part of the url."""
         pattern = r'''
             (?P<pre>^|(?<=[\s>.\(\|])|[{[])?    # leading text
             "                                   # opening quote
