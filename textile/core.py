@@ -647,11 +647,6 @@ class Textile(object):
                                match.group(4))
 
     def block(self, text, head_offset=0):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.block('h1. foobar baby')
-        '\\t<h1>foobar baby</h1>'
-        """
         if not self.lite:
             tre = '|'.join(self.btag)
         else:
