@@ -717,20 +717,6 @@ class Textile(object):
         return '\n\n'.join(out)
 
     def fBlock(self, tag, atts, ext, cite, content):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.fBlock("bq", "", None, "", "Hello BlockQuote")
-        ('\\t<blockquote>\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
-
-        >>> Py3 << t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
-        ('\\t<blockquote cite="http://google.com">\\n', '\\t\\t<p>', 'Hello BlockQuote', '</p>', '\\n\\t</blockquote>', False)
-
-        >>> Py3 << t.fBlock("bc", "", None, "", 'printf "Hello, World";') # doctest: +ELLIPSIS
-        ('<pre>', '<code>', ..., '</code>', '</pre>', False)
-
-        >>> Py3 << t.fBlock("h1", "", None, "", "foobar")
-        ('', '\\t<h1>', 'foobar', '</h1>', '', False)
-        """
         att = atts
         atts = self.pba(atts)
         o1 = o2 = c2 = c1 = ''
