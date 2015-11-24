@@ -1078,11 +1078,6 @@ class Textile(object):
         return urlunsplit((scheme, netloc, path, query, fragment))
 
     def span(self, text):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.span(r"hello %(bob)span *strong* and **bold**% goodbye")
-        'hello <span class="bob">span <strong>strong</strong> and <b>bold</b></span> goodbye'
-        """
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
                  r'_', r'%', r'\+', r'~', r'\^')
         pnct = ".,\"'?!;:("
