@@ -6,3 +6,5 @@ def test_urls():
     assert t.isRelURL("/foo") is True
 
     assert t.relURL("http://www.google.com/") == 'http://www.google.com/'
+
+    assert t.autoLink("http://www.ya.ru") == '"$":http://www.ya.ru'
