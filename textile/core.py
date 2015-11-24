@@ -1124,13 +1124,6 @@ class Textile(object):
         return out
 
     def image(self, text):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.image('!/imgs/myphoto.jpg!:http://jsamsa.com')
-        '<a href="http://jsamsa.com" class="img"><img alt="" src="/imgs/myphoto.jpg" /></a>'
-        >>> Py3 << t.image('!</imgs/myphoto.jpg!')
-        '<img align="left" alt="" src="/imgs/myphoto.jpg" />'
-        """
         pattern = re.compile(r"""
             (?:[\[{])?         # pre
             \!                 # opening !
