@@ -857,27 +857,6 @@ class Textile(object):
         A similar situation occurs for double quotes as well.
         So, for the first pass, we use the glyph_search_initial set of
         regexes.  For all remaining passes, we use glyph_search
-
-        >>> t = Textile()
-
-        >>> Py3 << t.glyphs("apostrophe's")
-        'apostrophe&#8217;s'
-
-        >>> Py3 << t.glyphs("back in '88")
-        'back in &#8217;88'
-
-        >>> Py3 << t.glyphs('foo ...')
-        'foo &#8230;'
-
-        >>> Py3 << t.glyphs('--')
-        '&#8212;'
-
-        >>> Py3 << t.glyphs('FooBar[tm]')
-        'FooBar&#8482;'
-
-        >>> Py3 << t.glyphs("<p><cite>Cat's Cradle</cite> by Vonnegut</p>")
-        '<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'
-
         """
         # fix: hackish
         text = re.sub(r'"\Z', r'" ', text)
