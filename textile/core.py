@@ -367,17 +367,8 @@ class Textile(object):
         return ''.join(result)
 
     def hasRawText(self, text):
-        """
-        checks whether the text has text not already enclosed by a block tag
-
-        >>> t = Textile()
-        >>> t.hasRawText('<p>foo bar biz baz</p>')
-        False
-
-        >>> t.hasRawText(' why yes, yes it does')
-        True
-
-        """
+        """checks whether the text has text not already enclosed by a block
+        tag"""
         # The php version has orders the below list of tags differently.  The
         # important thing to note here is that the pre must occur before the
         # p or else the regex module doesn't properly match pre-s. It only
