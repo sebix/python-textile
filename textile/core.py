@@ -889,25 +889,11 @@ class Textile(object):
         return self.urlrefs.get(url, url)
 
     def isRelURL(self, url):
-        """
-        Identify relative urls.
-
-        >>> t = Textile()
-        >>> t.isRelURL("http://www.google.com/")
-        False
-        >>> t.isRelURL("/foo")
-        True
-
-        """
+        """Identify relative urls."""
         (scheme, netloc) = urlparse(url)[0:2]
         return not scheme and not netloc
 
     def relURL(self, url):
-        """
-        >>> t = Textile()
-        >>> Py3 << t.relURL("http://www.google.com/")
-        'http://www.google.com/'
-        """
         scheme = urlparse(url)[0]
         if scheme and scheme not in self.url_schemes:
             return '#'
