@@ -201,3 +201,8 @@ def test_html5():
     result = '\t<p>We use <abbr title="Cascading Style Sheets"><span class="caps">CSS</span></abbr>.</p>'
     expect = textile.textile(test, html_type="html5")
     assert result == expect
+
+def test_relURL():
+    t = textile.Textile()
+    t.restricted = True
+    assert t.relURL("gopher://gopher.com/") == '#'

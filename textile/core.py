@@ -1033,10 +1033,6 @@ class Textile(object):
         >>> t = Textile()
         >>> Py3 << t.relURL("http://www.google.com/")
         'http://www.google.com/'
-        >>> t.restricted = True
-        >>> Py3 << t.relURL("gopher://gopher.com/")
-        '#'
-
         """
         scheme = urlparse(url)[0]
         if scheme and scheme not in self.url_schemes:
