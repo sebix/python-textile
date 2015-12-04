@@ -12,7 +12,8 @@ def test_block():
     assert result == expect
 
     result = t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
-    expect = ('\t<blockquote cite="http://google.com">\n', '\t\t<p>',
+    citation = '{0}1:url'.format(t.uid)
+    expect = ('\t<blockquote cite="{0}">\n'.format(citation), '\t\t<p>',
             'Hello BlockQuote', '</p>', '\n\t</blockquote>', False)
     assert result == expect
 
