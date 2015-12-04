@@ -20,6 +20,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 
 import uuid
+from xml.etree import ElementTree
 
 from textile.tools import sanitizer, imagesize
 
@@ -51,11 +52,13 @@ try:
     # otherwise fall back to finding all the uppercase chars in a loop.
     import regex as re
     upper_re_s = r'\p{Lu}'
+    _is_regex_module = True
 except ImportError:
     import re
     from sys import maxunicode
     upper_re_s = "".join([unichr(c) for c in
         xrange(maxunicode) if unichr(c).isupper()])
+    _is_regex_module = False
 
 
 def _normalize_newlines(string):
@@ -131,8 +134,8 @@ class Textile(object):
         'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
     }
 
-    def __init__(self, restricted=False, lite=False, noimage=False,
-                 auto_link=False, get_sizes=False, html_type='xhtml'):
+    def __init__(
+            self, restricted=False, lite=False, noimage=False, auto_link=False, get_sizes=False, html_type='xhtml', rel='', block_tags=True):
         """Textile properties that are common to regular textile and
         textile_restricted"""
         self.restricted = restricted
@@ -143,9 +146,43 @@ class Textile(object):
         self.fn = {}
         self.urlrefs = {}
         self.shelf = {}
-        self.rel = ''
+        self.rel = rel
         self.html_type = html_type
         self.max_span_depth = 5
+        uid = uuid.uuid4().hex
+        self.uid = 'textileRef:{0}:'.format(uid)
+        self.linkPrefix = '{0}-'.format(uid)
+        self.refCache = {}
+        self.refIndex = 1
+        self.block_tags = block_tags
+
+        if _is_regex_module:
+            self.regex_snippets = {
+                    'acr': r'\p{Lu}\p{Nd}',
+                    'abr': r'\p{Lu}',
+                    'nab': r'\p{Ll}',
+                    'wrd': r'(?:\p{L}|\p{M}|\p{N}|\p{Pc})',
+                    'mod': re.UNICODE,
+                    'cur': r'\p{Sc}',
+                    'digit': r'\p{N}',
+                    'space': r'(?:\p{Zs}|\h|\v)',
+                    'char': r'(?:[^\p{Zs}\h\v])',
+                    }
+        else:
+            self.regex_snippets = {
+                    'acr': r'A-Z0-9',
+                    'abr': r'A-Z',
+                    'nab': r'a-z',
+                    'wrd': r'\w',
+                    'mod': 0,
+                    'cur': r'',
+                    'digit': r'\d',
+                    'space': r'(?:\s|\h|\v)',
+                    'char': r'\S',
+                    }
+        urlch = (r'' + self.regex_snippets['wrd'] +
+                '''"$\-_.+!*'(),";\/?:@=&%#{}|\^~\[\]`]''')
+
 
         # We'll be searching for characters that need to be HTML-encoded to
         # produce properly valid html.  These are the defaults that work in
@@ -248,10 +285,22 @@ class Textile(object):
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
 
-        text = _normalize_newlines(text)
 
         if self.restricted:
             text = self.encode_html(text, quotes=False)
+
+        text = _normalize_newlines(text)
+
+        if self.block_tags:
+            if self.lite:
+                self.blocktag_whitelist = ['bq', 'p']
+                text = self.block(text)
+            else:
+                self.blocktag_whitelist = [
+                        'bq', 'p', 'bc', 'notextile', 'pre', 'h[1-6]',
+                        'fn{0}+'.format(self.regex_snippets['digit']), '###']
+                text = self.block(text)
+                text = self.placeNoteLists(text)
 
         if rel:
             self.rel = ' rel="%s"' % rel
@@ -269,6 +318,8 @@ class Textile(object):
 
         if sanitize:
             text = sanitizer.sanitize(text)
+
+        text = self.retrieveURLs(text)
 
         # if the text contains a break tag (<br> or <br />) not followed by
         # a newline, replace it with a new style break tag and a newline.
@@ -365,6 +416,95 @@ class Textile(object):
         if width:
             result.append(' width="%s"' % width)
         return ''.join(result)
+
+    def parse_attributes(self, block_attributes, element=None):
+        style = []
+        aclass = ''
+        lang = ''
+        colspan = ''
+        rowspan = ''
+        block_id = ''
+        span = ''
+        width = ''
+        result = {}
+
+        if not block_attributes:
+            return result
+
+        matched = block_attributes
+        if element == 'td':
+            m = re.search(r'\\(\d+)', matched)
+            if m:
+                colspan = m.group(1)
+
+            m = re.search(r'/(\d+)', matched)
+            if m:
+                rowspan = m.group(1)
+
+        if element == 'td' or element == 'tr':
+            m = re.search(r'(%s)' % self.valign_re_s, matched)
+            if m:
+                style.append("vertical-align:%s" % self.vAlign[m.group(1)])
+
+        m = re.search(r'\{([^}]*)\}', matched)
+        if m:
+            style += m.group(1).rstrip(';').split(';')
+            matched = matched.replace(m.group(0), '')
+
+        m = re.search(r'\[([^\]]+)\]', matched, re.U)
+        if m:
+            lang = m.group(1)
+            matched = matched.replace(m.group(0), '')
+
+        m = re.search(r'\(([^()]+)\)', matched, re.U)
+        if m:
+            aclass = m.group(1)
+            matched = matched.replace(m.group(0), '')
+
+        m = re.search(r'([(]+)', matched)
+        if m:
+            style.append("padding-left:%sem" % len(m.group(1)))
+            matched = matched.replace(m.group(0), '')
+
+        m = re.search(r'([)]+)', matched)
+        if m:
+            style.append("padding-right:%sem" % len(m.group(1)))
+            matched = matched.replace(m.group(0), '')
+
+        m = re.search(r'(%s)' % self.halign_re_s, matched)
+        if m:
+            style.append("text-align:%s" % self.hAlign[m.group(1)])
+
+        m = re.search(r'^(.*)#(.*)$', aclass)
+        if m:
+            block_id = m.group(2)
+            aclass = m.group(1)
+
+        if element == 'col':
+            pattern = r'(?:\\(\d+))?\s*(\d+)?'
+            csp = re.match(pattern, matched)
+            span, width = csp.groups()
+
+        if style:
+            # Previous splits that created style may have introduced extra
+            # whitespace into the list elements.  Clean it up.
+            style = [x.strip() for x in style]
+            result['style'] = "; ".join(style)
+        if aclass:
+            result['class'] = aclass
+        if block_id and not self.restricted:
+            result['id'] = block_id
+        if lang:
+            result['lang'] = lang
+        if colspan:
+            result['colspan'] = colspan
+        if rowspan:
+            result['rowspan'] = rowspan
+        if span:
+            result['span'] = span
+        if width:
+            result['width'] = width
+        return result
 
     def hasRawText(self, text):
         """checks whether the text has text not already enclosed by a block
@@ -769,7 +909,7 @@ class Textile(object):
             content = sup + ' ' + content
 
         if tag == 'bq':
-            cite = self.checkRefs(cite)
+            cite = self.shelveURL(cite)
             if cite:
                 cite = ' cite="%s"' % cite
             else:
@@ -965,68 +1105,294 @@ class Textile(object):
         """For some reason, the part of the regex below that matches the url
         does not match a trailing parenthesis.  It gets caught by tail, and
         we check later to see if it should be included as part of the url."""
-        pattern = r'''
-            (?P<pre>^|(?<=[\s>.\(\|])|[{[])?    # leading text
-            "                                   # opening quote
-            (?P<atts>%s)                        # block attributes
-            (?P<text>[^"]+?)                    # link text
-            \s?                                 # optional space
-            (?:\((?P<title>[^)]+?)\)(?="))?     # optional title
-            ":                                  # closing quote, colon
-            (?P<url>%s+?)                       # URL
-            (?P<slash>\/)?                      # slash
-            (?P<post>[^\w\/]*?)                 # trailing text
-            (?P<tail>[\]})]|(?=\s|$|\|))        # tail
-        ''' % (self.cslh_re_s, self.urlchar_re_s)
+        text = self.markStartOfLinks(text)
 
-        text = re.compile(pattern, re.X | re.U).sub(self.fLink, text)
+        return self.replaceLinks(text)
+
+    def markStartOfLinks(self, text):
+        """Finds and marks the start of well formed links in the input text."""
+        # Slice text on '":<not space>' boundaries. These always occur in
+        # inline links between the link text and the url part and are much more
+        # infrequent than '"' characters so we have less possible links to
+        # process.
+        mod = self.regex_snippets['mod']
+        slices = text.split('":')
+        output = []
+
+        if len(slices) > 1:
+            # There are never any start of links in the last slice, so pop it
+            # off (we'll glue it back later).
+            last_slice = slices.pop()
+
+            for s in slices:
+                # If there is no possible start quote then this slice is not
+                # a link
+                if '"' not in s:
+                    continue
+
+                # Cut this slice into possible starting points wherever we find
+                # a '"' character. Any of these parts could represent the start
+                # of the link text - we have to find which one.
+                possible_start_quotes = s.split('"')
+
+                # Start our search for the start of the link with the closest
+                # prior quote mark.
+                possibility = possible_start_quotes.pop()
+
+                # Init the balanced count. If this is still zero at the end of
+                # our do loop we'll mark the " that caused it to balance as the
+                # start of the link and move on to the next slice.
+                balanced = 0
+                linkparts = []
+                i = 0
+
+                while balanced is not 0 or i is 0:
+                    # Starting at the end, pop off the previous part of the
+                    # slice's fragments.
+
+                    # Add this part to those parts that make up the link text.
+                    linkparts.append(possibility)
+
+                    if len(possibility) > 0:
+                        # did this part inc or dec the balanced count?
+                        if re.search(r'^\S|=$', possibility, flags=mod):
+                            balanced = balanced - 1
+                        if re.search(r'\S$', possibility, flags=mod):
+                            balanced = balanced + 1
+                        possibility = possible_start_quotes.pop()
+                    else:
+                        # If quotes occur next to each other, we get zero
+                        # length strings.  eg. ...""Open the door,
+                        # HAL!"":url...  In this case we count a zero length in
+                        # the last position as a closing quote and others as
+                        # opening quotes.
+                        if i is 0:
+                            balanced = balanced + 1
+                        else:
+                            balanced = balanced - 1
+                        i = i + 1
+
+                        try:
+                            possibility = possible_start_quotes.pop()
+                        except IndexError:
+                            # If out of possible starting segments we back the
+                            # last one from the linkparts array
+                            linkparts.pop()
+                            break
+                        # If the next possibility is empty or ends in a space
+                        # we have a closing ".
+                        if (possibility is '' or possibility.endswith(' ')):
+                            # force search exit
+                            balanced = 0;
+
+                    if balanced <= 0:
+                        possible_start_quotes.append(possibility)
+                        break
+
+                # Rebuild the link's text by reversing the parts and sticking
+                # them back together with quotes.
+                linkparts.reverse()
+                link_content = '"'.join(linkparts)
+                # Rebuild the remaining stuff that goes before the link but
+                # that's already in order.
+                pre_link = '"'.join(possible_start_quotes)
+                # Re-assemble the link starts with a specific marker for the
+                # next regex.
+                o = '{0}{1}linkStartMarker:"{2}'.format(pre_link, self.uid,
+                        link_content)
+                output.append(o)
+
+            # Add the last part back
+            output.append(last_slice)
+            # Re-assemble the full text with the start and end markers
+            text = '":'.join(output)
 
         return text
 
-    def fLink(self, match):
-        pre, atts, text, title, url, slash, post, tail = match.groups()
+    def replaceLinks(self, text):
+        """Replaces links with tokens and stores them on the shelf."""
+        stopchars = r"\s|^'\"*"
+        pattern = r"""
+            (?P<pre>\[)?           # Optionally open with a square bracket eg. Look ["here":url]
+            {0}linkStartMarker:"   # marks start of the link
+            (?P<inner>(?:.|\n)*?)  # grab the content of the inner "..." part of the link, can be anything but
+                                   # do not worry about matching class, id, lang or title yet
+            ":                     # literal ": marks end of atts + text + title block
+            (?P<urlx>[^{1}]*)      # url upto a stopchar
+        """.format(self.uid, stopchars)
+        text = re.compile(pattern, flags=re.X | self.regex_snippets['mod']
+                ).sub(self.fLink, text)
+        return text
 
-        if not pre:
-            pre = ''
+    def fLink(self, m):
+        in_ = m.group()
+        pre, inner, url = m.groups()
+        pre = pre or ''
 
-        if not slash:
-            slash = ''
+        if inner is '':
+            return '{0}"{1}"{2}'.format(pre, inner, url)
 
-        if text == '$':
-            text = re.sub(r'^\w+://(.+)', r'\1', url)
+        m = re.search(r'''^
+            (?P<atts>{0})                # $atts (if any)
+            {1}*                         # any optional spaces
+            (?P<text>                    # $text is...
+                (!.+!)                   #     an image
+            |                            #   else...
+                .+?                      #     link text
+            )                            # end of $text
+            (?:\((?P<title>[^)]+?)\))?   # $title (if any)
+            $'''.format(self.csl_re_s, self.regex_snippets['space']), inner,
+                flags=re.X | self.regex_snippets['mod'])
 
-        # assume ) at the end of the url is not actually part of the url
-        # unless the url also contains a (
-        if tail == ')' and url.find('(') > -1:
-            url = url + tail
-            tail = None
+        atts = m.group('atts') or ''
+        text = m.group('text') or '' or inner
+        title = m.group('title') or ''
 
-        url = self.checkRefs(url)
-        try:
-            url = self.encode_url(url)
-        except:
-            pass
+        pop, tight = '', ''
+        url_chars = list(url)
+        counts = { '[': None, ']': url.count(']'), '(': None, ')': None }
 
-        atts = self.pba(atts)
-        if title:
-            atts = atts + ' title="%s"' % self.encode_html(title)
+        # Look for footnotes or other square-bracket delimited stuff at the end
+        # of the url...
+        #
+        # eg. "text":url][otherstuff... will have "[otherstuff" popped back
+        # out.
+        #
+        # "text":url?q[]=x][123]    will have "[123]" popped off the back, the
+        # remaining closing square brackets will later be tested for balance
+        if (counts[']']):
+            m = re.search('(?P<url>^.*\])(?P<tight>\[.*?)$', url,
+                flags=self.regex_snippets['mod'])
+            if m:
+                url, tight = m.groups()
+
+        # Split off any trailing text that isn't part of an array assignment.
+        # eg. "text":...?q[]=value1&q[]=value2 ... is ok
+        # "text":...?q[]=value1]following  ... would have "following" popped
+        # back out and the remaining square bracket will later be tested for
+        # balance
+        if (counts[']']):
+            m = re.search(r'(?P<url>^.*\])(?!=)(?P<end>.*?)$', url,
+                    flags=self.regex_snippets['mod'])
+            if m:
+                url = m.group('url')
+                tight = '{0}{1}'.format(m.group('end'), tight)
+
+        # Now we have the array of all the multi-byte chars in the url we will
+        # parse the  uri backwards and pop off  any chars that don't belong
+        # there (like . or , or unmatched brackets of various kinds).
+        first = True
+        popped = True
+
+        def _endchar(c, pop, popped, url_chars, counts):
+            """Textile URL shouldn't end in these characters, we pop them off
+            the end and push them out the back of the url again."""
+            pop = '{0}{1}'.format(c, pop)
+            popped = True
+            return pop, popped, url_chars, counts
+
+        def _rightanglebracket(c, pop, popped, url_chars, counts):
+            urlLeft = ''.join(url_chars)
+
+            m = re.search(r'(?P<url_chars>.*)(?P<tag><\/[a-z]+)$', urlLeft)
+            if m:
+                url_chars = m.group('url_chars')
+                pop = '{0}{1}{2}'.format(m.group('tag'), c, pop)
+                popped = True
+            return pop, popped, url_chars, counts
+
+        def _closingsquarebracket(c, pop, popped, url_chars, counts):
+            """If we find a closing square bracket we are going to see if it is
+            balanced.  If it is balanced with matching opening bracket then it
+            is part of the URL else we spit it back out of the URL."""
+            if counts['['] is None:
+                counts['['] = url.count('[')
+
+            if counts['['] == counts[']']:
+                # It is balanced, so keep it
+                url_chars.append(c)
+            else:
+                # In the case of un-matched closing square brackets we just eat
+                # it
+                popped = True
+                counts[']'] = counts[']'] - 1;
+                if first:
+                    pre = ''
+            return pop, popped, url_chars, counts
+
+        def _closingparenthesis(c, pop, popped, url_chars, counts):
+            if counts[')'] is None:
+                counts['('] = url.count('(')
+                counts[')'] = url.count(')')
+
+            if counts['('] == counts[')']:
+                # It is balanced, so keep it
+                url_chars.append(c)
+            else:
+                # Unbalanced so spit it out the back end
+                pop = '{0}{1}'.format(c, pop)
+                counts[')'] = counts[')'] - 1
+                popped = True
+            return pop, popped, url_chars, counts
+
+        def _casesdefault(c, pop, popped, url_chars, counts):
+            return pop, popped, url_chars, counts
+
+        popped = False
+        cases = {
+                '!': _endchar,
+                '?': _endchar,
+                ':': _endchar,
+                ';': _endchar,
+                '.': _endchar,
+                ',': _endchar,
+                '>': _rightanglebracket,
+                ']': _closingsquarebracket,
+                }
+        for c in url_chars[-1::-1]:
+            pop, popped, url_chars, counts = cases.get(c, _casesdefault)(c,
+                    pop, popped, url_chars, counts)
+            first = False
+            if popped is False:
+                break
+
+        url = ''.join(url_chars)
+        uri_parts = urlsplit(url)
+
+        if not self.isValidUrl(url):
+            return in_.replace('{0}:linkStartMarker:'.format(self.uid), '')
+
+        scheme_in_list = uri_parts.scheme in self.url_schemes
+
+        if text is '$':
+            if scheme_in_list:
+                text = url
+            else:
+                if url in self.urlrefs:
+                    url = self.urlrefs[url]
+                text = url
+
+        text = text.strip()
+        title = self.encode_html(title)
 
         if not self.noimage:
             text = self.image(text)
-
         text = self.span(text)
         text = self.glyphs(text)
+        url = self.shelveURL(urlunsplit(uri_parts))
+        attributes = self.parse_attributes(atts)
+        if title:
+            attributes['title'] = title
+        attributes['href'] = url
+        if self.rel:
+            attributes['rel'] = self.rel
+        a = ElementTree.Element('a', attrib=attributes)
+        a.text = text
+        a_shelf_id = self.shelve(ElementTree.tostring(a))
 
-        url = self.relURL(url) + slash
-        out = '<a href="%s"%s%s>%s</a>' % (self.encode_html(url), atts,
-                                           self.rel, text)
+        out = '{0}{1}{2}{3}'.format(pre, a_shelf_id, pop, tight)
 
-        if (pre and not tail) or (tail and not pre):
-            out = ''.join([pre, out, post, tail])
-            post = ''
-
-        out = self.shelve(out)
-        return ''.join([out, post])
+        return out
 
     def encode_url(self, url):
         """
@@ -1154,9 +1520,9 @@ class Textile(object):
             size = imagesize.getimagesize(url)
 
         if href:
-            href = self.checkRefs(href)
+            href = self.shelveURL(href)
 
-        url = self.checkRefs(url)
+        url = self.shelveURL(url)
         url = self.relURL(url)
 
         out = []
@@ -1451,6 +1817,34 @@ class Textile(object):
         text = '&#%s;' % text
         return h.unescape(text)
 
+    def isValidUrl(self, url):
+        parsed = urlparse(url)
+        if parsed.scheme == '':
+            return True
+        if parsed.scheme and parsed.scheme in self.url_schemes:
+            return True
+        return False
+
+    def shelveURL(self, text):
+        if text == '':
+            return ''
+        self.refCache[self.refIndex] = text
+        output = '{0}{1}{2}'.format(self.uid, self.refIndex, ':url')
+        self.refIndex = self.refIndex + 1
+        return output
+
+    def retrieveURLs(self, text):
+        return re.sub(r'{0}(?P<token>[0-9]+):url'.format(self.uid), self.retrieveURL, text)
+
+    def retrieveURL(self, match):
+        url = self.refCache.get(int(match.group('token')), '')
+        if url is '':
+            return url
+
+        if url in self.urlrefs:
+            url = self.urlrefs[url]
+
+        return url
 
 def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
             encoding=None, output=None):
@@ -1484,5 +1878,5 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
 
     """
     return Textile(restricted=True, lite=lite, noimage=noimage,
-            auto_link=auto_link, html_type=html_type).parse( text,
-                    rel='nofollow')
+            auto_link=auto_link, html_type=html_type, rel='nofollow').parse(
+                    text)
