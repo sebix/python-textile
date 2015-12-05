@@ -796,6 +796,7 @@ class Textile(object):
         tag = 'p'
         atts = cite = graf = ext = ''
         c1 = ''
+        eat = False
 
         out = []
 
