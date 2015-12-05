@@ -1523,7 +1523,6 @@ class Textile(object):
             href = self.shelveURL(href)
 
         url = self.shelveURL(url)
-        url = self.relURL(url)
 
         out = []
         if href:
