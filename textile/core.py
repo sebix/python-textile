@@ -228,7 +228,8 @@ class Textile(object):
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
             # 3+ uppercase acronym
-            re.compile(r'\b([%s][%s0-9]{2,})\b(?:[(]([^)]*)[)])' % (upper_re_s, upper_re_s)),
+            re.compile(r'\b({0}{1}{{2,}})\b(?:[(]([^)]*)[)])'.format(
+                self.regex_snippets['abr'], self.regex_snippets['acr'])),
             # 3+ uppercase
             re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))""" %
                 (upper_re_s, self.pnct_re_s)),
@@ -279,7 +280,7 @@ class Textile(object):
             self.url_schemes = self.unrestricted_url_schemes
 
 
-    def parse(self, text, rel=None, head_offset=0, sanitize=False):
+    def parse(self, text, rel=None, sanitize=False):
         """Parse the input text as textile and return html output."""
         self.notes = OrderedDict()
         self.unreferencedNotes = OrderedDict()
@@ -309,7 +310,7 @@ class Textile(object):
 
         # The original php puts the below within an if not self.lite, but our
         # block function handles self.lite itself.
-        text = self.block(text, int(head_offset))
+        text = self.block(text)
 
         if not self.lite:
             text = self.placeNoteLists(text)
@@ -786,7 +787,7 @@ class Textile(object):
         return '<%s%s>%s%s' % (match.group(1), match.group(2), content,
                                match.group(4))
 
-    def block(self, text, head_offset=0):
+    def block(self, text):
         if not self.lite:
             tre = '|'.join(self.btag)
         else:
@@ -811,10 +812,6 @@ class Textile(object):
                     out.append(out.pop() + c1)
 
                 tag, atts, ext, cite, graf = match.groups()
-                h_match = re.search(r'h([1-6])', tag)
-                if h_match:
-                    head_level, = h_match.groups()
-                    tag = 'h%i' % max(1, min(int(head_level) + head_offset, 6))
                 o1, o2, content, c2, c1, eat = self.fBlock(tag, atts, ext,
                                                            cite, graf)
                 # leave off c1 if this block is extended,
@@ -1846,7 +1843,7 @@ class Textile(object):
 
         return url
 
-def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
+def textile(text, html_type='xhtml', auto_link=False,
             encoding=None, output=None):
     """
     Apply Textile to a block of text.
@@ -1854,12 +1851,10 @@ def textile(text, head_offset=0, html_type='xhtml', auto_link=False,
     This function takes the following additional parameters:
 
     auto_link - enable automatic linking of URLs (default: False)
-    head_offset - offset to apply to heading levels (default: 0)
     html_type - 'xhtml' or 'html5' style tags (default: 'xhtml')
 
     """
-    return Textile(auto_link=auto_link, html_type=html_type).parse(text,
-            head_offset=head_offset)
+    return Textile(auto_link=auto_link, html_type=html_type).parse(text)
 
 
 def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',

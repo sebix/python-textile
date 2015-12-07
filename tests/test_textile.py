@@ -27,13 +27,6 @@ def test_Footnote():
 def test_PBAColspan():
     assert textile.Textile().pba(r'\3', element='td') == ' colspan="3"'
 
-def test_head_offset():
-    text = 'h2. This is a header'
-    head_offset = 2
-    expect = '\t<h4>This is a header</h4>'
-    result = textile.textile(text, head_offset=head_offset)
-    assert result == expect
-
 def test_issue_35():
     result = textile.textile('"z"')
     expect = '\t<p>&#8220;z&#8221; </p>'
