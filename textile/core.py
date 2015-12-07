@@ -1336,7 +1336,6 @@ class Textile(object):
         def _casesdefault(c, pop, popped, url_chars, counts):
             return pop, popped, url_chars, counts
 
-        popped = False
         cases = {
                 '!': _endchar,
                 '?': _endchar,
@@ -1348,6 +1347,7 @@ class Textile(object):
                 ']': _closingsquarebracket,
                 }
         for c in url_chars[-1::-1]:
+            popped = False
             pop, popped, url_chars, counts = cases.get(c, _casesdefault)(c,
                     pop, popped, url_chars, counts)
             first = False
