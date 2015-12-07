@@ -8,7 +8,7 @@ class TextileFactory(object):
 
     def __init__(self, restricted=False, lite=False, sanitize=False,
                  noimage=None, auto_link=False, get_sizes=False,
-                 head_offset=0, html_type='xhtml'):
+                 html_type='xhtml'):
 
         self.class_parms = {}
         self.method_parms = {}
@@ -31,11 +31,6 @@ class TextileFactory(object):
         self.method_parms['sanitize'] = sanitize
         self.class_parms['auto_link'] = auto_link
         self.class_parms['get_sizes'] = get_sizes
-
-        if int(head_offset) not in range(0, 6):
-            raise ValueError("head_offset must be 0-6")
-        else:
-            self.method_parms['head_offset'] = head_offset
 
         if html_type not in ['xhtml', 'html5']:
             raise ValueError("html_type must be 'xhtml' or 'html5'")
