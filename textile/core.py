@@ -21,6 +21,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import uuid
 from xml.etree import ElementTree
+from xml.sax.saxutils import unescape
 
 from textile.tools import sanitizer, imagesize
 
@@ -1388,7 +1389,11 @@ class Textile(object):
             attributes['rel'] = self.rel
         a = ElementTree.Element('a', attrib=attributes)
         a.text = text
-        a_shelf_id = self.shelve(ElementTree.tostring(a))
+        # When adding the text to the Element, it tries to encode the entities,
+        # which we've already taken care of.  So, we unescape &amp; to & and
+        # that should solve it.
+        a_text = unescape(ElementTree.tostring(a), {'&amp;': '&'})
+        a_shelf_id = self.shelve(a_text)
 
         out = '{0}{1}{2}{3}'.format(pre, a_shelf_id, pop, tight)
 
