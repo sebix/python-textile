@@ -1370,6 +1370,7 @@ class Textile(object):
                 if url in self.urlrefs:
                     url = self.urlrefs[url]
                 text = url
+            text = text.split("://")[1]
 
         text = text.strip()
         title = self.encode_html(title)
