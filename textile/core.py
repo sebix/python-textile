@@ -1363,7 +1363,7 @@ class Textile(object):
 
         scheme_in_list = uri_parts.scheme in self.url_schemes
 
-        if text is '$':
+        if text == '$':
             if scheme_in_list:
                 text = url
             else:
