@@ -1286,6 +1286,7 @@ class Textile(object):
             """Textile URL shouldn't end in these characters, we pop them off
             the end and push them out the back of the url again."""
             pop = '{0}{1}'.format(c, pop)
+            url_chars.pop()
             popped = True
             return pop, popped, url_chars, counts
 
