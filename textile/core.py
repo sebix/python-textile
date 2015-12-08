@@ -229,11 +229,14 @@ class Textile(object):
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
             # 3+ uppercase acronym
-            re.compile(r'\b({0}{1}{{2,}})\b(?:[(]([^)]*)[)])'.format(
-                self.regex_snippets['abr'], self.regex_snippets['acr'])),
+            re.compile(r'\b([%s][%s]{2,})\b(?:[(]([^)]*)[)])' % (
+                self.regex_snippets['abr'], self.regex_snippets['acr']),
+                flags=self.regex_snippets['mod']),
             # 3+ uppercase
-            re.compile(r"""(?:(?<=^)|(?<=\s)|(?<=[>\(;-]))([%s]{3,})(\w*)(?=\s|%s|$)(?=[^">]*?(<|$))""" %
-                (upper_re_s, self.pnct_re_s)),
+            re.compile(r'({0}|^|[>(;-])([{1}]{{3,}})([{2}]*)(?={0}|{3}|<|$)'
+                r'(?=[^">]*?(<|$))'.format(self.regex_snippets['space'],
+                    self.regex_snippets['abr'], self.regex_snippets['acr'],
+                    self.pnct_re_s), flags=self.regex_snippets['mod']),
         ]
 
         # These are the changes that need to be made for characters that occur
@@ -269,7 +272,8 @@ class Textile(object):
             r'%(degrees)s',                       # degrees
             r'%(plusminus)s',                     # plus/minus
             r'<acronym title="\2">\1</acronym>',  # 3+ uppercase acronym
-            r'<span class="caps">\1</span>\2',    # 3+ uppercase
+            r'\1<span class="caps">{0}:glyph:\2'  # 3+ uppercase
+              r'</span>\3'.format(self.uid),
         )]
 
         if self.html_type == 'html5':
@@ -318,6 +322,7 @@ class Textile(object):
             text = self.placeNoteLists(text)
 
         text = self.retrieve(text)
+        text = text.replace('{0}:glyph:'.format(self.uid), '')
 
         if sanitize:
             text = sanitizer.sanitize(text)
