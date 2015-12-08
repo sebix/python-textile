@@ -154,7 +154,7 @@ class Textile(object):
         self.uid = 'textileRef:{0}:'.format(uid)
         self.linkPrefix = '{0}-'.format(uid)
         self.refCache = {}
-        self.refIndex = 1
+        self.refIndex = 0
         self.block_tags = block_tags
 
         if _is_regex_module:
@@ -292,6 +292,7 @@ class Textile(object):
             text = self.encode_html(text, quotes=False)
 
         text = _normalize_newlines(text)
+        text = self.cleanUniqueTokens(text)
 
         if self.block_tags:
             if self.lite:
@@ -908,8 +909,8 @@ class Textile(object):
             content = sup + ' ' + content
 
         if tag == 'bq':
-            cite = self.shelveURL(cite)
             if cite:
+                cite = self.shelveURL(cite)
                 cite = ' cite="%s"' % cite
             else:
                 cite = ''
@@ -1039,7 +1040,8 @@ class Textile(object):
         return url
 
     def shelve(self, text):
-        itemID = uuid.uuid4().hex
+        self.refIndex = self.refIndex + 1
+        itemID = '{0}{1}:shelve'.format(self.uid, self.refIndex)
         self.shelf[itemID] = text
         return itemID
 
@@ -1836,9 +1838,9 @@ class Textile(object):
     def shelveURL(self, text):
         if text == '':
             return ''
+        self.refIndex = self.refIndex + 1
         self.refCache[self.refIndex] = text
         output = '{0}{1}{2}'.format(self.uid, self.refIndex, ':url')
-        self.refIndex = self.refIndex + 1
         return output
 
     def retrieveURLs(self, text):
@@ -1853,6 +1855,11 @@ class Textile(object):
             url = self.urlrefs[url]
 
         return url
+
+    def cleanUniqueTokens(self, text):
+        """Remove tokens which mark different Textile-specific bits of text"""
+        return text.replace(self.uid, '')
+
 
 def textile(text, html_type='xhtml', auto_link=False,
             encoding=None, output=None):
