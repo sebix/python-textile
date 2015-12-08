@@ -229,7 +229,7 @@ class Textile(object):
             # plus/minus
             re.compile(r'[([]\+\/-[])]', re.I | re.U),
             # 3+ uppercase acronym
-            re.compile(r'\b([%s][%s]{2,})\b(?:[(]([^)]*)[)])' % (
+            re.compile(r'\b([{0}][{1}]{{2,}})\b(?:[(]([^)]*)[)])'.format(
                 self.regex_snippets['abr'], self.regex_snippets['acr']),
                 flags=self.regex_snippets['mod']),
             # 3+ uppercase
