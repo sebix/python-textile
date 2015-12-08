@@ -1380,7 +1380,7 @@ class Textile(object):
             text = self.image(text)
         text = self.span(text)
         text = self.glyphs(text)
-        url = self.shelveURL(urlunsplit(uri_parts))
+        url = self.shelveURL(self.encode_url(urlunsplit(uri_parts)))
         attributes = self.parse_attributes(atts)
         if title:
             attributes['title'] = title
@@ -1414,13 +1414,17 @@ class Textile(object):
         # parse it
         parsed = urlsplit(url)
 
-        # divide the netloc further
-        netloc_pattern = re.compile(r"""
-            (?:(?P<user>[^:@]+)(?::(?P<password>[^:@]+))?@)?
-            (?P<host>[^:]+)
-            (?::(?P<port>[0-9]+))?
-        """, re.X | re.U)
-        netloc_parsed = netloc_pattern.match(parsed.netloc).groupdict()
+        if parsed.netloc:
+            # divide the netloc further
+            netloc_pattern = re.compile(r"""
+                (?:(?P<user>[^:@]+)(?::(?P<password>[^:@]+))?@)?
+                (?P<host>[^:]+)
+                (?::(?P<port>[0-9]+))?
+            """, re.X | re.U)
+            netloc_parsed = netloc_pattern.match(parsed.netloc).groupdict()
+        else:
+            netloc_parsed = {'user': '', 'password': '', 'host': '', 'port':
+                    ''}
 
         # encode each component
         scheme = parsed.scheme
