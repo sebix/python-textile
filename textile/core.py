@@ -150,6 +150,7 @@ class Textile(object):
         self.rel = rel
         self.html_type = html_type
         self.max_span_depth = 5
+        self.span_depth = 0
         uid = uuid.uuid4().hex
         self.uid = 'textileRef:{0}:'.format(uid)
         self.linkPrefix = '{0}-'.format(uid)
@@ -1462,25 +1463,30 @@ class Textile(object):
     def span(self, text):
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
                  r'_', r'%', r'\+', r'~', r'\^')
-        pnct = ".,\"'?!;:("
+        pnct = r""".,"'?!;:‹›«»„“”‚‘’"""
+        self.span_depth = self.span_depth + 1
 
-        for qtag in qtags:
-            pattern = re.compile(r"""
-                (?:^|(?<=[\s>%(pnct)s])|([\[{]))
-                (%(qtag)s)(?!%(qtag)s)
-                (%(c)s)
-                (?::\(([^)]+?)\))?
-                ([^\s%(qtag)s]+|\S[^%(qtag)s\n]*[^\s%(qtag)s\n])
-                ([%(pnct)s]*)
-                %(qtag)s
-                (?:$|([\]}])|(?=%(selfpnct)s{1,2}|\s))
-            """ % {'qtag': qtag, 'c': self.cslh_re_s, 'pnct': pnct,
-                   'selfpnct': self.pnct_re_s}, re.X)
-            text = pattern.sub(self.fSpan, text)
+        if self.span_depth <= self.max_span_depth:
+            for tag in qtags:
+                pattern = re.compile(r"""
+                    (?P<pre>^|(?<=[\s>{pnct}\(])|[{{[])
+                    (?P<tag>{tag})(?!{tag})
+                    (?P<atts>{cls})
+                    (?!{tag})
+                    (?::(?P<cite>\S+[^{tag}]{space}))?
+                    (?P<content>[^{space}{tag}]+|\S.*?[^\s{tag}\n])
+                    (?P<end>[{pnct}]*)
+                    {tag}
+                    (?P<tail>$|[\[\]}}<]|(?=[{pnct}]{{1,2}}[^0-9]|\s|\)))
+                """.format(**{'tag': tag, 'cls': self.csl_re_s, 'pnct': pnct,
+                    'space': self.regex_snippets['space']}),
+                flags=re.X | self.regex_snippets['mod'])
+                text = pattern.sub(self.fSpan, text)
+        self.span_depth = self.span_depth - 1
         return text
 
     def fSpan(self, match):
-        _, tag, atts, cite, content, end, _ = match.groups()
+        pre, tag, atts, cite, content, end, tail = match.groups()
 
         qtags = {
             '*':  'strong',
@@ -1503,6 +1509,8 @@ class Textile(object):
         content = self.span(content)
 
         out = "<%s%s>%s%s</%s>" % (tag, atts, content, end, tag)
+        if pre and not tail or tail and not pre:
+            out = '{0}{1}{2}'.format(pre, out, tail)
         return out
 
     def image(self, text):
