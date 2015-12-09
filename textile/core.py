@@ -235,7 +235,7 @@ class Textile(object):
             # 3+ uppercase
             re.compile(r'({0}|^|[>(;-])([{1}]{{3,}})([{2}]*)(?={0}|{3}|<|$)'
                 r'(?=[^">]*?(<|$))'.format(self.regex_snippets['space'],
-                    self.regex_snippets['abr'], self.regex_snippets['acr'],
+                    self.regex_snippets['abr'], self.regex_snippets['nab'],
                     self.pnct_re_s), flags=self.regex_snippets['mod']),
         ]
 
