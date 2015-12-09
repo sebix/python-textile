@@ -1626,7 +1626,7 @@ class Textile(object):
         """
         before, commenttext, after = match.groups()
         commenttext = self.shelve(commenttext)
-        return '<!--%s-->' % commenttext
+        return '{0}<!--{1}-->'.format(before, commenttext)
 
     def redcloth_list(self, text):
         """Parse the text for definition lists and send them to be
