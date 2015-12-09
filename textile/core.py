@@ -814,20 +814,18 @@ class Textile(object):
 
         anon = False
         for line in text:
-            pattern = r'^(%s)(%s%s)\.(\.?)(?::(\S+))? (.*)$' % (
-                tre, self.align_re_s, self.cslh_re_s
-            )
-            match = re.search(pattern, line, re.S)
+            pattern = (r'^(?P<tag>{0})(?P<atts>{1}{2})\.(?P<ext>\.?)'
+                    '(?::(?P<cite>\S+))? (?P<content>.*)$'.format(tre,
+                        self.align_re_s, self.cslh_re_s))
+            match = re.search(pattern, line, flags=re.S | self.regex_snippets['mod'])
             if match:
                 if ext:
                     out.append(out.pop() + c1)
 
-                tag, atts, ext, cite, graf = match.groups()
-                o1, o2, content, c2, c1, eat = self.fBlock(tag, atts, ext,
-                                                           cite, graf)
+                tag, atts, ext, cite, content = match.groups()
+                o1, o2, content, c2, c1, eat = self.fBlock(**match.groupdict())
                 # leave off c1 if this block is extended,
                 # we'll close it at the start of the next block
-
                 if ext:
                     line = "%s%s%s%s" % (o1, o2, content, c2)
                 else:
