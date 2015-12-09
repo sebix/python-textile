@@ -11,5 +11,5 @@ def test_urls():
     assert t.autoLink("http://www.ya.ru") == '"$":http://www.ya.ru'
 
     result = t.links('fooobar "Google":http://google.com/foobar/ and hello world "flickr":http://flickr.com/photos/jsamsa/ ')
-    expect = re.compile(r'fooobar [a-f0-9]{32} and hello world [a-f0-9]{32}')
+    expect = re.compile(r'fooobar {0}2:shelve and hello world {0}4:shelve'.format(t.uid))
     assert expect.search(result) is not None
