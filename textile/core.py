@@ -309,15 +309,18 @@ class Textile(object):
                         'fn{0}+'.format(self.regex_snippets['digit']), '###']
                 text = self.block(text)
                 text = self.placeNoteLists(text)
+        else:
+            # Inline markup (em, strong, sup, sub, del etc).
+            text = self.span(text)
+
+            # Glyph level substitutions (mainly typographic -- " & ' => curly
+            # quotes, -- => em-dash etc.
+            text = self.glyphs(text)
 
         if rel:
             self.rel = ' rel="%s"' % rel
 
         text = self.getRefs(text)
-
-        # The original php puts the below within an if not self.lite, but our
-        # block function handles self.lite itself.
-        text = self.block(text)
 
         if not self.lite:
             text = self.placeNoteLists(text)
@@ -849,7 +852,7 @@ class Textile(object):
 
             if ext and anon:
                 out.append(out.pop() + "\n" + line)
-            elif not eat:
+            elif not eat and line:
                 out.append(line)
 
             if not ext:
