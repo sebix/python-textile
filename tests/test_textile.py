@@ -37,14 +37,7 @@ def test_issue_35():
     assert result == expect
 
 def test_restricted():
-    test = "this is \"some\" *bold text*."
-    result = textile.textile_restricted(test)
-    expect = "\t<p>this is &#8220;some&#8221; <strong>bold text</strong>.</p>"
-
-    assert result == expect
-
-    #Note that the HTML is escaped, thus rendering
-    #the <script> tag harmless.
+    #Note that the HTML is escaped, thus rendering the <script> tag harmless.
     test = "Here is some text.\n<script>alert('hello world')</script>"
     result = textile.textile_restricted(test)
     expect = "\t<p>Here is some text.<br />\n&lt;script&gt;alert(&#8216;hello world&#8217;)&lt;/script&gt;</p>"
