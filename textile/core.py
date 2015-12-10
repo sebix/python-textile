@@ -1238,7 +1238,7 @@ class Textile(object):
         pre = pre or ''
 
         if inner is '':
-            return '{0}"{1}"{2}'.format(pre, inner, url)
+            return '{0}"{1}":{2}'.format(pre, inner, url)
 
         m = re.search(r'''^
             (?P<atts>{0})                # $atts (if any)
@@ -1257,7 +1257,6 @@ class Textile(object):
         title = m.group('title') or ''
 
         pop, tight = '', ''
-        url_chars = list(url)
         counts = { '[': None, ']': url.count(']'), '(': None, ')': None }
 
         # Look for footnotes or other square-bracket delimited stuff at the end
@@ -1292,15 +1291,18 @@ class Textile(object):
         first = True
         popped = True
 
-        def _endchar(c, pop, popped, url_chars, counts):
+        counts[']'] = url.count(']')
+        url_chars = list(url)
+
+        def _endchar(c, pop, popped, url_chars, counts, pre):
             """Textile URL shouldn't end in these characters, we pop them off
             the end and push them out the back of the url again."""
             pop = '{0}{1}'.format(c, pop)
             url_chars.pop()
             popped = True
-            return pop, popped, url_chars, counts
+            return pop, popped, url_chars, counts, pre
 
-        def _rightanglebracket(c, pop, popped, url_chars, counts):
+        def _rightanglebracket(c, pop, popped, url_chars, counts, pre):
             urlLeft = ''.join(url_chars)
 
             m = re.search(r'(?P<url_chars>.*)(?P<tag><\/[a-z]+)$', urlLeft)
@@ -1308,9 +1310,9 @@ class Textile(object):
                 url_chars = m.group('url_chars')
                 pop = '{0}{1}{2}'.format(m.group('tag'), c, pop)
                 popped = True
-            return pop, popped, url_chars, counts
+            return pop, popped, url_chars, counts, pre
 
-        def _closingsquarebracket(c, pop, popped, url_chars, counts):
+        def _closingsquarebracket(c, pop, popped, url_chars, counts, pre):
             """If we find a closing square bracket we are going to see if it is
             balanced.  If it is balanced with matching opening bracket then it
             is part of the URL else we spit it back out of the URL."""
@@ -1324,12 +1326,13 @@ class Textile(object):
                 # In the case of un-matched closing square brackets we just eat
                 # it
                 popped = True
+                url_chars.pop()
                 counts[']'] = counts[']'] - 1;
                 if first:
                     pre = ''
-            return pop, popped, url_chars, counts
+            return pop, popped, url_chars, counts, pre
 
-        def _closingparenthesis(c, pop, popped, url_chars, counts):
+        def _closingparenthesis(c, pop, popped, url_chars, counts, pre):
             if counts[')'] is None:
                 counts['('] = url.count('(')
                 counts[')'] = url.count(')')
@@ -1342,10 +1345,10 @@ class Textile(object):
                 pop = '{0}{1}'.format(c, pop)
                 counts[')'] = counts[')'] - 1
                 popped = True
-            return pop, popped, url_chars, counts
+            return pop, popped, url_chars, counts, pre
 
-        def _casesdefault(c, pop, popped, url_chars, counts):
-            return pop, popped, url_chars, counts
+        def _casesdefault(c, pop, popped, url_chars, counts, pre):
+            return pop, popped, url_chars, counts, pre
 
         cases = {
                 '!': _endchar,
@@ -1359,8 +1362,8 @@ class Textile(object):
                 }
         for c in url_chars[-1::-1]:
             popped = False
-            pop, popped, url_chars, counts = cases.get(c, _casesdefault)(c,
-                    pop, popped, url_chars, counts)
+            pop, popped, url_chars, counts, pre = cases.get(c,
+                    _casesdefault)(c, pop, popped, url_chars, counts, pre)
             first = False
             if popped is False:
                 break
