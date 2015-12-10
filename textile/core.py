@@ -234,10 +234,13 @@ class Textile(object):
                 self.regex_snippets['abr'], self.regex_snippets['acr']),
                 flags=self.regex_snippets['mod']),
             # 3+ uppercase
-            re.compile(r'({0}|^|[>(;-])([{1}]{{3,}})([{2}]*)(?={0}|{3}|<|$)'
-                r'(?=[^">]*?(<|$))'.format(self.regex_snippets['space'],
-                    self.regex_snippets['abr'], self.regex_snippets['nab'],
-                    self.pnct_re_s), flags=self.regex_snippets['mod']),
+            re.compile(r'({space}|^|[>(;-])([{abr}]{{3,}})([{nab}]*)'
+                '(?={space}|{pnct}|<|$)(?=[^">]*?(<|$))'.format(**{
+                    'space': self.regex_snippets['space'],
+                    'abr': self.regex_snippets['abr'],
+                    'nab': self.regex_snippets['nab'],
+                    'pnct': self.pnct_re_s}),
+                flags=self.regex_snippets['mod']),
         ]
 
         # These are the changes that need to be made for characters that occur
@@ -1006,10 +1009,13 @@ class Textile(object):
         regexes.  For all remaining passes, we use glyph_search
         """
         # fix: hackish
-        text = re.sub(r'"\Z', r'" ', text)
+        if text.endswith('"'):
+            text = '{0} '.format(text)
 
+        text = text.rstrip('\n')
         result = []
         searchlist = self.glyph_search_initial
+        # split the text by any angle-bracketed tags
         for i, line in enumerate(re.compile(r'(<[\w\/!?].*?>)',
                                             re.U).split(text)):
             if not i % 2:
