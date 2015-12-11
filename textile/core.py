@@ -1406,11 +1406,13 @@ class Textile(object):
         if self.rel:
             attributes['rel'] = self.rel
         a = ElementTree.Element('a', attrib=attributes)
-        a.text = text
-        # When adding the text to the Element, it tries to encode the entities,
-        # which we've already taken care of.  So, we unescape &amp; to & and
-        # that should solve it.
-        a_text = unescape(ElementTree.tostring(a), {'&amp;': '&'})
+        a_tags = ElementTree.tostring(a, method="html")
+        # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
+        # adding text by assigning it to a.text.  That results in non-ascii
+        # text being html-entity encoded.  Not bad, but not entirely matching
+        # php-textile either.
+        a_tags_split = a_tags.split('><')
+        a_text = '{0}>{1}<{2}'.format(a_tags_split[0], text, a_tags_split[1])
         a_shelf_id = self.shelve(a_text)
 
         out = '{0}{1}{2}{3}'.format(pre, a_shelf_id, pop, tight)
