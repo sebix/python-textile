@@ -135,15 +135,14 @@ class Textile(object):
         'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
     }
 
-    def __init__(
-            self, restricted=False, lite=False, noimage=False, auto_link=False, get_sizes=False, html_type='xhtml', rel='', block_tags=True):
+    def __init__(self, restricted=False, lite=False, noimage=False,
+            get_sizes=False, html_type='xhtml', rel='', block_tags=True):
         """Textile properties that are common to regular textile and
         textile_restricted"""
         self.restricted = restricted
         self.lite = lite
         self.noimage = noimage
         self.get_sizes = get_sizes
-        self.auto_link = auto_link
         self.fn = {}
         self.urlrefs = {}
         self.shelf = {}
@@ -1091,9 +1090,6 @@ class Textile(object):
 
         text = self.getRefs(text)
         text = self.links(text)
-        if self.auto_link:
-            text = self.autoLink(text)
-            text = self.links(text)
 
         if not self.noimage:
             text = self.image(text)
@@ -1109,11 +1105,6 @@ class Textile(object):
         text = self.glyphs(text)
 
         return text.rstrip('\n')
-
-    def autoLink(self, text):
-        pattern = re.compile(r"""\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))""",
-                             re.U | re.I)
-        return pattern.sub(r'"$":\1', text)
 
     def links(self, text):
         """For some reason, the part of the regex below that matches the url
@@ -1387,7 +1378,10 @@ class Textile(object):
                 if url in self.urlrefs:
                     url = self.urlrefs[url]
                 text = url
-            text = text.split("://")[1]
+            if "://" in text:
+                text = text.split("://")[1]
+            else:
+                text = text.split(":")[1]
 
         text = text.strip()
         title = self.encode_html(title)
@@ -1884,22 +1878,19 @@ class Textile(object):
         return text.replace(self.uid, '')
 
 
-def textile(text, html_type='xhtml', auto_link=False,
-            encoding=None, output=None):
+def textile(text, html_type='xhtml', encoding=None, output=None):
     """
     Apply Textile to a block of text.
 
     This function takes the following additional parameters:
 
-    auto_link - enable automatic linking of URLs (default: False)
     html_type - 'xhtml' or 'html5' style tags (default: 'xhtml')
 
     """
-    return Textile(auto_link=auto_link, html_type=html_type).parse(text)
+    return Textile(html_type=html_type).parse(text)
 
 
-def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
-                       auto_link=False):
+def textile_restricted(text, lite=True, noimage=True, html_type='xhtml'):
     """
     Apply Textile to a block of text, with restrictions designed for weblog
     comments and other untrusted input.  Raw HTML is escaped, style attributes
@@ -1907,12 +1898,11 @@ def textile_restricted(text, lite=True, noimage=True, html_type='xhtml',
 
     This function takes the following additional parameters:
 
-    auto_link - enable automatic linking of URLs (default: False)
     html_type - 'xhtml' or 'html5' style tags (default: 'xhtml')
     lite - restrict block tags to p, bq, and bc, disable tables (default: True)
     noimage - disable image tags (default: True)
 
     """
     return Textile(restricted=True, lite=lite, noimage=noimage,
-            auto_link=auto_link, html_type=html_type, rel='nofollow').parse(
+            html_type=html_type, rel='nofollow').parse(
                     text)

@@ -7,8 +7,7 @@ class TextileFactory(object):
     process multiple strings with the same settings."""
 
     def __init__(self, restricted=False, lite=False, sanitize=False,
-                 noimage=None, auto_link=False, get_sizes=False,
-                 html_type='xhtml'):
+                 noimage=None, get_sizes=False, html_type='xhtml'):
 
         self.class_parms = {}
         self.method_parms = {}
@@ -29,7 +28,6 @@ class TextileFactory(object):
 
         self.class_parms['noimage'] = noimage
         self.method_parms['sanitize'] = sanitize
-        self.class_parms['auto_link'] = auto_link
         self.class_parms['get_sizes'] = get_sizes
 
         if html_type not in ['xhtml', 'html5']:

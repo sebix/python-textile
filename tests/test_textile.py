@@ -62,8 +62,8 @@ def test_unicode_footnote():
 
 def test_autolinking():
     test = """some text "test":http://www.google.com http://www.google.com "$":http://www.google.com"""
-    result = """\t<p>some text <a href="http://www.google.com">test</a> <a href="http://www.google.com">www.google.com</a> <a href="http://www.google.com">www.google.com</a></p>"""
-    expect = textile.textile(test, auto_link=True)
+    result = """\t<p>some text <a href="http://www.google.com">test</a> http://www.google.com <a href="http://www.google.com">www.google.com</a></p>"""
+    expect = textile.textile(test)
 
     assert result == expect
 

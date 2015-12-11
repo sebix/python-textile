@@ -1,5 +1,10 @@
 import textile
 
+def test_github_issue_16():
+    result = textile.textile('"$":http://google.com "$":https://google.com "$":mailto:blackhole@sun.comet')
+    expect = '\t<p><a href="http://google.com">google.com</a> <a href="https://google.com">google.com</a> <a href="mailto:blackhole%40sun.comet">blackhole@sun.comet</a></p>'
+    assert result == expect
+
 def test_github_issue_17():
     result = textile.textile('!http://www.ox.ac.uk/favicon.ico!')
     expect = '\t<p><img alt="" src="http://www.ox.ac.uk/favicon.ico" /></p>'
