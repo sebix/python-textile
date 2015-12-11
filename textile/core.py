@@ -1404,13 +1404,13 @@ class Textile(object):
         if self.rel:
             attributes['rel'] = self.rel
         a = ElementTree.Element('a', attrib=attributes)
-        a_tags = ElementTree.tostring(a, method="html")
+        a_tag = ElementTree.tostring(a)
         # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
         # adding text by assigning it to a.text.  That results in non-ascii
         # text being html-entity encoded.  Not bad, but not entirely matching
         # php-textile either.
-        a_tags_split = a_tags.split('><')
-        a_text = '{0}>{1}<{2}'.format(a_tags_split[0], text, a_tags_split[1])
+        a_tag = a_tag.rstrip(' />')
+        a_text = '{0}>{1}</a>'.format(a_tag, text)
         a_shelf_id = self.shelve(a_text)
 
         out = '{0}{1}{2}{3}'.format(pre, a_shelf_id, pop, tight)
