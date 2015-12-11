@@ -10,3 +10,14 @@ def test_github_issue_20():
     result = textile.textile(text)
     expect = '\t<p>This is a link to a <a href="http://en.wikipedia.org/wiki/Textile_%28markup_language%29">Wikipedia article about Textile</a>.</p>'
     assert result == expect
+
+def test_github_issue_21():
+    text = '''h1. xml example
+
+bc. 
+<foo>
+  bar
+</foo>'''
+    result = textile.textile(text)
+    expect = '\t<h1>xml example</h1>\n\n<pre><code>\n&lt;foo&gt;\n  bar\n&lt;/foo&gt;\n</code></pre>'
+    assert result == expect
