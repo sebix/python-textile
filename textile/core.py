@@ -1343,14 +1343,11 @@ class Textile(object):
                 counts['('] = url.count('(')
                 counts[')'] = url.count(')')
 
-            if counts['('] == counts[')']:
-                # It is balanced, so keep it
-                url_chars.append(c)
-            else:
+            if counts['('] != counts[')']:
                 # Unbalanced so spit it out the back end
-                pop = '{0}{1}'.format(c, pop)
-                counts[')'] = counts[')'] - 1
                 popped = True
+                pop = '{0}{1}'.format(url_chars.pop(), pop)
+                counts[')'] = counts[')'] - 1
             return pop, popped, url_chars, counts, pre
 
         def _casesdefault(c, pop, popped, url_chars, counts, pre):
@@ -1365,6 +1362,7 @@ class Textile(object):
                 ',': _endchar,
                 '>': _rightanglebracket,
                 ']': _closingsquarebracket,
+                ')': _closingparenthesis,
                 }
         for c in url_chars[-1::-1]:
             popped = False
