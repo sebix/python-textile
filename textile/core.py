@@ -1409,7 +1409,7 @@ class Textile(object):
         # adding text by assigning it to a.text.  That results in non-ascii
         # text being html-entity encoded.  Not bad, but not entirely matching
         # php-textile either.
-        a_tag = a_tag.rstrip(' />')
+        a_tag = a_tag.decode('utf-8').rstrip(' />')
         a_text = '{0}>{1}</a>'.format(a_tag, text)
         a_shelf_id = self.shelve(a_text)
 
