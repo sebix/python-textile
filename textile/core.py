@@ -172,8 +172,8 @@ class Textile(object):
                     }
         else:
             self.regex_snippets = {
-                    'acr': r'A-Z0-9',
-                    'abr': r'A-Z',
+                    'acr': r'{0}0-9'.format(upper_re_s),
+                    'abr': r'{0}'.format(upper_re_s),
                     'nab': r'a-z',
                     'wrd': r'\w',
                     'mod': 0,
