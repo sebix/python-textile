@@ -372,7 +372,7 @@ class Textile(object):
 
         m = re.search(r'\{([^}]*)\}', matched)
         if m:
-            style += m.group(1).rstrip(';').split(';')
+            style.extend(m.group(1).rstrip(';').split(';'))
             matched = matched.replace(m.group(0), '')
 
         m = re.search(r'\[([^\]]+)\]', matched, re.U)
@@ -462,7 +462,7 @@ class Textile(object):
 
         m = re.search(r'\{([^}]*)\}', matched)
         if m:
-            style += m.group(1).rstrip(';').split(';')
+            style.extend(m.group(1).rstrip(';').split(';'))
             matched = matched.replace(m.group(0), '')
 
         m = re.search(r'\[([^\]]+)\]', matched, re.U)

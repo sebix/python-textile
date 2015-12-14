@@ -27,3 +27,11 @@ def test_block():
     result = t.fBlock("h1", "", None, "", "foobar")
     expect = ('', '\t<h1>', 'foobar', '</h1>', '', False)
     assert result == expect
+
+def test_block_tags_false():
+    t = Textile(block_tags=False)
+    assert t.block_tags is False
+
+    result = t.parse('test')
+    expect = 'test'
+    assert result == expect
