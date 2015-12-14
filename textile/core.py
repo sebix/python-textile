@@ -1037,9 +1037,6 @@ class Textile(object):
         self.urlrefs[flag] = url
         return ''
 
-    def checkRefs(self, url):
-        return self.urlrefs.get(url, url)
-
     def isRelURL(self, url):
         """Identify relative urls."""
         (scheme, netloc) = urlparse(url)[0:2]
@@ -1130,11 +1127,6 @@ class Textile(object):
             last_slice = slices.pop()
 
             for s in slices:
-                # If there is no possible start quote then this slice is not
-                # a link
-                if '"' not in s:
-                    continue
-
                 # Cut this slice into possible starting points wherever we find
                 # a '"' character. Any of these parts could represent the start
                 # of the link text - we have to find which one.
