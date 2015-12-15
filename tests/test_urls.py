@@ -15,3 +15,11 @@ def test_urls():
     result = t.links('""Open the door, HAL!"":https://xkcd.com/375/')
     expect = '{0}6:shelve'.format(t.uid)
     assert result == expect
+
+    result = t.links('"$":http://domain.tld/test_[brackets]')
+    expect = '{0}8:shelve'.format(t.uid)
+    assert result == expect
+
+    result = t.links('<em>"$":http://domain.tld/test_</em>')
+    expect = '<em>{0}10:shelve</em>'.format(t.uid)
+    assert result == expect

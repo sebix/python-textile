@@ -1292,6 +1292,7 @@ class Textile(object):
             return pop, popped, url_chars, counts, pre
 
         def _rightanglebracket(c, pop, popped, url_chars, counts, pre):
+            url_chars.pop()
             urlLeft = ''.join(url_chars)
 
             m = re.search(r'(?P<url_chars>.*)(?P<tag><\/[a-z]+)$', urlLeft)
