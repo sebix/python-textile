@@ -1501,7 +1501,7 @@ class Textile(object):
         tag = qtags[tag]
         atts = self.pba(atts)
         if cite:
-            atts = atts + ' cite="%s"' % cite
+            atts = atts + ' cite="%s"' % cite.rstrip()
 
         content = self.span(content)
 
