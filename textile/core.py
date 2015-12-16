@@ -1360,7 +1360,7 @@ class Textile(object):
         uri_parts = urlsplit(url)
 
         if not self.isValidUrl(url):
-            return in_.replace('{0}:linkStartMarker:'.format(self.uid), '')
+            return in_.replace('{0}linkStartMarker:'.format(self.uid), '')
 
         scheme_in_list = uri_parts.scheme in self.url_schemes
 
