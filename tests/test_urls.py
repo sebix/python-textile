@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from textile import Textile
 import re
 
@@ -30,6 +31,18 @@ def test_urls():
 
     expect = '"$":htt://domain.tld'
     result = t.links(expect)
+    assert result == expect
+
+    result = t.shelveURL('')
+    expect = ''
+    assert result == expect
+
+    result = t.retrieveURLs('{0}2:url'.format(t.uid))
+    expect = ''
+    assert result == expect
+
+    result = t.encode_url('http://domain.tld/übermensch')
+    expect = 'http://domain.tld/%C3%BCbermensch'
     assert result == expect
 
 def test_rel_attribute():
