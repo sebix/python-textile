@@ -201,8 +201,8 @@ xhtml_known_values = (
 
     ('H[~2~]O', '\t<p>H<sub>2</sub>O</p>'),
 
-    (u"p=. Où est l'école, l'église s'il vous plaît?",
-     u"""\t<p style="text-align:center;">Où est l&#8217;école, l&#8217;église s&#8217;il vous plaît?</p>"""),
+    ("p=. Où est l'école, l'église s'il vous plaît?",
+     """\t<p style="text-align:center;">Où est l&#8217;école, l&#8217;église s&#8217;il vous plaît?</p>"""),
 
     ("p=. *_The_* _*Prisoner*_",
      """\t<p style="text-align:center;"><strong><em>The</em></strong> <em><strong>Prisoner</strong></em></p>"""),
@@ -215,16 +215,16 @@ xhtml_known_values = (
 
     ("""p=. "Please visit our "Textile Test Page":http://textile.sitemonks.com" """,
      """\t<p style="text-align:center;">&#8220;Please visit our <a href="http://textile.sitemonks.com">Textile Test Page</a>&#8221; </p>"""),
-    (u"""| Foreign EXPÓŅÉNTIAL |""",
-     u"""\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
-    (u"""Piękne ŹDŹBŁO""",
-     u"""\t<p>Piękne <span class="caps">ŹDŹBŁO</span></p>"""),
+    ("""| Foreign EXPÓŅÉNTIAL |""",
+     """\t<table>\n\t\t<tr>\n\t\t\t<td> Foreign <span class="caps">EXPÓŅÉNTIAL</span> </td>\n\t\t</tr>\n\t</table>"""),
+    ("""Piękne ŹDŹBŁO""",
+     """\t<p>Piękne <span class="caps">ŹDŹBŁO</span></p>"""),
 
     ("""p=. Tell me, what is AJAX(Asynchronous Javascript and XML), please?""",
      """\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
     ('p{font-size:0.8em}. *TxStyle* is a documentation project of Textile 2.4 for "Textpattern CMS":http://texpattern.com.',
      '\t<p style="font-size:0.8em;"><strong>TxStyle</strong> is a documentation project of Textile 2.4 for <a href="http://texpattern.com">Textpattern <span class="caps">CMS</span></a>.</p>'),
-    (u""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", u"""\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
+    (""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", """\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
     ("""Here is some text with a <!-- Commented out[1] --> block.\n\n<!-- Here is a single <span>line</span> comment block -->\n\n<!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n-->\n\nbc. <!-- Here is a comment block in a code block. -->""",
      """\t<p>Here is some text with a <!-- Commented out[1] --> block.</p>\n\n\t<p><!-- Here is a single <span>line</span> comment block --></p>\n\n\t<p><!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n--></p>\n\n<pre><code>&lt;!-- Here is a comment block in a code block. --&gt;\n</code></pre>"""),
     (""""Textile(c)" is a registered(r) 'trademark' of Textpattern(tm) -- or TXP(That's textpattern!) -- at least it was - back in '88 when 2x4 was (+/-)5(o)C ... QED!\n\np{font-size: 200%;}. 2(1/4) 3(1/2) 4(3/4)""",
