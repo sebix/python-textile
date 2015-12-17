@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import textile
 import pytest
 
@@ -109,7 +110,7 @@ xhtml_known_values = (
     ('* A first item\n* A second item\n* A third',
      '\t<ul>\n\t\t<li>A first item</li>\n\t\t<li>A second item</li>\n\t\t<li>A third</li>\n\t</ul>'),
 
-    (u'• A first item\n• A second item\n• A third',
+    ('• A first item\n• A second item\n• A third',
      '\t<ul>\n\t\t<li>A first item</li>\n\t\t<li>A second item</li>\n\t\t<li>A third</li>\n\t</ul>'),
 
     ('* Fuel could be:\n** Coal\n** Gasoline\n** Electricity\n* Humans need only:\n** Water\n** Protein',
