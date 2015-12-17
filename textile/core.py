@@ -1365,12 +1365,7 @@ class Textile(object):
         scheme_in_list = uri_parts.scheme in self.url_schemes
 
         if text == '$':
-            if scheme_in_list:
-                text = url
-            else:
-                if url in self.urlrefs:
-                    url = self.urlrefs[url]
-                text = url
+            text = url
             if "://" in text:
                 text = text.split("://")[1]
             else:
