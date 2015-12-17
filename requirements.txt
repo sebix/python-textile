@@ -1,2 +1,2 @@
 html5lib==0.999
-Pillow==2.6.0
+Pillow==3.0.0
