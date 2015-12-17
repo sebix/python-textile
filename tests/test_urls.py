@@ -24,6 +24,14 @@ def test_urls():
     expect = '<em>{0}10:shelve</em>'.format(t.uid)
     assert result == expect
 
+    expect = '"":test'
+    result = t.links(expect)
+    assert result == expect
+
+    expect = '"$":htt://domain.tld'
+    result = t.links(expect)
+    assert result == expect
+
 def test_rel_attribute():
     t = Textile(rel='nofollow')
     result = t.parse('"$":http://domain.tld')
