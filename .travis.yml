@@ -15,7 +15,8 @@ install:
   - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
   - pip install coveralls pytest-cov coverage
   - pip install -e .
-  - if [[ ! $TRAVIS_PYTHON_VERSION == pypy ]] ; then pip install regex; fi
+  - if [[ ! $TRAVIS_PYTHON_VERSION == 'pypy' ]] ; then pip install regex; fi
+  - if [[ $REQUIREMENTS == true && $TRAVIS_PYTHON_VERSION == '3.2' ]] ; then pip install regex; fi
 # command to run tests
 script: py.test
 sudo: false
