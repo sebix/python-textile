@@ -1226,7 +1226,7 @@ class Textile(object):
         pre, inner, url = m.groups()
         pre = pre or ''
 
-        if inner is '':
+        if inner == '':
             return '{0}"{1}":{2}'.format(pre, inner, url)
 
         m = re.search(r'''^
