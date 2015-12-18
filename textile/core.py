@@ -503,7 +503,7 @@ class Textile(object):
             # Previous splits that created style may have introduced extra
             # whitespace into the list elements.  Clean it up.
             style = [x.strip() for x in style]
-            result['style'] = "; ".join(style)
+            result['style'] = '{0};'.format("; ".join(style))
         if aclass:
             result['class'] = aclass
         if block_id and not self.restricted:
