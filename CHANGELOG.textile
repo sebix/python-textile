@@ -1,19 +1,31 @@
 h1. Textile Changelog
 
-h1. Version 2.2.1
+h2. Develop Branch
+* bugfixes:
+** support data URIs in img tags
+** Fix autolink urls with image references (#17)
+** fix textile links containing parentheses (#20)
+** fix double-encoding of code blocks (#21)
+** fix handling of scheme in self-linked URLs (#16)
+* convert testing over to "py.test":http://pytest.org/, improving unicode testing
+
+h2. Version 2.2.2
+* bugfix: "regex":https://pypi.python.org/pypi/regex is now an optional dependency
+
+h2. Version 2.2.1
 
 * drop textilefactory support for html.
 * Various development-related bugfixes.
 * Added this changelog.
 
-h1. Version 2.2.0
+h2. Version 2.2.0
 
 * Started refactoring the code to be less repetitive.  @textile.Textile().parse()@ is a little more friendly than @textile.Textile().textile()@  There may be more work to be done on this front to make the flow a little smoother.
 * We now support versions 2.6 - 3.4 (including 3.2) using the same codebase.  Many thanks to Radek Czajka for this.
 * Drop support for html4.  We now only output xhtml or html5.
 * Various development-related bugfixes.
 
-h1. Version 2.1.8
+h2. Version 2.1.8
 
 * Add support for html5 output.
 * Lots of new functionality added bringing us in line with the official Textile 2.4
