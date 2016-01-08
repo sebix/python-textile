@@ -546,7 +546,7 @@ class Textile(object):
 
         summary = ''
         if match.group('summary'):
-            summary = ' summary="%s"'.format(match.group('summary').strip())
+            summary = ' summary="{0}"'.format(match.group('summary').strip())
         cap = ''
         colgrp, last_rgrp = '', ''
         c_row = 1
@@ -557,7 +557,7 @@ class Textile(object):
 
             # Caption -- only occurs on row 1, otherwise treat '|=. foo |...'
             # as a normal center-aligned cell.
-            captionpattern = (r"^\|\=(?P<capts>{s}{a}{c})\. (?P<cap>[^\n]*)(?P<row>.*)\s".format(**{'s': self.table_span_re_s, 'a': self.align_re_s, 'c': self.cslh_re_s}))
+            captionpattern = (r"^\|\=(?P<capts>{s}{a}{c})\. (?P<cap>[^\n]*)(?P<row>.*)".format(**{'s': self.table_span_re_s, 'a': self.align_re_s, 'c': self.cslh_re_s}))
             caption_re = re.compile(captionpattern, re.S)
             cmtch = caption_re.match(row)
             if c_row == 1 and cmtch:
@@ -639,7 +639,7 @@ class Textile(object):
                     a = re.search(a_pattern, cell, flags=re.S)
                     if a:
                         cell = self.redcloth_list(a.group('cell'))
-                        cell = self.lists(a.group('cell'))
+                        cell = self.lists(cell)
                         cell = '{0}{1}'.format(a.group('space'), cell)
 
                 # row.split() gives us ['', 'cell 1 contents', '...']
@@ -663,7 +663,7 @@ class Textile(object):
             last_rgrp = rgrp if rgrp else last_rgrp
 
             trailing_newline = '\n' if cells else ''
-            rows.append("{0}\t\t<tr{1}>\n{2}{3}\t\t</tr>" % (grp, ratts,
+            rows.append("{0}\t\t<tr{1}>\n{2}{3}\t\t</tr>".format(grp, ratts,
                 '\n'.join(cells), trailing_newline))
             cells = []
             catts = None
