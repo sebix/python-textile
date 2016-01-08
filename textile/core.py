@@ -606,7 +606,7 @@ class Textile(object):
             rgrp = ''
             rgrptypes = {'^': 'head', '~': 'foot', '-': 'body'}
             if grpmatch.group('part'):
-                rgrp = rgrptypes[grpmatch.group'part'2)]
+                rgrp = rgrptypes[grpmatch.group('part')]
             rgrpatts = self.pba(grpmatch.group('rgrpatts'))
             row = grpmatch.group('row')
 
@@ -636,7 +636,7 @@ class Textile(object):
                 if not self.lite:
                     a_pattern = r'(?P<space>{0}*)(?P<cell>.*)'.format(
                             self.regex_snippets['space'])
-                    a = re.search(a_re_pattern, cell, flags=re.S)
+                    a = re.search(a_pattern, cell, flags=re.S)
                     if a:
                         cell = self.redcloth_list(a.group('cell'))
                         cell = self.lists(a.group('cell'))
@@ -646,7 +646,7 @@ class Textile(object):
                 # so we ignore the first cell.
                 if cellctr > 0:
                     ctag = "t{0}".format(ctyp)
-                    cline = ("\t\t\t<{ctag}{catts}>{cell}</{ctag}>".format(**{
+                    cline = "\t\t\t<{ctag}{catts}>{cell}</{ctag}>".format(**{
                         'ctag': ctag, 'catts': catts, 'cell': cell})
                     cells.append(self.doTagBr(ctag, cline))
 
@@ -673,8 +673,8 @@ class Textile(object):
 
         if last_rgrp:
             close = '\t</t{0}>\n'.format(last_rgrp)
-        tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t'
-            '</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
+        tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t"
+            "</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
             cap, 'colgrp': colgrp, 'close': close, 'rows': rows}))
         return tbl
 
