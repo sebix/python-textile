@@ -166,8 +166,8 @@ class Textile(object):
                     'mod': re.UNICODE,
                     'cur': r'\p{Sc}',
                     'digit': r'\p{N}',
-                    'space': r'(?:\p{Zs}|\h|\v)',
-                    'char': r'(?:[^\p{Zs}\h\v])',
+                    'space': r'(?:\p{Zs}|\v)',
+                    'char': r'(?:[^\p{Zs}\v])',
                     }
         else:
             self.regex_snippets = {
@@ -178,7 +178,7 @@ class Textile(object):
                     'mod': 0,
                     'cur': r'',
                     'digit': r'\d',
-                    'space': r'(?:\s|\h|\v)',
+                    'space': r'(?:\s|\v)',
                     'char': r'\S',
                     }
         urlch = (r'' + self.regex_snippets['wrd'] +

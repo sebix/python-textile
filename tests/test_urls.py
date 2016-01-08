@@ -45,6 +45,10 @@ def test_urls():
     expect = 'http://domain.tld/%C3%BCbermensch'
     assert result == expect
 
+    result = t.parse('A link that starts with an h is "handled":/test/ incorrectly.')
+    expect = '\t<p>A link that starts with an h is <a href="/test/">handled</a> incorrectly.</p>'
+    assert result == expect
+
 def test_rel_attribute():
     t = Textile(rel='nofollow')
     result = t.parse('"$":http://domain.tld')
