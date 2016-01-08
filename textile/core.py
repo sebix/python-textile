@@ -534,59 +534,60 @@ class Textile(object):
 
     def table(self, text):
         text = text + "\n\n"
-        pattern = re.compile(r'^(?:table(_?%(s)s%(a)s%(c)s)\.(.*?)\n)?^(%(a)s%(c)s\.? ?\|.*\|)[\s]*\n\n' %
-                {'s': self.table_span_re_s, 'a': self.align_re_s, 'c':
-                    self.cslh_re_s}, re.S | re.M | re.U)
+        pattern = re.compile(r'^(?:table(?P<tatts>_?{s}{a}{c})\.'
+                r'(?P<summary>.*?)\n)?^(?P<rows>{a}{c}\.? ?\|.*\|)'
+                r'[\s]*\n\n'.format(**{'s': self.table_span_re_s, 'a':
+                    self.align_re_s, 'c': self.cslh_re_s}),
+                flags=re.S | re.M | re.U)
         return pattern.sub(self.fTable, text)
 
     def fTable(self, match):
-        tatts = self.pba(match.group(1), 'table')
+        tatts = self.pba(match.group('tatts'), 'table')
 
-        summary = (' summary="%s"' % match.group(2).strip() if match.group(2)
-                   else '')
+        summary = ''
+        if match.group('summary'):
+            summary = ' summary="%s"'.format(match.group('summary').strip())
         cap = ''
         colgrp, last_rgrp = '', ''
         c_row = 1
         rows = []
-        split = re.split(r'\|\s*?$', match.group(3), flags=re.M)
+        split = re.split(r'\|\s*?$', match.group('rows'), flags=re.M)
         for row in [x for x in split if x]:
             row = row.lstrip()
 
             # Caption -- only occurs on row 1, otherwise treat '|=. foo |...'
             # as a normal center-aligned cell.
-            captionpattern = r"^\|\=(%(s)s%(a)s%(c)s)\. ([^\n]*)(.*)" % {'s':
-                    self.table_span_re_s, 'a': self.align_re_s, 'c':
-                    self.cslh_re_s}
+            captionpattern = (r"^\|\=(?P<capts>{s}{a}{c})\. (?P<cap>[^\n]*)(?P<row>.*)\s".format(**{'s': self.table_span_re_s, 'a': self.align_re_s, 'c': self.cslh_re_s}))
             caption_re = re.compile(captionpattern, re.S)
             cmtch = caption_re.match(row)
             if c_row == 1 and cmtch:
-                capatts = self.pba(cmtch.group(1))
-                cap = "\t<caption%s>%s</caption>\n" % (capatts,
-                                                       cmtch.group(2).strip())
-                row = cmtch.group(3).lstrip()
+                capatts = self.pba(cmtch.group('capts'))
+                cap = "\t<caption{0}>{1}</caption>\n".format(capatts,
+                        cmtch.group('cap').strip())
+                row = cmtch.group('row').lstrip()
                 if row == '':
                     continue
 
             c_row += 1
 
             # Colgroup
-            grppattern = r"^\|:(%(s)s%(a)s%(c)s\. .*)" % {'s':
-                    self.table_span_re_s, 'a': self.align_re_s, 'c':
-                    self.cslh_re_s}
+            grppattern = r"^\|:(?P<cols>{s}{a}{c}\. .*)".format(**{'s':
+                self.table_span_re_s, 'a': self.align_re_s, 'c':
+                self.cslh_re_s})
             grp_re = re.compile(grppattern, re.M)
             gmtch = grp_re.match(row.lstrip())
             if gmtch:
                 has_newline = "\n" in row
                 idx = 0
-                for col in gmtch.group(1).replace('.', '').split("|"):
+                for col in gmtch.group('cols').replace('.', '').split("|"):
                     gatts = self.pba(col.strip(), 'col')
                     if idx == 0:
-                        gatts = "group%s>" % gatts
+                        gatts = "group{0}>".format(gatts)
                     else:
-                        gatts = gatts + " />"
-                    colgrp = colgrp + "\t<col%s\n" % gatts
-                    idx += 1
-                colgrp += "\t</colgroup>\n"
+                        gatts = "{0} />".format(gatts)
+                    colgrp = "{0}\t<col{1}\n".format(colgrp, gatts)
+                    idx = idx + 1
+                colgrp = "{0}\t</colgroup>\n".format(colgrp)
 
                 # If the row has a newline in it, account for the missing
                 # closing pipe and process the rest of the line
@@ -595,25 +596,25 @@ class Textile(object):
                 else:
                     row = row[row.index('\n'):].lstrip()
 
-            grpmatchpattern = (r"(:?^\|(%(v)s)(%(s)s%(a)s%(c)s)\.\s*$\n)?^(.*)"
-                    % {'v': self.valign_re_s, 's': self.table_span_re_s, 'a':
-                        self.align_re_s, 'c': self.cslh_re_s})
+            grpmatchpattern = r"(:?^\|(?P<part>{v})(?P<rgrpatts>{s}{a}{c})\.\s*$\n)?^(?P<row>.*)".format(
+                **{'v': self.valign_re_s, 's': self.table_span_re_s, 'a':
+                    self.align_re_s, 'c': self.cslh_re_s})
             grpmatch_re = re.compile(grpmatchpattern, re.S | re.M)
             grpmatch = grpmatch_re.match(row.lstrip())
 
             # Row group
             rgrp = ''
             rgrptypes = {'^': 'head', '~': 'foot', '-': 'body'}
-            if grpmatch.group(2):
-                rgrp = rgrptypes[grpmatch.group(2)]
-            rgrpatts = self.pba(grpmatch.group(3))
-            row = grpmatch.group(4)
+            if grpmatch.group('part'):
+                rgrp = rgrptypes[grpmatch.group'part'2)]
+            rgrpatts = self.pba(grpmatch.group('rgrpatts'))
+            row = grpmatch.group('row')
 
-            rmtch = re.search(r'^(%s%s\. )(.*)' % (self.align_re_s,
+            rmtch = re.search(r'^(?P<ratts>{0}{1}\. )(?P<row>.*)'.format(self.align_re_s,
                 self.cslh_re_s), row.lstrip())
             if rmtch:
-                ratts = self.pba(rmtch.group(1), 'tr')
-                row = rmtch.group(2)
+                ratts = self.pba(rmtch.group('ratts'), 'tr')
+                row = rmtch.group('row')
             else:
                 ratts = ''
 
@@ -623,49 +624,58 @@ class Textile(object):
                 ctyp = 'd'
                 if re.search(r'^_', cell):
                     ctyp = "h"
-                cmtch = re.search(r'^(_?%s%s%s\. )(.*)' % (
+                cmtch = re.search(r'^(?P<catts>_?{0}{1}{2}\. )(?P<cell>.*)'.format(
                     self.table_span_re_s, self.align_re_s, self.cslh_re_s),
-                    cell)
+                    cell, flags=re.S)
                 if cmtch:
-                    catts = self.pba(cmtch.group(1), 'td')
-                    cell = cmtch.group(2)
+                    catts = self.pba(cmtch.group('catts'), 'td')
+                    cell = cmtch.group('cell')
                 else:
                     catts = ''
 
                 if not self.lite:
-                    cell = self.redcloth_list(cell)
-                    cell = self.lists(cell)
+                    a_pattern = r'(?P<space>{0}*)(?P<cell>.*)'.format(
+                            self.regex_snippets['space'])
+                    a = re.search(a_re_pattern, cell, flags=re.S)
+                    if a:
+                        cell = self.redcloth_list(a.group('cell'))
+                        cell = self.lists(a.group('cell'))
+                        cell = '{0}{1}'.format(a.group('space'), cell)
 
                 # row.split() gives us ['', 'cell 1 contents', '...']
                 # so we ignore the first cell.
                 if cellctr > 0:
-                    ctag = "t%s" % ctyp
-                    cline = ("\t\t\t<%(ctag)s%(catts)s>%(cell)s</%(ctag)s>" %
-                             {'ctag': ctag, 'catts': catts, 'cell': cell})
+                    ctag = "t{0}".format(ctyp)
+                    cline = ("\t\t\t<{ctag}{catts}>{cell}</{ctag}>".format(**{
+                        'ctag': ctag, 'catts': catts, 'cell': cell})
                     cells.append(self.doTagBr(ctag, cline))
 
-                cellctr += 1
+                cellctr = cellctr + 1
+
+            grp = ''
 
             if rgrp and last_rgrp:
-                grp = "\t</t%s>\n" % last_rgrp
-            else:
-                grp = ''
+                grp = "\t</t{0}>\n".format(last_rgrp)
 
             if rgrp:
-                grp += "\t<t%s%s>\n" % (rgrp, rgrpatts)
+                grp += "\t<t{0}{1}>\n".format(rgrp, rgrpatts)
 
             last_rgrp = rgrp if rgrp else last_rgrp
 
-            rows.append("%s\t\t<tr%s>\n%s%s\t\t</tr>" % (grp, ratts,
-                        '\n'.join(cells), '\n' if cells else ''))
+            trailing_newline = '\n' if cells else ''
+            rows.append("{0}\t\t<tr{1}>\n{2}{3}\t\t</tr>" % (grp, ratts,
+                '\n'.join(cells), trailing_newline))
             cells = []
             catts = None
 
+        rows = '{0}\n'.format('\n'.join(rows))
+        close = ''
+
         if last_rgrp:
-            last_rgrp = '\t</t%s>\n' % last_rgrp
-        tbl = ("\t<table%(tatts)s%(summary)s>\n%(cap)s%(colgrp)s%(rows)s\n%(last_rgrp)s\t</table>\n\n"
-               % {'tatts': tatts, 'summary': summary, 'cap': cap, 'colgrp':
-                  colgrp, 'last_rgrp': last_rgrp, 'rows': '\n'.join(rows)})
+            close = '\t</t{0}>\n'.format(last_rgrp)
+        tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t'
+            '</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
+            cap, 'colgrp': colgrp, 'close': close, 'rows': rows}))
         return tbl
 
     def lists(self, text):
