@@ -130,9 +130,9 @@ class Textile(object):
         'threequarters':      '&#190;',
         'degrees':            '&#176;',
         'plusminus':          '&#177;',
-        'fn_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
-        'fn_foot_pattern':    '<sup%(atts)s>%(marker)s</sup>',
-        'nl_ref_pattern':     '<sup%(atts)s>%(marker)s</sup>',
+        'fn_ref_pattern':     '<sup{atts}>{marker}</sup>',
+        'fn_foot_pattern':    '<sup{atts}>{marker}</sup>',
+        'nl_ref_pattern':     '<sup{atts}>{marker}</sup>',
     }
 
     def __init__(self, restricted=False, lite=False, noimage=False,
@@ -153,6 +153,7 @@ class Textile(object):
         uid = uuid.uuid4().hex
         self.uid = 'textileRef:{0}:'.format(uid)
         self.linkPrefix = '{0}-'.format(uid)
+        self.linkIndex = 0
         self.refCache = {}
         self.refIndex = 0
         self.block_tags = block_tags
@@ -884,26 +885,29 @@ class Textile(object):
         if tag == 'p':
             # is this an anonymous block with a note definition?
             notedef_re = re.compile(r"""
-            ^note\#                 # start of note def marker
-            ([^%%<*!@#^([{ \s.]+)   # !label
-            ([*!^]?)                # !link
-            (%s)                    # !att
-            \.?                     # optional period.
-            [\s]+                   # whitespace ends def marker
-            (.*)$                   # !content""" % (self.cslh_re_s), re.X)
+            ^note\#                               # start of note def marker
+            (?P<label>[^%<*!@\#^([{{ {space}.]+)  # label
+            (?P<link>[*!^]?)                      # link
+            (?P<att>{cls})                        # att
+            \.?                                   # optional period.
+            [{space}]+                            # whitespace ends def marker
+            (?P<content>.*)$                      # content""".format(
+                space=self.regex_snippets['space'], cls=self.cslh_re_s),
+            flags=re.X | self.regex_snippets['mod'])
             notedef = notedef_re.sub(self.fParseNoteDefs, content)
 
             # It will be empty if the regex matched and ate it.
             if '' == notedef:
                 return o1, o2, notedef, c2, c1, True
 
-        m = re.search(r'fn(\d+)', tag)
-        if m:
+        fns = re.search(r'fn(?P<fnid>{0}+)'.format(self.regex_snippets['digit']),
+                tag, flags=self.regex_snippets['mod'])
+        if fns:
             tag = 'p'
-            if m.group(1) in self.fn:
-                fnid = self.fn[m.group(1)]
-            else:
-                fnid = m.group(1)
+            fnid = self.fn.get(fns.group('fnid'), None)
+            if fnid is None:
+                self.linkIndex = self.linkIndex + 1
+                fnid = '{0}{1}'.format(self.linkPrefix, self.linkIndex)
 
             # If there is an author-specified ID goes on the wrapper & the
             # auto-id gets pushed to the <sup>
@@ -911,21 +915,22 @@ class Textile(object):
 
             # if class has not been previously specified, set it to "footnote"
             if atts.find('class=') < 0:
-                atts = atts + ' class="footnote"'
+                atts = '{0} class="footnote"'.format(atts)
 
             # if there's no specified id, use the generated one.
             if atts.find('id=') < 0:
-                atts = atts + ' id="fn%s"' % fnid
+                atts = '{0} id="fn{1}"'.format(atts, fnid)
             else:
-                supp_id = ' id="fn%s"' % fnid
+                supp_id = ' id="fn{0}"'.format(fnid)
 
             if att.find('^') < 0:
-                sup = self.formatFootnote(m.group(1), supp_id)
+                sup = self.formatFootnote(fns.group('fnid'), supp_id)
             else:
-                fnrev = '<a href="#fnrev%s">%s</a>' % (fnid, m.group(1))
+                fnrev = '<a href="#fnrev{0}">{1}</a>'.format(fnid,
+                        fns.group('fnid'))
                 sup = self.formatFootnote(fnrev, supp_id)
 
-            content = sup + ' ' + content
+            content = '{0} {1}'.format(sup, content)
 
         if tag == 'bq':
             if cite:
@@ -976,28 +981,28 @@ class Textile(object):
             pattern = self.glyph_definitions['fn_foot_pattern']
         else:
             pattern = self.glyph_definitions['fn_ref_pattern']
-        return pattern % {'atts': atts, 'marker': marker}
+        return pattern.format(**{'atts': atts, 'marker': marker})
 
     def footnoteRef(self, text):
-        return re.compile(r'(?<=\S)\[(\d+)(!?)\](\s)?', re.U).sub(
-            self.footnoteID, text
-        )
+        # somehow php-textile gets away with not capturing the space.
+        return re.compile(r'(?<=\S)\[(?P<id>{0}+)(?P<nolink>!?)\](?P<space>{1}?)'.format(
+            self.regex_snippets['digit'], self.regex_snippets['space']),
+            flags=self.regex_snippets['mod']).sub(self.footnoteID, text)
 
-    def footnoteID(self, match):
-        footnoteNum, nolink, space = match.groups()
-        if not space:
-            space = ''
+    def footnoteID(self, m):
         backref = ' class="footnote"'
-        if footnoteNum not in self.fn:
-            a = uuid.uuid4().hex
-            self.fn[footnoteNum] = a
-            backref = '%s id="fnrev%s"' % (backref, a)
-        footnoteID = self.fn[footnoteNum]
-        footref = '!' == nolink and footnoteNum or '<a href="#fn%s">%s</a>' % (
-            footnoteID, footnoteNum
-        )
+        if m.group('id') not in self.fn:
+            self.linkIndex = self.linkIndex + 1
+            self.fn[m.group('id')] = '{0}{1}'.format(self.linkPrefix,
+                    self.linkIndex)
+            fnid = self.fn[m.group('id')]
+            backref = '{0} id="fnrev{1}"'.format(backref, fnid)
+        fnid = self.fn[m.group('id')]
+        footref = '<a href="#fn{0}">{1}</a>'.format(fnid, m.group('id'))
+        if '!' == m.group('nolink'):
+            footref = m.group('id')
         footref = self.formatFootnote(footref, backref, False)
-        return footref + space
+        return '{0}{1}'.format(footref, m.group('space'))
 
     def glyphs(self, text):
         """
@@ -1707,7 +1712,7 @@ class Textile(object):
         """Given the text that matches as a note, format it into HTML."""
         att, start_char, g_links, extras = match.groups()
         start_char = start_char or 'a'
-        index = '%s%s%s' % (g_links, extras, start_char)
+        index = '{0}{1}{2}'.format(g_links, extras, start_char)
         result = ''
 
         if index not in self.notelist_cache:
@@ -1720,24 +1725,25 @@ class Textile(object):
                         infoid = info['id']
                         atts = info['def']['atts']
                         content = info['def']['content']
-                        li = ("""\t<li%s>%s<span id="note%s"> </span>%s</li>"""
-                              % (atts, links, infoid, content))
+                        li = ('\t\t<li{0}>{1}<span id="note{2}"> '
+                                '</span>{3}</li>').format(atts, links, infoid,
+                                        content)
                     else:
-                        li = ("""\t<li%s>%s Undefined Note [#%s].<li>""" %
-                              (atts, links, info['seq']))
+                        li = ('\t\t<li{0}>{1} Undefined Note [#{2}].<li>'
+                                ).format(atts, links, info['seq'])
                     o.append(li)
             if '+' == extras and self.unreferencedNotes:
                 for seq, info in self.unreferencedNotes.items():
                     if info['def']:
                         atts = info['def']['atts']
                         content = info['def']['content']
-                        li = """\t<li%s>%s</li>""" % (atts, content)
+                        li = '\t\t<li{0}>{1}</li>'.format(atts, content)
                     o.append(li)
             self.notelist_cache[index] = "\n".join(o)
             result = self.notelist_cache[index]
         if result:
             list_atts = self.pba(att)
-            result = """<ol%s>\n%s\n</ol>""" % (list_atts, result)
+            result = '<ol{0}>\n{1}\n\t</ol>'.format(list_atts, result)
         return result
 
     def makeBackrefLink(self, info, g_links, i):
@@ -1769,11 +1775,15 @@ class Textile(object):
 
     def fParseNoteDefs(self, m):
         """Parse the note definitions and format them as HTML"""
-        label, link, att, content = m.groups()
+        label = m.group('label')
+        link = m.group('link')
+        att = m.group('att')
+        content = m.group('content')
 
         # Assign an id if the note reference parse hasn't found the label yet.
         if label not in self.notes:
-            self.notes[label] = {'id': uuid.uuid4().hex}
+            self.linkIndex = self.linkIndex + 1
+            self.notes[label] = {'id': '{0}{1}'.format(self.linkPrefix, self.linkIndex)}
 
         # Ignores subsequent defs using the same label
         if 'def' not in self.notes[label]:
@@ -1814,22 +1824,24 @@ class Textile(object):
 
         # Make our anchor point and stash it for possible use in backlinks when
         # the note list is generated later...
-        refid = uuid.uuid4().hex
+        self.linkIndex = self.linkIndex + 1
+        refid = '{0}{1}'.format(self.linkPrefix, self.linkIndex)
         self.notes[label]['refids'].append(refid)
 
         # If we are referencing a note that hasn't had the definition parsed
         # yet, then assign it an ID...
         if not self.notes[label]['id']:
-            self.notes[label]['id'] = uuid.uuid4().hex
+            self.linkIndex = self.linkIndex + 1
+            self.notes[label]['id'] = '{0}{1}'.format(self.linkPrefix, self.linkIndex)
         labelid = self.notes[label]['id']
 
         # Build the link (if any)...
-        result = '<span id="noteref%s">%s</span>' % (refid, num)
+        result = '<span id="noteref{0}">{1}</span>'.format(refid, num)
         if not nolink:
-            result = """<a href="#note%s">%s</a>""" % (labelid, result)
+            result = """<a href="#note{0}">{1}</a>""".format(labelid, result)
 
         # Build the reference...
-        result = '<sup%s>%s</sup>' % (atts, result)
+        result = '<sup{0}>{1}</sup>'.format(atts, result)
         return result
 
     def encode_high(self, text):
