@@ -345,94 +345,11 @@ class Textile(object):
 
     def pba(self, block_attributes, element=None):
         """Parse block attributes."""
-        style = []
-        aclass = ''
-        lang = ''
-        colspan = ''
-        rowspan = ''
-        block_id = ''
-        span = ''
-        width = ''
-
-        if not block_attributes:
+        attrs = self.parse_attributes(block_attributes, element)
+        if not attrs:
             return ''
-
-        matched = block_attributes
-        if element == 'td':
-            m = re.search(r'\\(\d+)', matched)
-            if m:
-                colspan = m.group(1)
-
-            m = re.search(r'/(\d+)', matched)
-            if m:
-                rowspan = m.group(1)
-
-        if element == 'td' or element == 'tr':
-            m = re.search(r'({0})'.format(self.valign_re_s), matched)
-            if m:
-                style.append("vertical-align:{0}".format(self.vAlign[
-                    m.group(1)]))
-
-        m = re.search(r'\{([^}]*)\}', matched)
-        if m:
-            style.extend(m.group(1).rstrip(';').split(';'))
-            matched = matched.replace(m.group(0), '')
-
-        m = re.search(r'\[([^\]]+)\]', matched, re.U)
-        if m:
-            lang = m.group(1)
-            matched = matched.replace(m.group(0), '')
-
-        m = re.search(r'\(([^()]+)\)', matched, re.U)
-        if m:
-            aclass = m.group(1)
-            matched = matched.replace(m.group(0), '')
-
-        m = re.search(r'([(]+)', matched)
-        if m:
-            style.append("padding-left:{0}em".format(len(m.group(1))))
-            matched = matched.replace(m.group(0), '')
-
-        m = re.search(r'([)]+)', matched)
-        if m:
-            style.append("padding-right:{0}em".format(len(m.group(1))))
-            matched = matched.replace(m.group(0), '')
-
-        m = re.search(r'({0})'.format(self.halign_re_s), matched)
-        if m:
-            style.append("text-align:{0}".format(self.hAlign[m.group(1)]))
-
-        m = re.search(r'^(.*)#(.*)$', aclass)
-        if m:
-            block_id = m.group(2)
-            aclass = m.group(1)
-
-        if element == 'col':
-            pattern = r'(?:\\(\d+))?\s*(\d+)?'
-            csp = re.match(pattern, matched)
-            span, width = csp.groups()
-
-        result = []
-        if style:
-            # Previous splits that created style may have introduced extra
-            # whitespace into the list elements.  Clean it up.
-            style = [x.strip() for x in style]
-            result.append(' style="{0};"'.format("; ".join(style)))
-        if aclass:
-            result.append(' class="{0}"'.format(aclass))
-        if block_id and not self.restricted:
-            result.append(' id="{0}"'.format(block_id))
-        if lang:
-            result.append(' lang="{0}"'.format(lang))
-        if colspan:
-            result.append(' colspan="{0}"'.format(colspan))
-        if rowspan:
-            result.append(' rowspan="{0}"'.format(rowspan))
-        if span:
-            result.append(' span="{0}"'.format(span))
-        if width:
-            result.append(' width="{0}"'.format(width))
-        return ''.join(result)
+        result = ' '.join(['{0}="{1}"'.format(k, v) for k, v in attrs.items()])
+        return ' {0}'.format(result)
 
     def parse_attributes(self, block_attributes, element=None):
         style = []
@@ -443,7 +360,7 @@ class Textile(object):
         block_id = ''
         span = ''
         width = ''
-        result = {}
+        result = OrderedDict()
 
         if not block_attributes:
             return result
