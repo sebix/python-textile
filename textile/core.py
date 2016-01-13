@@ -21,7 +21,6 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import uuid
 from xml.etree import ElementTree
-from xml.sax.saxutils import unescape
 
 from textile.tools import sanitizer, imagesize
 
