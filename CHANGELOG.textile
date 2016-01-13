@@ -4,10 +4,10 @@ h2. Develop Branch
 
 * Bugfixes:
 ** Support data URIs in img tags
-** Fix autolink urls with image references ("#17":../../issues/17)
-** Fix textile links containing parentheses ("#20":../../issues/17)
-** Fix double-encoding of code blocks ("#21":../../issues/17)
-** Fix handling of scheme in self-linked URLs ("#16":../../issues/17)
+** Fix autolink urls with image references ("#17":https://github.com/textile/python-textile/issues/17)
+** Fix textile links containing parentheses ("#20":https://github.com/textile/python-textile/issues/20)
+** Fix double-encoding of code blocks ("#21":https://github.com/textile/python-textile/issues/21)
+** Fix handling of scheme in self-linked URLs ("#16":https://github.com/textile/python-textile/issues/16)
 * Convert testing over to "py.test":http://pytest.org/, improving unicode testing
 * Update functionality for tables, notelists, and footnotes.  Mostly corrections to underlying html tags, but it now matches php-textile.
 
