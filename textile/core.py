@@ -71,12 +71,6 @@ class Textile(object):
     btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p', '###')
     btag_lite = ('bq', 'bc', 'p')
 
-    iAlign = {'<': 'float: left;',
-              '>': 'float: right;',
-              '=': 'display: block; margin: 0 auto;'}
-    vAlign = {'^': 'top', '-': 'middle', '~': 'bottom'}
-    hAlign = {'<': 'left', '=': 'center', '>': 'right', '<>': 'justify'}
-
     note_index = 1
 
     doctype_whitelist = ['xhtml', 'html5']
@@ -295,6 +289,8 @@ class Textile(object):
         return ' {0}'.format(result)
 
     def parse_attributes(self, block_attributes, element=None):
+        vAlign = {'^': 'top', '-': 'middle', '~': 'bottom'}
+        hAlign = {'<': 'left', '=': 'center', '>': 'right', '<>': 'justify'}
         style = []
         aclass = ''
         lang = ''
@@ -321,8 +317,7 @@ class Textile(object):
         if element == 'td' or element == 'tr':
             m = re.search(r'({0})'.format(valign_re_s), matched)
             if m:
-                style.append("vertical-align:{0}".format(self.vAlign[
-                    m.group(1)]))
+                style.append("vertical-align:{0}".format(vAlign[m.group(1)]))
 
         m = re.search(r'\{([^}]*)\}', matched)
         if m:
@@ -351,7 +346,7 @@ class Textile(object):
 
         m = re.search(r'({0})'.format(halign_re_s), matched)
         if m:
-            style.append("text-align:{0}".format(self.hAlign[m.group(1)]))
+            style.append("text-align:{0}".format(hAlign[m.group(1)]))
 
         m = re.search(r'^(.*)#(.*)$', aclass)
         if m:
