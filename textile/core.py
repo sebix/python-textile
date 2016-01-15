@@ -26,7 +26,8 @@ from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, csl_re_s, cslh_re_s,
         halign_re_s, pnct_re_s, regex_snippets, syms_re_s, table_span_re_s,
         valign_re_s)
-from textile.utils import normalize_newlines, hasRawText
+from textile.utils import (encode_high, encode_html, decode_high, has_raw_text,
+        is_rel_url, is_valid_url, list_type, normalize_newlines)
 
 
 try:
@@ -38,7 +39,6 @@ except ImportError:
 try:
     # Python 3
     from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
-    from html.parser import HTMLParser
     xrange = range
     unichr = chr
     unicode = str
@@ -46,7 +46,6 @@ except (ImportError):
     # Python 2
     from urllib import quote, unquote
     from urlparse import urlparse, urlsplit, urlunsplit
-    from HTMLParser import HTMLParser
 
 
 try:
@@ -227,10 +226,10 @@ class Textile(object):
 
 
         if self.restricted:
-            text = self.encode_html(text, quotes=False)
+            text = encode_html(text, quotes=False)
 
         text = normalize_newlines(text)
-        text = self.cleanUniqueTokens(text)
+        text = text.replace(self.uid, '')
 
         if self.block_tags:
             if self.lite:
@@ -542,7 +541,7 @@ class Textile(object):
                 tl, start, atts, content = m.groups()
                 content = content.strip()
                 nl = ''
-                ltype = self.listType(tl)
+                ltype = list_type(tl)
                 if ';' in tl:
                     litem = 'dt'
                 elif ':' in tl:
@@ -612,8 +611,7 @@ class Textile(object):
                 for k, v in reversed(list(ls.items())):
                     if len(k) > len(nl):
                         if v != 2:
-                            line = "{0}\n\t</{1}l>".format(line,
-                                    self.listType(k))
+                            line = "{0}\n\t</{1}l>".format(line, list_type(k))
                         if len(k) > 1 and v != 2:
                             line = "{0}</{1}>".format(line, litem)
                         del ls[k]
@@ -628,15 +626,6 @@ class Textile(object):
                 #line = "{0}\n".format(line)
             result.append(line)
         return self.doTagBr(litem, "\n".join(result))
-
-    def listType(self, list_string):
-        listtypes = {
-            list_string.startswith('*'): 'u',
-            list_string.startswith('#'): 'o',
-            (not list_string.startswith('*') and not
-                list_string.startswith('#')): 'd'
-        }
-        return listtypes[True]
 
     def doTagBr(self, tag, input):
         return re.compile(r'<({0})([^>]*?)>(.*)(</\1>)'.format(re.escape(tag)),
@@ -692,7 +681,7 @@ class Textile(object):
                                                                cite, line)
                     # skip $o1/$c1 because this is part of a continuing
                     # extended block
-                    if tag == 'p' and not hasRawText(content):
+                    if tag == 'p' and not has_raw_text(content):
                         line = content
                     else:
                         line = "{0}{1}{2}".format(o2, content, c2)
@@ -747,8 +736,8 @@ class Textile(object):
             tag = 'p'
             fnid = self.fn.get(fns.group('fnid'), None)
             if fnid is None:
-                self.linkIndex = self.linkIndex + 1
-                fnid = '{0}{1}'.format(self.linkPrefix, self.linkIndex)
+                fnid = '{0}{1}'.format(self.linkPrefix,
+                        self._increment_link_index())
 
             # If there is an author-specified ID goes on the wrapper & the
             # auto-id gets pushed to the <sup>
@@ -784,25 +773,20 @@ class Textile(object):
             c2 = "</p>"
             c1 = "\n\t</blockquote>"
 
-        elif tag == 'bc':
+        elif tag == 'bc' or tag == 'pre':
             o1 = "<pre{0}>".format(atts)
-            o2 = "<code{0}>".format(atts)
-            c2 = "</code>"
+            o2 = c2 = ''
+            if tag == 'bc':
+                o2 = "<code{0}>".format(atts)
+                c2 = "</code>"
             c1 = "</pre>"
-            content = self.shelve(self.encode_html('{0}\n'.format(
+            content = self.shelve(encode_html('{0}\n'.format(
                 content.rstrip("\n"))))
 
         elif tag == 'notextile':
             content = self.shelve(content)
             o1 = o2 = ''
             c1 = c2 = ''
-
-        elif tag == 'pre':
-            content = self.shelve(self.encode_html('{0}\n'.format(
-                content.rstrip("\n"))))
-            o1 = "<pre{0}>".format(atts)
-            o2 = c2 = ''
-            c1 = '</pre>'
 
         elif tag == '###':
             eat = True
@@ -834,9 +818,8 @@ class Textile(object):
     def footnoteID(self, m):
         backref = ' class="footnote"'
         if m.group('id') not in self.fn:
-            self.linkIndex = self.linkIndex + 1
             self.fn[m.group('id')] = '{0}{1}'.format(self.linkPrefix,
-                    self.linkIndex)
+                    self._increment_link_index())
             fnid = self.fn[m.group('id')]
             backref = '{0} id="fnrev{1}"'.format(backref, fnid)
         fnid = self.fn[m.group('id')]
@@ -894,11 +877,6 @@ class Textile(object):
         self.urlrefs[flag] = url
         return ''
 
-    def isRelURL(self, url):
-        """Identify relative urls."""
-        (scheme, netloc) = urlparse(url)[0:2]
-        return not scheme and not netloc
-
     def relURL(self, url):
         scheme = urlparse(url)[0]
         if scheme and scheme not in self.url_schemes:
@@ -918,21 +896,6 @@ class Textile(object):
                 text = text.replace(k, v)
             if text == old:
                 break
-        return text
-
-    def encode_html(self, text, quotes=True):
-        """Return text that's safe for an HTML attribute."""
-        a = (
-            ('&', '&amp;'),
-            ('<', '&lt;'),
-            ('>', '&gt;'))
-
-        if quotes:
-            a = a + (("'", '&#39;'),
-                     ('"', '&#34;'))
-
-        for k, v in a:
-            text = text.replace(k, v)
         return text
 
     def graf(self, text):
@@ -1216,10 +1179,10 @@ class Textile(object):
         url = ''.join(url_chars)
         uri_parts = urlsplit(url)
 
-        if not self.isValidUrl(url):
-            return in_.replace('{0}linkStartMarker:'.format(self.uid), '')
-
         scheme_in_list = uri_parts.scheme in self.url_schemes
+        valid_scheme = (uri_parts.scheme and scheme_in_list)
+        if not is_valid_url(url) and not valid_scheme:
+            return in_.replace('{0}linkStartMarker:'.format(self.uid), '')
 
         if text == '$':
             text = url
@@ -1229,7 +1192,7 @@ class Textile(object):
                 text = text.split(":")[1]
 
         text = text.strip()
-        title = self.encode_html(title)
+        title = encode_html(title)
 
         if not self.noimage:
             text = self.image(text)
@@ -1389,7 +1352,7 @@ class Textile(object):
         if not title:
             title = ''
 
-        if not self.isRelURL(url) and self.get_sizes:
+        if not is_rel_url(url) and self.get_sizes:
             size = imagesize.getimagesize(url)
 
         if href:
@@ -1431,7 +1394,7 @@ class Textile(object):
             after = ''
         # text needs to be escaped
         if not self.restricted:
-            text = self.encode_html(text, quotes=False)
+            text = encode_html(text, quotes=False)
         return ''.join([before, self.shelve('<code>{0}</code>'.format(text)), after])
 
     def fPre(self, match):
@@ -1440,7 +1403,7 @@ class Textile(object):
             after = ''
         # text needs to be escaped
         if not self.restricted:
-            text = self.encode_html(text)
+            text = encode_html(text)
         return ''.join([before, '<pre>', self.shelve(text), '</pre>', after])
 
     def doSpecial(self, text, start, end, method):
@@ -1594,7 +1557,7 @@ class Textile(object):
         if 'def' in info:
             link = info['def']['link']
         backlink_type = link or g_links
-        i_ = self.encode_high(i)
+        i_ = encode_high(i)
         allow_inc = i not in syms_re_s
         i_ = int(i_)
 
@@ -1606,7 +1569,7 @@ class Textile(object):
         else:
             result = []
             for refid in info['refids']:
-                i_entity = self.decode_high(i_)
+                i_entity = decode_high(i_)
                 sup = """<sup><a href="#noteref{0}">{1}</a></sup>""".format(
                         refid, i_entity)
                 if allow_inc:
@@ -1624,8 +1587,8 @@ class Textile(object):
 
         # Assign an id if the note reference parse hasn't found the label yet.
         if label not in self.notes:
-            self.linkIndex = self.linkIndex + 1
-            self.notes[label] = {'id': '{0}{1}'.format(self.linkPrefix, self.linkIndex)}
+            self.notes[label] = {'id': '{0}{1}'.format(self.linkPrefix,
+                self._increment_link_index())}
 
         # Ignores subsequent defs using the same label
         if 'def' not in self.notes[label]:
@@ -1666,15 +1629,14 @@ class Textile(object):
 
         # Make our anchor point and stash it for possible use in backlinks when
         # the note list is generated later...
-        self.linkIndex = self.linkIndex + 1
-        refid = '{0}{1}'.format(self.linkPrefix, self.linkIndex)
+        refid = '{0}{1}'.format(self.linkPrefix, self._increment_link_index())
         self.notes[label]['refids'].append(refid)
 
         # If we are referencing a note that hasn't had the definition parsed
         # yet, then assign it an ID...
         if not self.notes[label]['id']:
-            self.linkIndex = self.linkIndex + 1
-            self.notes[label]['id'] = '{0}{1}'.format(self.linkPrefix, self.linkIndex)
+            self.notes[label]['id'] = '{0}{1}'.format(self.linkPrefix,
+                    self._increment_link_index())
         labelid = self.notes[label]['id']
 
         # Build the link (if any)...
@@ -1685,24 +1647,6 @@ class Textile(object):
         # Build the reference...
         result = '<sup{0}>{1}</sup>'.format(atts, result)
         return result
-
-    def encode_high(self, text):
-        """Encode the text so that it is an appropriate HTML entity."""
-        return ord(text)
-
-    def decode_high(self, text):
-        """Decode encoded HTML entities."""
-        h = HTMLParser()
-        text = '&#{0};'.format(text)
-        return h.unescape(text)
-
-    def isValidUrl(self, url):
-        parsed = urlparse(url)
-        if parsed.scheme == '':
-            return True
-        if parsed.scheme and parsed.scheme in self.url_schemes:
-            return True
-        return False
 
     def shelveURL(self, text):
         if text == '':
@@ -1725,9 +1669,11 @@ class Textile(object):
 
         return url
 
-    def cleanUniqueTokens(self, text):
-        """Remove tokens which mark different Textile-specific bits of text"""
-        return text.replace(self.uid, '')
+    def _increment_link_index(self):
+        """The self.linkIndex property needs to be incremented in various
+        places.  Don't Repeat Yourself."""
+        self.linkIndex = self.linkIndex + 1
+        return self.linkIndex
 
 
 def textile(text, html_type='xhtml', encoding=None, output=None):

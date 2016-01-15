@@ -4,9 +4,6 @@ import re
 
 def test_urls():
     t = Textile()
-    assert t.isRelURL("http://www.google.com/") is False
-    assert t.isRelURL("/foo") is True
-
     assert t.relURL("http://www.google.com/") == 'http://www.google.com/'
 
     result = t.links('fooobar "Google":http://google.com/foobar/ and hello world "flickr":http://flickr.com/photos/jsamsa/ ')
