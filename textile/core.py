@@ -26,6 +26,7 @@ from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, csl_re_s, cslh_re_s,
         halign_re_s, pnct_re_s, regex_snippets, syms_re_s, table_span_re_s,
         valign_re_s)
+from textile.utils import normalize_newlines, hasRawText
 
 
 try:
@@ -52,15 +53,6 @@ try:
     import regex as re
 except ImportError:
     import re
-
-
-def _normalize_newlines(string):
-    out = string.strip()
-    out = re.sub(r'\r\n', '\n', out)
-    out = re.sub(r'\n{3,}', '\n\n', out)
-    out = re.sub(r'\n\s*\n', '\n\n', out)
-    out = re.sub(r'"$', '" ', out)
-    return out
 
 
 class Textile(object):
@@ -237,7 +229,7 @@ class Textile(object):
         if self.restricted:
             text = self.encode_html(text, quotes=False)
 
-        text = _normalize_newlines(text)
+        text = normalize_newlines(text)
         text = self.cleanUniqueTokens(text)
 
         if self.block_tags:
@@ -378,18 +370,6 @@ class Textile(object):
         if width:
             result['width'] = width
         return result
-
-    def hasRawText(self, text):
-        """checks whether the text has text not already enclosed by a block
-        tag"""
-        # The php version has orders the below list of tags differently.  The
-        # important thing to note here is that the pre must occur before the
-        # p or else the regex module doesn't properly match pre-s. It only
-        # matches the p in pre.
-        r = re.compile(r'<(pre|p|blockquote|div|form|table|ul|ol|dl|h[1-6])[^>]*?>.*</\1>',
-                       re.S).sub('', text.strip()).strip()
-        r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
-        return '' != r
 
     def table(self, text):
         text = "{0}\n\n".format(text)
@@ -712,7 +692,7 @@ class Textile(object):
                                                                cite, line)
                     # skip $o1/$c1 because this is part of a continuing
                     # extended block
-                    if tag == 'p' and not self.hasRawText(content):
+                    if tag == 'p' and not hasRawText(content):
                         line = content
                     else:
                         line = "{0}{1}{2}".format(o2, content, c2)
