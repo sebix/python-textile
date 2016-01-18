@@ -8,32 +8,32 @@ try:
     import regex as re
     upper_re_s = r'\p{Lu}'
     regex_snippets = {
-            'acr': r'\p{Lu}\p{Nd}',
-            'abr': r'\p{Lu}',
-            'nab': r'\p{Ll}',
-            'wrd': r'(?:\p{L}|\p{M}|\p{N}|\p{Pc})',
-            'mod': re.UNICODE,
-            'cur': r'\p{Sc}',
-            'digit': r'\p{N}',
-            'space': r'(?:\p{Zs}|\v)',
-            'char': r'(?:[^\p{Zs}\v])',
-            }
+        'acr': r'\p{Lu}\p{Nd}',
+        'abr': r'\p{Lu}',
+        'nab': r'\p{Ll}',
+        'wrd': r'(?:\p{L}|\p{M}|\p{N}|\p{Pc})',
+        'mod': re.UNICODE,
+        'cur': r'\p{Sc}',
+        'digit': r'\p{N}',
+        'space': r'(?:\p{Zs}|\v)',
+        'char': r'(?:[^\p{Zs}\v])',
+        }
 except ImportError:
     import re
     from sys import maxunicode
     upper_re_s = "".join([unichr(c) for c in xrange(maxunicode) if unichr(
         c).isupper()])
     regex_snippets = {
-            'acr': r'{0}0-9'.format(upper_re_s),
-            'abr': r'{0}'.format(upper_re_s),
-            'nab': r'a-z',
-            'wrd': r'\w',
-            'mod': 0,
-            'cur': r'',
-            'digit': r'\d',
-            'space': r'(?:\s|\v)',
-            'char': r'\S',
-            }
+        'acr': r'{0}0-9'.format(upper_re_s),
+        'abr': r'{0}'.format(upper_re_s),
+        'nab': r'a-z',
+        'wrd': r'\w',
+        'mod': 0,
+        'cur': r'',
+        'digit': r'\d',
+        'space': r'(?:\s|\v)',
+        'char': r'\S',
+        }
 
 halign_re_s = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
 valign_re_s = r'[\-^~]'

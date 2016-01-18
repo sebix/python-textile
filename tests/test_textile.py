@@ -24,9 +24,6 @@ def test_Footnote():
     html = textile.textile('''See[4!] for details.\n\nfn4^. Here are the details.''')
     assert re.search(r'^\t<p>See<sup class="footnote" id="fnrev([a-f0-9]{32})-1">4</sup> for details.</p>\n\n\t<p class="footnote" id="fn\1-1"><sup><a href="#fnrev\1-1">4</a></sup> Here are the details.</p>$', html) is not None
 
-def test_PBAColspan():
-    assert textile.Textile().pba(r'\3', element='td') == ' colspan="3"'
-
 def test_issue_35():
     result = textile.textile('"z"')
     expect = '\t<p>&#8220;z&#8221; </p>'
