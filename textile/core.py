@@ -21,7 +21,6 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import uuid
 from xml.etree import ElementTree
-from xml.sax import saxutils
 
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, csl_re_s, cslh_re_s,
@@ -1106,14 +1105,18 @@ class Textile(object):
         if self.rel:
             attributes['rel'] = self.rel
         a = ElementTree.Element('a', attrib=attributes)
-        a.text = text
-        a_tag = ElementTree.tostringlist(a, encoding='UTF-8', method='html')
-        # FIXME: Kind of a hack.  By default, adding text to an Element will
-        # escape html-entities.  We've already escaped the text by this point,
-        # and we use saxutils.unescape below to fix it for us, and then decode
-        # ascii to UTF-8.
-        a_tag[-2] = saxutils.unescape(a_tag[-2]).decode('utf-8')
-        a_shelf_id = self.shelve(''.join(a_tag))
+        a_tag = ElementTree.tostring(a)
+        # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
+        # adding text by assigning it to a.text.  That results in non-ascii
+        # text being html-entity encoded.  Not bad, but not entirely matching
+        # php-textile either.
+        #
+        # I thought I had found a fancy solution, using
+        # ElementTree.tostringlist, but it fails differently on different
+        # platforms.
+        a_tag = a_tag.decode('utf-8').rstrip(' />')
+        a_text = '{0}>{1}</a>'.format(a_tag, text)
+        a_shelf_id = self.shelve(a_text)
 
         out = '{0}{1}{2}{3}'.format(pre, a_shelf_id, pop, tight)
 
