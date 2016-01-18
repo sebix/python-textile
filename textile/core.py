@@ -1099,7 +1099,7 @@ class Textile(object):
         text = self.span(text)
         text = self.glyphs(text)
         url = self.shelveURL(self.encode_url(urlunsplit(uri_parts)))
-        attributes = parse_attributes(atts, include_id=self.restricted)
+        attributes = parse_attributes(atts)
         if title:
             attributes['title'] = title
         attributes['href'] = url
