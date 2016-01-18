@@ -23,9 +23,8 @@ import uuid
 from xml.etree import ElementTree
 
 from textile.tools import sanitizer, imagesize
-from textile.regex_strings import (align_re_s, csl_re_s, cslh_re_s,
-        halign_re_s, pnct_re_s, regex_snippets, syms_re_s, table_span_re_s,
-        valign_re_s)
+from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
+        pnct_re_s, regex_snippets, syms_re_s, table_span_re_s, valign_re_s)
 from textile.utils import (encode_high, encode_html, decode_high, has_raw_text,
         is_rel_url, is_valid_url, list_type, normalize_newlines, pba,
         parse_attributes)
@@ -274,7 +273,7 @@ class Textile(object):
         pattern = re.compile(r'^(?:table(?P<tatts>_?{s}{a}{c})\.'
                 r'(?P<summary>.*?)\n)?^(?P<rows>{a}{c}\.? ?\|.*\|)'
                 r'[\s]*\n\n'.format(**{'s': table_span_re_s, 'a': align_re_s,
-                    'c': cslh_re_s}),
+                    'c': cls_re_s}),
                 flags=re.S | re.M | re.U)
         return pattern.sub(self.fTable, text)
 
@@ -296,7 +295,7 @@ class Textile(object):
             # as a normal center-aligned cell.
             captionpattern = (r"^\|\=(?P<capts>{s}{a}{c})\. (?P<cap>[^\n]*)"
                     r"(?P<row>.*)".format(**{'s': table_span_re_s, 'a':
-                        align_re_s, 'c': cslh_re_s}))
+                        align_re_s, 'c': cls_re_s}))
             caption_re = re.compile(captionpattern, re.S)
             cmtch = caption_re.match(row)
             if c_row == 1 and cmtch:
@@ -311,7 +310,7 @@ class Textile(object):
 
             # Colgroup
             grppattern = r"^\|:(?P<cols>{s}{a}{c}\. .*)".format(**{'s':
-                table_span_re_s, 'a': align_re_s, 'c': cslh_re_s})
+                table_span_re_s, 'a': align_re_s, 'c': cls_re_s})
             grp_re = re.compile(grppattern, re.M)
             gmtch = grp_re.match(row.lstrip())
             if gmtch:
@@ -336,7 +335,7 @@ class Textile(object):
 
             grpmatchpattern = (r"(:?^\|(?P<part>{v})(?P<rgrpatts>{s}{a}{c})"
                     r"\.\s*$\n)?^(?P<row>.*)").format(**{'v': valign_re_s, 's':
-                        table_span_re_s, 'a': align_re_s, 'c': cslh_re_s})
+                        table_span_re_s, 'a': align_re_s, 'c': cls_re_s})
             grpmatch_re = re.compile(grpmatchpattern, re.S | re.M)
             grpmatch = grpmatch_re.match(row.lstrip())
 
@@ -349,7 +348,7 @@ class Textile(object):
             row = grpmatch.group('row')
 
             rmtch = re.search(r'^(?P<ratts>{0}{1}\. )(?P<row>.*)'.format(
-                align_re_s, cslh_re_s), row.lstrip())
+                align_re_s, cls_re_s), row.lstrip())
             if rmtch:
                 ratts = pba(rmtch.group('ratts'), 'tr')
                 row = rmtch.group('row')
@@ -363,7 +362,7 @@ class Textile(object):
                 if re.search(r'^_', cell):
                     ctyp = "h"
                 cmtch = re.search(r'^(?P<catts>_?{0}{1}{2}\. )(?P<cell>.*)'.format(
-                    table_span_re_s, align_re_s, cslh_re_s), cell, flags=re.S)
+                    table_span_re_s, align_re_s, cls_re_s), cell, flags=re.S)
                 if cmtch:
                     catts = pba(cmtch.group('catts'), 'td')
                     cell = cmtch.group('cell')
@@ -420,7 +419,7 @@ class Textile(object):
         bullet_pattern = re.compile('^•', re.U | re.M)
 
         pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?){0}[ .].*)$'
-                r'(?![^#*;:])'.format(csl_re_s), re.U | re.M | re.S)
+                r'(?![^#*;:])'.format(cls_re_s), re.U | re.M | re.S)
         return pattern.sub(self.fList, bullet_pattern.sub('*', text))
 
     def fList(self, match):
@@ -434,7 +433,7 @@ class Textile(object):
             except IndexError:
                 nextline = ''
 
-            m = re.search(r"^([#*;:]+)(_|\d+)?({0})[ .](.*)$".format(csl_re_s),
+            m = re.search(r"^([#*;:]+)(_|\d+)?({0})[ .](.*)$".format(cls_re_s),
                     line, re.S)
             if m:
                 tl, start, atts, content = m.groups()
@@ -476,7 +475,7 @@ class Textile(object):
                         self.olstarts[tl] = self.olstarts[tl] + 1
 
                 nm = re.match("^([#\*;:]+)(_|[\d]+)?{0}[ .].*".format(
-                    csl_re_s), nextline)
+                    cls_re_s), nextline)
                 if nm:
                     nl = nm.group(1)
 
@@ -558,7 +557,7 @@ class Textile(object):
         for line in text:
             pattern = (r'^(?P<tag>{0})(?P<atts>{1}{2})\.(?P<ext>\.?)'
                     r'(?::(?P<cite>\S+))? (?P<content>.*)$'.format(tre,
-                        align_re_s, cslh_re_s))
+                        align_re_s, cls_re_s))
             match = re.search(pattern, line, flags=re.S | regex_snippets['mod'])
             if match:
                 if ext:
@@ -621,7 +620,7 @@ class Textile(object):
             \.?                                   # optional period.
             [{space}]+                            # whitespace ends def marker
             (?P<content>.*)$                      # content""".format(
-                space=regex_snippets['space'], cls=cslh_re_s),
+                space=regex_snippets['space'], cls=cls_re_s),
             flags=re.X | regex_snippets['mod'])
             notedef = notedef_re.sub(self.fParseNoteDefs, content)
 
@@ -957,7 +956,7 @@ class Textile(object):
                 .+?                      #     link text
             )                            # end of $text
             (?:\((?P<title>[^)]+?)\))?   # $title (if any)
-            $'''.format(csl_re_s, regex_snippets['space']), inner,
+            $'''.format(cls_re_s, regex_snippets['space']), inner,
                 flags=re.X | regex_snippets['mod'])
 
         atts = m.group('atts') or ''
@@ -1193,7 +1192,7 @@ class Textile(object):
                     (?P<end>[{pnct}]*)
                     {tag}
                     (?P<tail>$|[\[\]}}<]|(?=[{pnct}]{{1,2}}[^0-9]|\s|\)))
-                """.format(**{'tag': tag, 'cls': csl_re_s, 'pnct': pnct,
+                """.format(**{'tag': tag, 'cls': cls_re_s, 'pnct': pnct,
                     'space': regex_snippets['space']}),
                 flags=re.X | regex_snippets['mod'])
                 text = pattern.sub(self.fSpan, text)
@@ -1241,7 +1240,7 @@ class Textile(object):
             \!                  # closing
             (?::(\S+))?         # optional href
             (?:[\]}}]|(?=\s|$)) # lookahead: space or end of string
-        """.format(cslh_re_s), re.U | re.X)
+        """.format(cls_re_s), re.U | re.X)
         return pattern.sub(self.fImage, text)
 
     def fImage(self, match):
@@ -1346,7 +1345,7 @@ class Textile(object):
     def redcloth_list(self, text):
         """Parse the text for definition lists and send them to be
         formatted."""
-        pattern = re.compile(r"^([-]+{0}[ .].*:=.*)$(?![^-])".format(csl_re_s),
+        pattern = re.compile(r"^([-]+{0}[ .].*:=.*)$(?![^-])".format(cls_re_s),
                 re.M | re.U | re.S)
         return pattern.sub(self.fRCList, text)
 
@@ -1356,7 +1355,7 @@ class Textile(object):
         text = re.split(r'\n(?=[-])', match.group(), flags=re.M)
         for line in text:
             # parse the attributes and content
-            m = re.match(r'^[-]+({0})[ .](.*)$'.format(csl_re_s), line,
+            m = re.match(r'^[-]+({0})[ .](.*)$'.format(cls_re_s), line,
                     flags=re.M | re.S)
 
             atts, content = m.groups()
@@ -1412,7 +1411,7 @@ class Textile(object):
                 o = OrderedDict(sorted(o.items(), key=lambda t: t[0]))
             self.notes = o
         text_re = re.compile('<p>notelist({0})(?:\:([\w|{1}]))?([\^!]?)(\+?)'
-                '\.?[\s]*</p>'.format(cslh_re_s, syms_re_s), re.U)
+                '\.?[\s]*</p>'.format(cls_re_s, syms_re_s), re.U)
         text = text_re.sub(self.fNoteLists, text)
         return text
 
@@ -1507,7 +1506,7 @@ class Textile(object):
         \#
         ([^\]!]+)   # !label
         ([!]?)      # !nolink
-        \]""".format(cslh_re_s), re.X)
+        \]""".format(cls_re_s), re.X)
         text = text_re.sub(self.fParseNoteRefs, text)
         return text
 

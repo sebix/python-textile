@@ -44,12 +44,12 @@ colspan_re_s = r'(?:\\\d+)'
 rowspan_re_s = r'(?:\/\d+)'
 align_re_s = r'(?:{0}|{1})*'.format(halign_re_s, valign_re_s)
 table_span_re_s = r'(?:{0}|{1})*'.format(colspan_re_s, rowspan_re_s)
-# regex string to match class, style, language and horizontal alignment
-# attributes
-cslh_re_s = r'(?:{0})*'.format('|'.join([class_re_s, style_re_s, language_re_s,
-    halign_re_s]))
 # regex string to match class, style and language attributes
-csl_re_s = r'(?:{0})*'.format('|'.join([class_re_s, style_re_s,
-    language_re_s]))
+cls_re_s = (r'(?:'
+               r'{c}(?:{l}(?:{s})?|{s}(?:{l})?)?|'
+               r'{l}(?:{c}(?:{s})?|{s}(?:{c})?)?|'
+               r'{s}(?:{c}(?:{l})?|{l}(?:{c})?)?'
+            r')?'
+           ).format(c=class_re_s, s=style_re_s, l=language_re_s)
 pnct_re_s = r'[-!"#$%&()*+,/:;<=>?@\'\[\\\]\.^_`{|}~]'
 syms_re_s = '¤§µ¶†‡•∗∴◊♠♣♥♦'
