@@ -374,7 +374,7 @@ class Textile(object):
                     a = re.search(a_pattern, cell, flags=re.S)
                     if a:
                         cell = self.redcloth_list(a.group('cell'))
-                        cell = self.lists(cell)
+                        cell = self.textileLists(cell)
                         cell = '{0}{1}'.format(a.group('space'), cell)
 
                 # row.split() gives us ['', 'cell 1 contents', '...']
@@ -411,15 +411,12 @@ class Textile(object):
             cap, 'colgrp': colgrp, 'close': close, 'rows': rows}))
         return tbl
 
-    def lists(self, text):
-        #Replace line-initial bullets with asterisks
-        bullet_pattern = re.compile('^•', re.U | re.M)
-
+    def textileLists(self, text):
         pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?){0}[ .].*)$'
                 r'(?![^#*;:])'.format(cls_re_s), re.U | re.M | re.S)
-        return pattern.sub(self.fList, bullet_pattern.sub('*', text))
+        return pattern.sub(self.fTextileList, text)
 
-    def fList(self, match):
+    def fTextileList(self, match):
         text = re.split(r'\n(?=[*#;:])', match.group(), flags=re.M)
         pt = ''
         result = []
@@ -809,7 +806,7 @@ class Textile(object):
         if not self.lite:
             text = self.table(text)
             text = self.redcloth_list(text)
-            text = self.lists(text)
+            text = self.textileLists(text)
 
         text = self.span(text)
         text = self.footnoteRef(text)
