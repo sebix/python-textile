@@ -356,10 +356,9 @@ class Textile(object):
                 ratts = ''
 
             cells = []
-            cellctr = 0
-            for cell in row.split('|'):
+            for cellctr, cell in enumerate(row.split('|')):
                 ctyp = 'd'
-                if re.search(r'^_', cell):
+                if cell.startswith('_'):
                     ctyp = "h"
                 cmtch = re.search(r'^(?P<catts>_?{0}{1}{2}\. )(?P<cell>.*)'.format(
                     table_span_re_s, align_re_s, cls_re_s), cell, flags=re.S)
@@ -385,8 +384,6 @@ class Textile(object):
                     cline = "\t\t\t<{ctag}{catts}>{cell}</{ctag}>".format(**{
                         'ctag': ctag, 'catts': catts, 'cell': cell})
                     cells.append(self.doTagBr(ctag, cline))
-
-                cellctr = cellctr + 1
 
             grp = ''
 
