@@ -252,8 +252,8 @@ xhtml_known_values = (
     ("""###. Here's a comment.\n\nh3. Hello\n\n###. And\nanother\none.\n\nGoodbye.""", """\t<h3>Hello</h3>\n\n\t<p>Goodbye.</p>"""),
     ("""h2. A Definition list which covers the instance where a new definition list is created with a term without a definition\n\n- term :=\n- term2 := def""", """\t<h2>A Definition list which covers the instance where a new definition list is created with a term without a definition</h2>\n\n<dl>\n\t<dt>term2</dt>\n\t<dd>def</dd>\n</dl>"""),
     ('!{height:20px;width:20px;}https://1.gravatar.com/avatar/!',
-     '\t<p><img alt="" src="https://1.gravatar.com/avatar/" style="height:20px; width:20px;" /></p>')
-
+     '\t<p><img alt="" src="https://1.gravatar.com/avatar/" style="height:20px; width:20px;" /></p>'),
+    ('& test', '\t<p>&amp; test</p>'),
 )
 
 # A few extra cases for HTML4

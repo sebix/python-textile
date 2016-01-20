@@ -135,7 +135,7 @@ class Textile(object):
             # ellipsis
             re.compile(r'([^.]?)\.{3}', re.U),
             # ampersand
-            re.compile(r'(\s)&(\s)', re.U),
+            re.compile(r'(\s?)&(\s)', re.U),
             # em dash
             re.compile(r'(\s?)--(\s?)', re.U),
             # en dash
@@ -748,7 +748,7 @@ class Textile(object):
         searchlist = self.glyph_search_initial
         # split the text by any angle-bracketed tags
         for i, line in enumerate(re.compile(r'(<[\w\/!?].*?>)',
-                                            re.U).split(text)):
+                regex_snippets['mod']).split(text)):
             if not i % 2:
                 for s, r in zip(searchlist, self.glyph_replace):
                     line = s.sub(r, line)
