@@ -156,16 +156,16 @@ class Textile(object):
             # dimension sign
             re.compile(r'(?<=\b|x)([0-9]++[\])]?[\'"]? ?)[x]( ?[\[(]?)'
                 r'(?=[+-]?{0}[0-9]*\.?[0-9]++)'.format(cur),
-                flags=re.I | regex_snippets['mod']),
+                flags=re.I | re.U),
             # trademark
             re.compile(r'(\b ?|{0}|^)[([]TM[])]'.format(regex_snippets['space']
-                ), flags=re.I | regex_snippets['mod']),
+                ), flags=re.I | re.U),
             # registered
             re.compile(r'(\b ?|{0}|^)[([]R[])]'.format(regex_snippets['space']
-                ), flags=re.I | regex_snippets['mod']),
+                ), flags=re.I | re.U),
             # copyright
             re.compile(r'(\b ?|{0}|^)[([]C[])]'.format(regex_snippets['space']
-                ), flags=re.I | regex_snippets['mod']),
+                ), flags=re.I | re.U),
             # 1/2
             re.compile(r'[([]1\/2[])]'),
             # 1/4
