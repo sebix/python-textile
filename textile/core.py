@@ -115,49 +115,67 @@ class Textile(object):
         self.refIndex = 0
         self.block_tags = block_tags
 
+        cur = r''
+        if regex_snippets:
+            cur = r'(?:[{0}]{1}*)?'.format(regex_snippets['cur'],
+                    regex_snippets['space'])
+
         # We'll be searching for characters that need to be HTML-encoded to
         # produce properly valid html.  These are the defaults that work in
         # most cases.  Below, we'll copy this and modify the necessary pieces
         # to make it work for characters at the beginning of the string.
         self.glyph_search = [
             # apostrophe's
-            re.compile(r"(^|\w)'(\w)", re.U),
+            re.compile(r"(^|{0}|\))'({0})".format(regex_snippets['wrd']),
+                flags=regex_snippets['mod']),
             # back in '88
-            re.compile(r"(\s)'(\d+\w?)\b(?!')", re.U),
+            re.compile(r"({0})'(\d+{1}?)\b(?![.]?[{1}]*?')".format(
+                regex_snippets['space'], regex_snippets['wrd']),
+                flags=regex_snippets['mod']),
             # single closing
-            re.compile(r"(^|\S)'(?=\s|{0}|$)".format(pnct_re_s, re.U)),
+            re.compile(r"(^|\S)'(?={0}|{1}|<|$)".format(regex_snippets['space'],
+                pnct_re_s), flags=regex_snippets['mod']),
             # single opening
             re.compile(r"'", re.U),
+            # double opening following an open bracket. Allows things like
+            # Hello ["(Mum) & dad"]
+            re.compile(r'([([{])"(?=\S)', flags=regex_snippets['mod']),
             # double closing
-            re.compile(r'(^|\S)"(?=\s|{0}|$)'.format(pnct_re_s, re.U)),
+            re.compile(r'(^|\S)"(?={0}|{1}|<|$)'.format(
+                regex_snippets['space'], pnct_re_s), regex_snippets['mod']),
             # double opening
             re.compile(r'"'),
             # ellipsis
-            re.compile(r'([^.]?)\.{3}', re.U),
+            re.compile(r'([^.]?)\.{3}'),
             # ampersand
             re.compile(r'(\s?)&(\s)', re.U),
             # em dash
-            re.compile(r'(\s?)--(\s?)', re.U),
+            re.compile(r'(\s?)--(\s?)'),
             # en dash
-            re.compile(r'\s-(?:\s|$)', re.U),
+            re.compile(r' - '),
             # dimension sign
-            re.compile(r'(\d+)( ?)x( ?)(?=\d+)', re.U),
+            re.compile(r'(?<=\b|x)([0-9]++[\])]?[\'"]? ?)[x]( ?[\[(]?)'
+                r'(?=[+-]?{0}[0-9]*\.?[0-9]++)'.format(cur),
+                flags=re.I | regex_snippets['mod']),
             # trademark
-            re.compile(r'\b ?[([]TM[])]', re.I | re.U),
+            re.compile(r'(\b ?|{0}|^)[([]TM[])]'.format(regex_snippets['space']
+                ), flags=re.I | regex_snippets['mod']),
             # registered
-            re.compile(r'\b ?[([]R[])]', re.I | re.U),
+            re.compile(r'(\b ?|{0}|^)[([]R[])]'.format(regex_snippets['space']
+                ), flags=re.I | regex_snippets['mod']),
             # copyright
-            re.compile(r'\b ?[([]C[])]', re.I | re.U),
+            re.compile(r'(\b ?|{0}|^)[([]C[])]'.format(regex_snippets['space']
+                ), flags=re.I | regex_snippets['mod']),
             # 1/2
-            re.compile(r'[([]1\/2[])]', re.I | re.U),
+            re.compile(r'[([]1\/2[])]'),
             # 1/4
-            re.compile(r'[([]1\/4[])]', re.I | re.U),
+            re.compile(r'[([]1\/4[])]'),
             # 3/4
-            re.compile(r'[([]3\/4[])]', re.I | re.U),
+            re.compile(r'[([]3\/4[])]'),
             # degrees
-            re.compile(r'[([]o[])]', re.I | re.U),
+            re.compile(r'[([]o[])]'),
             # plus/minus
-            re.compile(r'[([]\+\/-[])]', re.I | re.U),
+            re.compile(r'[([]\+\/-[])]'),
             # 3+ uppercase acronym
             re.compile(r'\b([{0}][{1}]{{2,}})\b(?:[(]([^)]*)[)])'.format(
                 regex_snippets['abr'], regex_snippets['acr']),
@@ -174,29 +192,31 @@ class Textile(object):
         # at the beginning of the string.
         self.glyph_search_initial = list(self.glyph_search)
         # apostrophe's
-        self.glyph_search_initial[0] = re.compile(r"(\w)'(\w)", re.U)
+        self.glyph_search_initial[0] = re.compile(r"({0}|\))'({0})".format(
+            regex_snippets['wrd']), flags=regex_snippets['mod'])
         # single closing
-        self.glyph_search_initial[2] = re.compile(r"(\S)'(?=\s|{0}|$)".format(
-                pnct_re_s, re.U))
+        self.glyph_search_initial[2] = re.compile(r"(\S)'(?={0}|{1}|$)".format(
+                regex_snippets['space'], pnct_re_s), regex_snippets['mod'])
         # double closing
-        self.glyph_search_initial[4] = re.compile(r'(\S)"(?=\s|{0}|$)'.format(
-                pnct_re_s, re.U))
+        self.glyph_search_initial[5] = re.compile(r'(\S)"(?={0}|{1}|<|$)'.format(
+                regex_snippets['space'], pnct_re_s), regex_snippets['mod'])
 
         self.glyph_replace = [x.format(**self.glyph_definitions) for x in (
             r'\1{apostrophe}\2',                  # apostrophe's
             r'\1{apostrophe}\2',                  # back in '88
             r'\1{quote_single_close}',            # single closing
             r'{quote_single_open}',               # single opening
+            r'\1{quote_double_open}',             # double opening after bracket
             r'\1{quote_double_close}',            # double closing
             r'{quote_double_open}',               # double opening
             r'\1{ellipsis}',                      # ellipsis
             r'\1{ampersand}\2',                   # ampersand
             r'\1{emdash}\2',                      # em dash
             r' {endash} ',                        # en dash
-            r'\1\2{dimension}\3',                 # dimension sign
-            r'{trademark}',                       # trademark
-            r'{registered}',                      # registered
-            r'{copyright}',                       # copyright
+            r'\1{dimension}\2',                   # dimension sign
+            r'\1{trademark}',                       # trademark
+            r'\1{registered}',                      # registered
+            r'\1{copyright}',                       # copyright
             r'{half}',                            # 1/2
             r'{quarter}',                         # 1/4
             r'{threequarters}',                   # 3/4
@@ -208,7 +228,7 @@ class Textile(object):
         )]
 
         if self.html_type == 'html5':
-            self.glyph_replace[19] = r'<abbr title="\2">\1</abbr>'
+            self.glyph_replace[20] = r'<abbr title="\2">\1</abbr>'
 
         if self.restricted is True:
             self.url_schemes = self.restricted_url_schemes
