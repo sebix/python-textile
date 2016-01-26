@@ -117,7 +117,7 @@ class Textile(object):
 
         cur = r''
         if regex_snippets['cur']:
-            cur =r'(?:[{0}]{1}*)?'.format(regex_snippets['cur'],
+            cur = r'(?:[{0}]{1}*)?'.format(regex_snippets['cur'],
                     regex_snippets['space'])
 
         # We'll be searching for characters that need to be HTML-encoded to
