@@ -116,8 +116,8 @@ class Textile(object):
         self.block_tags = block_tags
 
         cur = r''
-        if regex_snippets:
-            cur = r'(?:[{0}]{1}*)?'.format(regex_snippets['cur'],
+        if regex_snippets['cur']:
+            cur =r'(?:[{0}]{1}*)?'.format(regex_snippets['cur'],
                     regex_snippets['space'])
 
         # We'll be searching for characters that need to be HTML-encoded to
@@ -127,14 +127,16 @@ class Textile(object):
         self.glyph_search = [
             # apostrophe's
             re.compile(r"(^|{0}|\))'({0})".format(regex_snippets['wrd']),
-                flags=regex_snippets['mod']),
+                flags=re.U),
             # back in '88
             re.compile(r"({0})'(\d+{1}?)\b(?![.]?[{1}]*?')".format(
                 regex_snippets['space'], regex_snippets['wrd']),
-                flags=regex_snippets['mod']),
+                flags=re.U),
+            # single opening following an open bracket.
+            re.compile(r"([([{])'(?=\S)", flags=regex_snippets['mod']),
             # single closing
             re.compile(r"(^|\S)'(?={0}|{1}|<|$)".format(regex_snippets['space'],
-                pnct_re_s), flags=regex_snippets['mod']),
+                pnct_re_s), flags=re.U),
             # single opening
             re.compile(r"'", re.U),
             # double opening following an open bracket. Allows things like
@@ -154,9 +156,8 @@ class Textile(object):
             # en dash
             re.compile(r' - '),
             # dimension sign
-            re.compile(r'(?<=\b|x)([0-9]++[\])]?[\'"]? ?)[x]( ?[\[(]?)'
-                r'(?=[+-]?{0}[0-9]*\.?[0-9]++)'.format(cur),
-                flags=re.I | re.U),
+            re.compile(r'([0-9]+[\])]?[\'"]? ?)[x]( ?[\[(]?)'
+                r'(?=[+-]?{0}[0-9]*\.?[0-9]+)'.format(cur), flags=re.I | re.U),
             # trademark
             re.compile(r'(\b ?|{0}|^)[([]TM[])]'.format(regex_snippets['space']
                 ), flags=re.I | re.U),
@@ -193,17 +194,18 @@ class Textile(object):
         self.glyph_search_initial = list(self.glyph_search)
         # apostrophe's
         self.glyph_search_initial[0] = re.compile(r"({0}|\))'({0})".format(
-            regex_snippets['wrd']), flags=regex_snippets['mod'])
+            regex_snippets['wrd']), flags=re.U)
         # single closing
-        self.glyph_search_initial[2] = re.compile(r"(\S)'(?={0}|{1}|$)".format(
+        self.glyph_search_initial[3] = re.compile(r"(\S)'(?={0}|{1}|$)".format(
                 regex_snippets['space'], pnct_re_s), regex_snippets['mod'])
         # double closing
-        self.glyph_search_initial[5] = re.compile(r'(\S)"(?={0}|{1}|<|$)'.format(
+        self.glyph_search_initial[6] = re.compile(r'(\S)"(?={0}|{1}|<|$)'.format(
                 regex_snippets['space'], pnct_re_s), regex_snippets['mod'])
 
         self.glyph_replace = [x.format(**self.glyph_definitions) for x in (
             r'\1{apostrophe}\2',                  # apostrophe's
             r'\1{apostrophe}\2',                  # back in '88
+            r'\1{quote_single_open}',             # single opening after bracket
             r'\1{quote_single_close}',            # single closing
             r'{quote_single_open}',               # single opening
             r'\1{quote_double_open}',             # double opening after bracket
@@ -214,9 +216,9 @@ class Textile(object):
             r'\1{emdash}\2',                      # em dash
             r' {endash} ',                        # en dash
             r'\1{dimension}\2',                   # dimension sign
-            r'\1{trademark}',                       # trademark
-            r'\1{registered}',                      # registered
-            r'\1{copyright}',                       # copyright
+            r'\1{trademark}',                     # trademark
+            r'\1{registered}',                    # registered
+            r'\1{copyright}',                     # copyright
             r'{half}',                            # 1/2
             r'{quarter}',                         # 1/4
             r'{threequarters}',                   # 3/4
@@ -228,7 +230,7 @@ class Textile(object):
         )]
 
         if self.html_type == 'html5':
-            self.glyph_replace[20] = r'<abbr title="\2">\1</abbr>'
+            self.glyph_replace[21] = r'<abbr title="\2">\1</abbr>'
 
         if self.restricted is True:
             self.url_schemes = self.restricted_url_schemes
