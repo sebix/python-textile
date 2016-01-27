@@ -2,14 +2,6 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-install_requires = []
-
-
-if 'develop' in sys.argv:
-    install_requires.extend([
-        'tox',
-    ])
-
 def get_version():
     basedir = os.path.dirname(__file__)
     with open(os.path.join(basedir, 'textile/version.py')) as f:
@@ -32,13 +24,24 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
-    keywords='textile,text',
-    install_requires=install_requires,
+    keywords='textile,text,html markup',
+    install_requires=[],
     extras_require={
         ':python_version=="2.6"': ['ordereddict>=1.1'],
+        'develop': ['regex', 'pytest', 'pytest-cov'],
     },
-    tests_require=['pytest'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest', 'pytest-cov'],
     include_package_data=True,
     zip_safe=False,
 )
