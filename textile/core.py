@@ -133,18 +133,18 @@ class Textile(object):
                 regex_snippets['space'], regex_snippets['wrd']),
                 flags=re.U),
             # single opening following an open bracket.
-            re.compile(r"([([{])'(?=\S)", flags=regex_snippets['mod']),
+            re.compile(r"([([{])'(?=\S)", flags=re.U),
             # single closing
-            re.compile(r"(^|\S)'(?={0}|{1}|<|$)".format(regex_snippets['space'],
-                pnct_re_s), flags=re.U),
+            re.compile(r"(^|\S)'(?={0}|{1}|<|$)".format(
+                regex_snippets['space'], pnct_re_s), flags=re.U),
             # single opening
             re.compile(r"'", re.U),
             # double opening following an open bracket. Allows things like
             # Hello ["(Mum) & dad"]
-            re.compile(r'([([{])"(?=\S)', flags=regex_snippets['mod']),
+            re.compile(r'([([{])"(?=\S)', flags=re.U),
             # double closing
             re.compile(r'(^|\S)"(?={0}|{1}|<|$)'.format(
-                regex_snippets['space'], pnct_re_s), regex_snippets['mod']),
+                regex_snippets['space'], pnct_re_s), re.U),
             # double opening
             re.compile(r'"'),
             # ellipsis
@@ -179,14 +179,12 @@ class Textile(object):
             re.compile(r'[([]\+\/-[])]'),
             # 3+ uppercase acronym
             re.compile(r'\b([{0}][{1}]{{2,}})\b(?:[(]([^)]*)[)])'.format(
-                regex_snippets['abr'], regex_snippets['acr']),
-                flags=regex_snippets['mod']),
+                regex_snippets['abr'], regex_snippets['acr']), flags=re.U),
             # 3+ uppercase
             re.compile(r'({space}|^|[>(;-])([{abr}]{{3,}})([{nab}]*)'
                 '(?={space}|{pnct}|<|$)(?=[^">]*?(<|$))'.format(**{ 'space':
                     regex_snippets['space'], 'abr': regex_snippets['abr'],
-                    'nab': regex_snippets['nab'], 'pnct': pnct_re_s}),
-                flags=regex_snippets['mod']),
+                    'nab': regex_snippets['nab'], 'pnct': pnct_re_s}), re.U),
         ]
 
         # These are the changes that need to be made for characters that occur
@@ -197,10 +195,10 @@ class Textile(object):
             regex_snippets['wrd']), flags=re.U)
         # single closing
         self.glyph_search_initial[3] = re.compile(r"(\S)'(?={0}|{1}|$)".format(
-                regex_snippets['space'], pnct_re_s), regex_snippets['mod'])
+                regex_snippets['space'], pnct_re_s), re.U)
         # double closing
         self.glyph_search_initial[6] = re.compile(r'(\S)"(?={0}|{1}|<|$)'.format(
-                regex_snippets['space'], pnct_re_s), regex_snippets['mod'])
+                regex_snippets['space'], pnct_re_s), re.U)
 
         self.glyph_replace = [x.format(**self.glyph_definitions) for x in (
             r'\1{apostrophe}\2',                  # apostrophe's
@@ -574,7 +572,7 @@ class Textile(object):
             pattern = (r'^(?P<tag>{0})(?P<atts>{1}{2})\.(?P<ext>\.?)'
                     r'(?::(?P<cite>\S+))? (?P<content>.*)$'.format(tre,
                         align_re_s, cls_re_s))
-            match = re.search(pattern, line, flags=re.S | regex_snippets['mod'])
+            match = re.search(pattern, line, flags=re.S | re.U)
             if match:
                 if ext:
                     out.append('{0}{1}'.format(out.pop(), c1))
@@ -637,7 +635,7 @@ class Textile(object):
             [{space}]+                            # whitespace ends def marker
             (?P<content>.*)$                      # content""".format(
                 space=regex_snippets['space'], cls=cls_re_s),
-            flags=re.X | regex_snippets['mod'])
+            flags=re.X | re.U)
             notedef = notedef_re.sub(self.fParseNoteDefs, content)
 
             # It will be empty if the regex matched and ate it.
@@ -645,7 +643,7 @@ class Textile(object):
                 return o1, o2, notedef, c2, c1, True
 
         fns = re.search(r'fn(?P<fnid>{0}+)'.format(regex_snippets['digit']),
-                tag, flags=regex_snippets['mod'])
+                tag, flags=re.U)
         if fns:
             tag = 'p'
             fnid = self.fn.get(fns.group('fnid'), None)
@@ -726,8 +724,7 @@ class Textile(object):
         # somehow php-textile gets away with not capturing the space.
         return re.compile(r'(?<=\S)\[(?P<id>{0}+)(?P<nolink>!?)\]'
                 r'(?P<space>{1}?)'.format(regex_snippets['digit'],
-                    regex_snippets['space']), flags=regex_snippets['mod']).sub(
-                            self.footnoteID, text)
+                    regex_snippets['space']), re.U).sub(self.footnoteID, text)
 
     def footnoteID(self, m):
         backref = ' class="footnote"'
@@ -769,8 +766,8 @@ class Textile(object):
         result = []
         searchlist = self.glyph_search_initial
         # split the text by any angle-bracketed tags
-        for i, line in enumerate(re.compile(r'(<[\w\/!?].*?>)',
-                regex_snippets['mod']).split(text)):
+        for i, line in enumerate(re.compile(r'(<[\w\/!?].*?>)', re.U).split(
+            text)):
             if not i % 2:
                 for s, r in zip(searchlist, self.glyph_replace):
                     line = s.sub(r, line)
@@ -851,7 +848,6 @@ class Textile(object):
         # inline links between the link text and the url part and are much more
         # infrequent than '"' characters so we have less possible links to
         # process.
-        mod = regex_snippets['mod']
         slices = text.split('":')
         output = []
 
@@ -886,9 +882,9 @@ class Textile(object):
 
                     if len(possibility) > 0:
                         # did this part inc or dec the balanced count?
-                        if re.search(r'^\S|=$', possibility, flags=mod):
+                        if re.search(r'^\S|=$', possibility, flags=re.U):
                             balanced = balanced - 1
-                        if re.search(r'\S$', possibility, flags=mod):
+                        if re.search(r'\S$', possibility, flags=re.U):
                             balanced = balanced + 1
                         possibility = possible_start_quotes.pop()
                     else:
@@ -951,8 +947,7 @@ class Textile(object):
             ":                     # literal ": marks end of atts + text + title block
             (?P<urlx>[^{1}]*)      # url upto a stopchar
         """.format(self.uid, stopchars)
-        text = re.compile(pattern, flags=re.X | regex_snippets['mod']).sub(
-                self.fLink, text)
+        text = re.compile(pattern, flags=re.X | re.U).sub(self.fLink, text)
         return text
 
     def fLink(self, m):
@@ -973,7 +968,7 @@ class Textile(object):
             )                            # end of $text
             (?:\((?P<title>[^)]+?)\))?   # $title (if any)
             $'''.format(cls_re_s, regex_snippets['space']), inner,
-                flags=re.X | regex_snippets['mod'])
+                flags=re.X | re.U)
 
         atts = m.group('atts') or ''
         text = m.group('text') or '' or inner
@@ -991,8 +986,7 @@ class Textile(object):
         # "text":url?q[]=x][123]    will have "[123]" popped off the back, the
         # remaining closing square brackets will later be tested for balance
         if (counts[']']):
-            m = re.search('(?P<url>^.*\])(?P<tight>\[.*?)$', url,
-                flags=regex_snippets['mod'])
+            m = re.search('(?P<url>^.*\])(?P<tight>\[.*?)$', url, flags=re.U)
             if m:
                 url, tight = m.groups()
 
@@ -1002,8 +996,7 @@ class Textile(object):
         # back out and the remaining square bracket will later be tested for
         # balance
         if (counts[']']):
-            m = re.search(r'(?P<url>^.*\])(?!=)(?P<end>.*?)$', url,
-                    flags=regex_snippets['mod'])
+            m = re.search(r'(?P<url>^.*\])(?!=)(?P<end>.*?)$', url, flags=re.U)
             if m:
                 url = m.group('url')
                 tight = '{0}{1}'.format(m.group('end'), tight)
@@ -1209,8 +1202,7 @@ class Textile(object):
                     {tag}
                     (?P<tail>$|[\[\]}}<]|(?=[{pnct}]{{1,2}}[^0-9]|\s|\)))
                 """.format(**{'tag': tag, 'cls': cls_re_s, 'pnct': pnct,
-                    'space': regex_snippets['space']}),
-                flags=re.X | regex_snippets['mod'])
+                    'space': regex_snippets['space']}), flags=re.X | re.U)
                 text = pattern.sub(self.fSpan, text)
         self.span_depth = self.span_depth - 1
         return text
