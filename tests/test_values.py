@@ -221,7 +221,7 @@ xhtml_known_values = (
      """\t<p style="text-align:center;">Tell me, what is <acronym title="Asynchronous Javascript and XML"><span class="caps">AJAX</span></acronym>, please?</p>"""),
     ('p{font-size:0.8em}. *TxStyle* is a documentation project of Textile 2.4 for "Textpattern CMS":http://texpattern.com.',
      '\t<p style="font-size:0.8em;"><strong>TxStyle</strong> is a documentation project of Textile 2.4 for <a href="http://texpattern.com">Textpattern <span class="caps">CMS</span></a>.</p>'),
-    (""""Übermensch":http://de/wikipedia.org/wiki/Übermensch""", """\t<p><a href="http://de/wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
+    (""""Übermensch":http://de.wikipedia.org/wiki/Übermensch""", """\t<p><a href="http://de.wikipedia.org/wiki/%C3%9Cbermensch">Übermensch</a></p>"""),
     ("""Here is some text with a <!-- Commented out[1] --> block.\n\n<!-- Here is a single <span>line</span> comment block -->\n\n<!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n-->\n\nbc. <!-- Here is a comment block in a code block. -->""",
      """\t<p>Here is some text with a <!-- Commented out[1] --> block.</p>\n\n\t<p><!-- Here is a single <span>line</span> comment block --></p>\n\n\t<p><!-- Here is a whole\nmultiline\n<span>HTML</span>\nComment\n--></p>\n\n<pre><code>&lt;!-- Here is a comment block in a code block. --&gt;\n</code></pre>"""),
     (""""Textile(c)" is a registered(r) 'trademark' of Textpattern(tm) -- or TXP(That's textpattern!) -- at least it was - back in '88 when 2x4 was (+/-)5(o)C ... QED!\n\np{font-size: 200%;}. 2(1/4) 3(1/2) 4(3/4)""",

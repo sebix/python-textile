@@ -17,6 +17,8 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
+from xml.etree import ElementTree
+
 from textile.regex_strings import valign_re_s, halign_re_s
 
 
@@ -77,6 +79,23 @@ def encode_html(text, quotes=True):
     for k, v in a:
         text = text.replace(k, v)
     return text
+
+def generate_tag(tag, content, attributes):
+    """Generate a complete html tag using the ElementTree module.  tag and
+    content are strings, the attributes argument is a dictionary."""
+    content = content.encode('utf-8')
+    element = ElementTree.Element(tag, attrib=attributes)
+    element_tag = ElementTree.tostring(element)
+    # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
+    # adding text by assigning it to a.text.  That results in non-ascii text
+    # being html-entity encoded.  Not bad, but not entirely matching
+    # php-textile either.
+    #
+    # I thought I had found a fancy solution, using ElementTree.tostringlist,
+    # but it fails differently on different platforms.
+    element_tag = element_tag.encode('utf-8').rstrip(' />')
+    element_text = '{0}>{1}</{2}>'.format(element_tag, content, tag)
+    return element_text.decode('utf-8')
 
 def is_valid_url(url):
     parsed = urlparse(url)

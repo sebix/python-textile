@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from textile import utils
 
 def test_encode_html():
@@ -14,3 +17,14 @@ def test_has_raw_text():
 def test_is_rel_url():
     assert utils.is_rel_url("http://www.google.com/") is False
     assert utils.is_rel_url("/foo") is True
+
+def test_generate_tag():
+    result = utils.generate_tag('span', 'inner text', {'class': 'test'})
+    expect = '<span class="test">inner text</span>'
+    assert result == expect
+
+    text = 'Übermensch'
+    attributes = {'href': 'http://de.wikipedia.org/wiki/%C3%C9bermensch'}
+    expect = '<a href="http://de.wikipedia.org/wiki/%C3%C9bermensch">Übermensch</a>'
+    result = utils.generate_tag('a', text, attributes)
+    assert result == expect

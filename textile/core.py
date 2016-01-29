@@ -25,9 +25,9 @@ from xml.etree import ElementTree
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
         pnct_re_s, regex_snippets, syms_re_s, table_span_re_s, valign_re_s)
-from textile.utils import (encode_high, encode_html, decode_high, has_raw_text,
-        is_rel_url, is_valid_url, list_type, normalize_newlines, pba,
-        parse_attributes)
+from textile.utils import (encode_high, encode_html, decode_high, generate_tag,
+        has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
+        pba, parse_attributes)
 
 
 try:
@@ -299,10 +299,12 @@ class Textile(object):
 
     def fTable(self, match):
         tatts = pba(match.group('tatts'), 'table')
+        table_attributes = parse_attributes(match.group('tatts'), 'table')
 
         summary = ''
         if match.group('summary'):
             summary = ' summary="{0}"'.format(match.group('summary').strip())
+            table_attributes.update(summary=match.group('summary').strip())
         cap = ''
         colgrp, last_rgrp = '', ''
         c_row = 1
@@ -320,8 +322,10 @@ class Textile(object):
             cmtch = caption_re.match(row)
             if c_row == 1 and cmtch:
                 capatts = pba(cmtch.group('capts'))
+                caption_atts = parse_attributes(cmtch.group('capts'))
                 cap = "\t<caption{0}>{1}</caption>\n".format(capatts,
                         cmtch.group('cap').strip())
+                cap = '\t{0}\n'.format(generate_tag('caption', cmtch.group('cap').strip(), caption_atts))
                 row = cmtch.group('row').lstrip()
                 if row == '':
                     continue
@@ -335,16 +339,22 @@ class Textile(object):
             gmtch = grp_re.match(row.lstrip())
             if gmtch:
                 has_newline = "\n" in row
-                idx = 0
-                for col in gmtch.group('cols').replace('.', '').split("|"):
+                match_cols = gmtch.group('cols').replace('.', '').split('|')
+                group_atts = parse_attributes(match_cols[0].strip(), 'col')
+                colgroup = ElementTree.Element('colgroup', attrib=group_atts)
+                colgroup.text = '\n\t'
+                for idx, col in enumerate(match_cols):
                     gatts = pba(col.strip(), 'col')
                     if idx == 0:
                         gatts = "group{0}>".format(gatts)
                     else:
                         gatts = "{0} />".format(gatts)
+                        col_atts = parse_attributes(col.strip(), 'col')
+                        ElementTree.SubElement(colgroup, 'col', col_atts)
                     colgrp = "{0}\t<col{1}\n".format(colgrp, gatts)
-                    idx = idx + 1
                 colgrp = "{0}\t</colgroup>\n".format(colgrp)
+                colgrp = '{0}\n'.format(ElementTree.tostring(colgroup))
+                colgrp = '\t{0}'.format(colgrp.replace('><', '>\n\t<'))
 
                 # If the row has a newline in it, account for the missing
                 # closing pipe and process the rest of the line
@@ -1112,18 +1122,7 @@ class Textile(object):
         attributes['href'] = url
         if self.rel:
             attributes['rel'] = self.rel
-        a = ElementTree.Element('a', attrib=attributes)
-        a_tag = ElementTree.tostring(a)
-        # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
-        # adding text by assigning it to a.text.  That results in non-ascii
-        # text being html-entity encoded.  Not bad, but not entirely matching
-        # php-textile either.
-        #
-        # I thought I had found a fancy solution, using
-        # ElementTree.tostringlist, but it fails differently on different
-        # platforms.
-        a_tag = a_tag.decode('utf-8').rstrip(' />')
-        a_text = '{0}>{1}</a>'.format(a_tag, text)
+        a_text = generate_tag('a', text, attributes)
         a_shelf_id = self.shelve(a_text)
 
         out = '{0}{1}{2}{3}'.format(pre, a_shelf_id, pop, tight)
