@@ -7,6 +7,9 @@ try:
     # Python 3
     from urllib.parse import urlparse
     from html.parser import HTMLParser
+    xrange = range
+    unichr = chr
+    unicode = str
 except ImportError:
     # Python 2
     from urlparse import urlparse
@@ -83,7 +86,7 @@ def encode_html(text, quotes=True):
 def generate_tag(tag, content, attributes):
     """Generate a complete html tag using the ElementTree module.  tag and
     content are strings, the attributes argument is a dictionary."""
-    content = content.encode('utf-8')
+    content = unicode(content).encode('utf-8')
     element = ElementTree.Element(tag, attrib=attributes)
     element_tag = ElementTree.tostring(element)
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
@@ -93,9 +96,9 @@ def generate_tag(tag, content, attributes):
     #
     # I thought I had found a fancy solution, using ElementTree.tostringlist,
     # but it fails differently on different platforms.
-    element_tag = element_tag.encode('utf-8').rstrip(' />')
+    element_tag = unicode(element_tag).encode('utf-8').rstrip(' />')
     element_text = '{0}>{1}</{2}>'.format(element_tag, content, tag)
-    return element_text.decode('utf-8')
+    return unicode(element_text).decode('utf-8')
 
 def is_valid_url(url):
     parsed = urlparse(url)
