@@ -86,7 +86,8 @@ def encode_html(text, quotes=True):
 def generate_tag(tag, content, attributes):
     """Generate a complete html tag using the ElementTree module.  tag and
     content are strings, the attributes argument is a dictionary."""
-    content = unicode(content).encode('utf-8')
+    if isinstance(content, unicode):
+        content = content.encode('utf8')
     element = ElementTree.Element(tag, attrib=attributes)
     element_tag = ElementTree.tostring(element)
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
@@ -96,9 +97,13 @@ def generate_tag(tag, content, attributes):
     #
     # I thought I had found a fancy solution, using ElementTree.tostringlist,
     # but it fails differently on different platforms.
-    element_tag = unicode(element_tag).encode('utf-8').rstrip(' />')
+    if isinstance(element_tag, unicode):
+        element_tag = element_tag.encode('utf8')
+    element_tag = element_tag.rstrip(' />')
     element_text = '{0}>{1}</{2}>'.format(element_tag, content, tag)
-    return unicode(element_text).decode('utf-8')
+    if not isinstance(element_text, unicode):
+        element_text = element_text.decode('utf8')
+    return element_text
 
 def is_valid_url(url):
     parsed = urlparse(url)
