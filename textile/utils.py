@@ -99,7 +99,7 @@ def generate_tag(tag, content, attributes):
     # but it fails differently on different platforms.
     if isinstance(element_tag, unicode):
         element_tag = element_tag.encode('utf8')
-    element_tag = element_tag.rstrip(' />')
+    element_tag = str(element_tag).rstrip(' />')
     element_text = '{0}>{1}</{2}>'.format(element_tag, content, tag)
     if not isinstance(element_text, unicode):
         element_text = element_text.decode('utf8')
