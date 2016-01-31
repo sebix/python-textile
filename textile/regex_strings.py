@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import six
+
 try:
     # Use regex module for matching uppercase characters if installed,
     # otherwise fall back to finding all the uppercase chars in a loop.
@@ -20,6 +22,9 @@ try:
 except ImportError:
     import re
     from sys import maxunicode
+    if not six.PY2:
+        xrange = range
+        unichr = chr
     upper_re_s = "".join([unichr(c) for c in xrange(maxunicode) if unichr(
         c).isupper()])
     regex_snippets = {

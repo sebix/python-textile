@@ -20,6 +20,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 
 import uuid
+import six
 from xml.etree import ElementTree
 
 from textile.tools import sanitizer, imagesize
@@ -342,7 +343,6 @@ class Textile(object):
                 match_cols = gmtch.group('cols').replace('.', '').split('|')
                 group_atts = parse_attributes(match_cols[0].strip(), 'col')
                 colgroup = ElementTree.Element('colgroup', attrib=group_atts)
-                colgroup.text = '\n\t'
                 for idx, col in enumerate(match_cols):
                     gatts = pba(col.strip(), 'col')
                     if idx == 0:
@@ -353,7 +353,11 @@ class Textile(object):
                         ElementTree.SubElement(colgroup, 'col', col_atts)
                     colgrp = "{0}\t<col{1}\n".format(colgrp, gatts)
                 colgrp = "{0}\t</colgroup>\n".format(colgrp)
-                colgrp = '{0}\n'.format(ElementTree.tostring(colgroup))
+                enc = 'unicode'
+                if six.PY2:
+                    enc = 'UTF-8'
+                colgrp = '{0}\n'.format(six.text_type(ElementTree.tostring(colgroup, encoding=enc, method='html')))
+                colgrp = re.sub(r'(<col(?!group)[^>]*)>', r'\1 />', colgrp)
                 colgrp = '\t{0}'.format(colgrp.replace('><', '>\n\t<'))
 
                 # If the row has a newline in it, account for the missing

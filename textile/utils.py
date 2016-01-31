@@ -1,3 +1,6 @@
+from __future__ import unicode_literals
+import six
+
 try:
     import regex as re
 except ImportError:
@@ -83,13 +86,15 @@ def encode_html(text, quotes=True):
         text = text.replace(k, v)
     return text
 
-def generate_tag(tag, content, attributes):
+def generate_tag(tag, content, attributes=None):
     """Generate a complete html tag using the ElementTree module.  tag and
     content are strings, the attributes argument is a dictionary."""
-    if isinstance(content, unicode):
-        content = content.encode('utf8')
+    content = six.text_type(content)
     element = ElementTree.Element(tag, attrib=attributes)
-    element_tag = ElementTree.tostring(element)
+    enc = 'unicode'
+    if six.PY2:
+        enc = 'UTF-8'
+    element_tag = ElementTree.tostring(element, encoding=enc, method='html')
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
     # adding text by assigning it to a.text.  That results in non-ascii text
     # being html-entity encoded.  Not bad, but not entirely matching
@@ -97,12 +102,8 @@ def generate_tag(tag, content, attributes):
     #
     # I thought I had found a fancy solution, using ElementTree.tostringlist,
     # but it fails differently on different platforms.
-    if isinstance(element_tag, unicode):
-        element_tag = element_tag.encode('utf8')
-    element_tag = str(element_tag).rstrip(' />')
-    element_text = '{0}>{1}</{2}>'.format(element_tag, content, tag)
-    if not isinstance(element_text, unicode):
-        element_text = element_text.decode('utf8')
+    element_tag = re.sub(r'</\w+>$', '', six.text_type(element_tag))
+    element_text = six.text_type('{0}{1}</{2}>').format(six.text_type(element_tag), content, tag)
     return element_text
 
 def is_valid_url(url):
