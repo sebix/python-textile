@@ -310,6 +310,8 @@ class Textile(object):
         colgrp, last_rgrp = '', ''
         c_row = 1
         rows = []
+        row_tags = []
+        groups = []
         split = re.split(r'\|\s*?$', match.group('rows'), flags=re.M)
         for row in [x for x in split if x]:
             row = row.lstrip()
@@ -326,7 +328,7 @@ class Textile(object):
                 caption_atts = parse_attributes(cmtch.group('capts'))
                 cap = "\t<caption{0}>{1}</caption>\n".format(capatts,
                         cmtch.group('cap').strip())
-                cap = '\t{0}\n'.format(generate_tag('caption', cmtch.group('cap').strip(), caption_atts))
+                cap = '\t{0}\n\t'.format(generate_tag('caption', cmtch.group('cap').strip(), caption_atts))
                 row = cmtch.group('row').lstrip()
                 if row == '':
                     continue
@@ -360,7 +362,7 @@ class Textile(object):
                 colgrp = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', colgrp)
                 if len(colgroup.getchildren()) is 0:
                     colgrp = colgrp.replace(' />', '>\n\t</colgroup>')
-                colgrp = '\t{0}'.format(colgrp.replace('><', '>\n\t<'))
+                colgrp = colgrp.replace('><', '>\n\t<')
 
                 # If the row has a newline in it, account for the missing
                 # closing pipe and process the rest of the line
@@ -381,17 +383,21 @@ class Textile(object):
             if grpmatch.group('part'):
                 rgrp = rgrptypes[grpmatch.group('part')]
             rgrpatts = pba(grpmatch.group('rgrpatts'))
+            rgrp_atts = parse_attributes(grpmatch.group('rgrpatts'))
             row = grpmatch.group('row')
 
             rmtch = re.search(r'^(?P<ratts>{0}{1}\. )(?P<row>.*)'.format(
                 align_re_s, cls_re_s), row.lstrip())
             if rmtch:
                 ratts = pba(rmtch.group('ratts'), 'tr')
+                row_atts = parse_attributes(rmtch.group('ratts'), 'tr')
                 row = rmtch.group('row')
             else:
                 ratts = ''
+                row_atts = {}
 
             cells = []
+            cell_tags = []
             for cellctr, cell in enumerate(row.split('|')):
                 ctyp = 'd'
                 if cell.startswith('_'):
@@ -400,9 +406,11 @@ class Textile(object):
                     table_span_re_s, align_re_s, cls_re_s), cell, flags=re.S)
                 if cmtch:
                     catts = pba(cmtch.group('catts'), 'td')
+                    cell_atts = parse_attributes(cmtch.group('catts'), 'td')
                     cell = cmtch.group('cell')
                 else:
                     catts = ''
+                    cell_atts = {}
 
                 if not self.lite:
                     a_pattern = r'(?P<space>{0}*)(?P<cell>.*)'.format(
@@ -419,7 +427,15 @@ class Textile(object):
                     ctag = "t{0}".format(ctyp)
                     cline = "\t\t\t<{ctag}{catts}>{cell}</{ctag}>".format(**{
                         'ctag': ctag, 'catts': catts, 'cell': cell})
+                    cline_tag = '\t\t\t{0}'.format(generate_tag(ctag, cell, cell_atts))
+                    cell_tags.append(self.doTagBr(ctag, cline_tag))
                     cells.append(self.doTagBr(ctag, cline))
+
+            # if cells:
+                # cells = '\n{0}\n'.format('\n\t\t'.join(cells))
+
+            row_tag = generate_tag('tr', '\n{0}\n\t\t'.format('\n'.join(cell_tags)), row_atts)
+            row_tags.append(row_tag)
 
             grp = ''
 
@@ -434,7 +450,14 @@ class Textile(object):
             trailing_newline = '\n' if cells else ''
             rows.append("{0}\t\t<tr{1}>\n{2}{3}\t\t</tr>".format(grp, ratts,
                 '\n'.join(cells), trailing_newline))
+            if rgrp:
+                grp_tag = 't{0}'.format(rgrp)
+                groups.append("\n\t{0}\n\t".format(generate_tag(grp_tag, '\n\t\t{0}\n\t'.format('\n'.join(row_tags)), rgrp_atts)))
+            else:
+                groups.append('\n\t\t'.join(row_tags))
             cells = []
+            cell_tags = []
+            row_tags = []
             catts = None
 
         rows = '{0}\n'.format('\n'.join(rows))
@@ -445,6 +468,9 @@ class Textile(object):
         tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t"
             "</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
             cap, 'colgrp': colgrp, 'close': close, 'rows': rows}))
+
+        content = '\n{0}{1}\t\t{2}\n\t'.format(cap, colgrp, '\n'.join(groups))
+        # tbl = '\t{0}\n\n'.format(generate_tag('table', content, table_attributes))
         return tbl
 
     def textileLists(self, text):

@@ -195,6 +195,9 @@ def parse_attributes(block_attributes, element=None, include_id=True):
         csp = re.match(pattern, matched)
         span, width = csp.groups()
 
+    if colspan:
+        result['colspan'] = colspan
+
     if style:
         # Previous splits that created style may have introduced extra
         # whitespace into the list elements.  Clean it up.
@@ -206,8 +209,6 @@ def parse_attributes(block_attributes, element=None, include_id=True):
         result['id'] = block_id
     if lang:
         result['lang'] = lang
-    if colspan:
-        result['colspan'] = colspan
     if rowspan:
         result['rowspan'] = rowspan
     if span:
