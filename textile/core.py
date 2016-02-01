@@ -356,8 +356,10 @@ class Textile(object):
                 enc = 'unicode'
                 if six.PY2:
                     enc = 'UTF-8'
-                colgrp = '{0}\n'.format(six.text_type(ElementTree.tostring(colgroup, encoding=enc, method='html')))
-                colgrp = re.sub(r'(<col(?!group)[^>]*)>', r'\1 />', colgrp)
+                colgrp = '{0}\n'.format(six.text_type(ElementTree.tostring(colgroup, encoding=enc)))
+                colgrp = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', colgrp)
+                if len(colgroup.getchildren()) is 0:
+                    colgrp = colgrp.replace(' />', '>\n\t</colgroup>')
                 colgrp = '\t{0}'.format(colgrp.replace('><', '>\n\t<'))
 
                 # If the row has a newline in it, account for the missing
