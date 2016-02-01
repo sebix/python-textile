@@ -102,8 +102,8 @@ def generate_tag(tag, content, attributes=None):
     #
     # I thought I had found a fancy solution, using ElementTree.tostringlist,
     # but it fails differently on different platforms.
-    element_tag = element_tag.rstrip(' />').split(
-            "<?xml version='1.0' encoding='UTF-8'?>\n")[1]
+    element_tag = element_tag.rstrip(' />')
+    element_tag = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '' element_tag)
     element_text = six.text_type('{0}>{1}</{2}>').format(six.text_type(element_tag), content, tag)
     return element_text
 
