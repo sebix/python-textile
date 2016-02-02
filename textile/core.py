@@ -345,6 +345,7 @@ class Textile(object):
                 match_cols = gmtch.group('cols').replace('.', '').split('|')
                 group_atts = parse_attributes(match_cols[0].strip(), 'col')
                 colgroup = ElementTree.Element('colgroup', attrib=group_atts)
+                colgroup.text = '\n'
                 for idx, col in enumerate(match_cols):
                     gatts = pba(col.strip(), 'col')
                     if idx == 0:
@@ -354,14 +355,12 @@ class Textile(object):
                         col_atts = parse_attributes(col.strip(), 'col')
                         ElementTree.SubElement(colgroup, 'col', col_atts)
                     colgrp = "{0}\t<col{1}\n".format(colgrp, gatts)
-                colgrp = "{0}\t</colgroup>\n".format(colgrp)
+                colgrp = "{0}\t</colgroup>".format(colgrp)
                 enc = 'unicode'
                 if six.PY2:
                     enc = 'UTF-8'
-                colgrp = '{0}\n'.format(six.text_type(ElementTree.tostring(colgroup, encoding=enc)))
+                colgrp = '{0}\n'.format(ElementTree.tostring(colgroup, encoding=enc))
                 colgrp = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', colgrp)
-                if len(colgroup.getchildren()) is 0:
-                    colgrp = colgrp.replace(' />', '>\n\t</colgroup>')
                 colgrp = colgrp.replace('><', '>\n\t<')
 
                 # If the row has a newline in it, account for the missing
@@ -378,12 +377,14 @@ class Textile(object):
             grpmatch = grpmatch_re.match(row.lstrip())
 
             # Row group
+            rgrpatts = pba(grpmatch.group('rgrpatts'))
+            rgrp_atts = parse_attributes(grpmatch.group('rgrpatts'))
             rgrp = ''
             rgrptypes = {'^': 'head', '~': 'foot', '-': 'body'}
             if grpmatch.group('part'):
                 rgrp = rgrptypes[grpmatch.group('part')]
-            rgrpatts = pba(grpmatch.group('rgrpatts'))
-            rgrp_atts = parse_attributes(grpmatch.group('rgrpatts'))
+                rgrp_tag = ElementTree.Element('t{0}'.format(rgrp), rgrp_atts)
+                rgrp_tag.text = '\n'
             row = grpmatch.group('row')
 
             rmtch = re.search(r'^(?P<ratts>{0}{1}\. )(?P<row>.*)'.format(
@@ -431,16 +432,18 @@ class Textile(object):
                     cell_tags.append(self.doTagBr(ctag, cline_tag))
                     cells.append(self.doTagBr(ctag, cline))
 
-            # if cells:
-                # cells = '\n{0}\n'.format('\n\t\t'.join(cells))
+            if cell_tags:
+                cell_tag_string = '\n{0}\n\t\t'.format('\n'.join(cell_tags))
 
-            row_tag = generate_tag('tr', '\n{0}\n\t\t'.format('\n'.join(cell_tags)), row_atts)
+            row_tag = generate_tag('tr', cell_tag_string, row_atts)
             row_tags.append(row_tag)
 
             grp = ''
 
             if rgrp and last_rgrp:
-                grp = "\t</t{0}>\n".format(last_rgrp)
+                grp = "</t{0}>\n\t".format(last_rgrp)
+                o, c = ElementTree.tostring(rgrp_tag, encoding='UTF-8').split('\n')[1:]
+                groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
 
             if rgrp:
                 grp = "{0}\t<t{1}{2}>\n".format(grp, rgrp, rgrpatts)
@@ -450,11 +453,8 @@ class Textile(object):
             trailing_newline = '\n' if cells else ''
             rows.append("{0}\t\t<tr{1}>\n{2}{3}\t\t</tr>".format(grp, ratts,
                 '\n'.join(cells), trailing_newline))
-            if rgrp:
-                grp_tag = 't{0}'.format(rgrp)
-                groups.append("\n\t{0}\n\t".format(generate_tag(grp_tag, '\n\t\t{0}\n\t'.format('\n'.join(row_tags)), rgrp_atts)))
-            else:
-                groups.append('\n\t\t'.join(row_tags))
+            if not rgrp:
+                groups.append('\t{0}'.format('\n\t\t'.join(row_tags)))
             cells = []
             cell_tags = []
             row_tags = []
@@ -465,12 +465,14 @@ class Textile(object):
 
         if last_rgrp:
             close = '\t</t{0}>\n'.format(last_rgrp)
+            o, c = ElementTree.tostring(rgrp_tag, encoding='UTF-8').split('\n')[1:]
+            groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
         tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t"
             "</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
             cap, 'colgrp': colgrp, 'close': close, 'rows': rows}))
 
-        content = '\n{0}{1}\t\t{2}\n\t'.format(cap, colgrp, '\n'.join(groups))
-        # tbl = '\t{0}\n\n'.format(generate_tag('table', content, table_attributes))
+        content = '\n{0}{1}\t{2}\n\t'.format(cap, colgrp, '\n\t'.join(groups))
+        tbl = '\t{0}\n\n'.format(generate_tag('table', content, table_attributes))
         return tbl
 
     def textileLists(self, text):
