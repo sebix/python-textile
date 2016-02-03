@@ -348,7 +348,7 @@ class Textile(object):
                 match_cols = gmtch.group('cols').replace('.', '').split('|')
                 group_atts = parse_attributes(match_cols[0].strip(), 'col')
                 colgroup = ElementTree.Element('colgroup', attrib=group_atts)
-                colgroup.text = '\n'
+                colgroup.text = '\n\t'
                 for idx, col in enumerate(match_cols):
                     gatts = pba(col.strip(), 'col')
                     if idx == 0:
@@ -385,6 +385,7 @@ class Textile(object):
                 rgrp = rgrptypes[grpmatch.group('part')]
                 rgrp_tag = ElementTree.Element('t{0}'.format(rgrp), rgrp_atts)
                 rgrp_tag.text = '\n'
+                rgrp_tag = generate_tag('t{0}'.format(rgrp), '\n', rgrp_atts)
             row = grpmatch.group('row')
 
             rmtch = re.search(r'^(?P<ratts>{0}{1}\. )(?P<row>.*)'.format(
@@ -442,9 +443,7 @@ class Textile(object):
 
             if rgrp and last_rgrp:
                 grp = "</t{0}>\n\t".format(last_rgrp)
-                rgrp_element = six.text_type(ElementTree.tostring(rgrp_tag, encoding=enc))
-                rgrp_element = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', rgrp_element)
-                o, c = rgrp_element.split('\n')
+                o, c = rgrp_tag.split('\n')
                 groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
 
             if rgrp:
@@ -467,9 +466,7 @@ class Textile(object):
 
         if last_rgrp:
             close = '\t</t{0}>\n'.format(last_rgrp)
-            rgrp_element = six.text_type(ElementTree.tostring(rgrp_tag, encoding=enc))
-            rgrp_element = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', rgrp_element)
-            o, c = rgrp_element.split('\n')
+            o, c = rgrp_tag.split('\n')
             groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
         tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t"
             "</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
