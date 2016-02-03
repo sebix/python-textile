@@ -6,17 +6,9 @@ try:
 except ImportError:
     import re
 
-try:
-    # Python 3
-    from urllib.parse import urlparse
-    from html.parser import HTMLParser
-    xrange = range
-    unichr = chr
-    unicode = str
-except ImportError:
-    # Python 2
-    from urlparse import urlparse
-    from HTMLParser import HTMLParser
+from six.moves import urllib, html_parser
+urlparse = urllib.parse.urlparse
+HTMLParser = html_parser.HTMLParser
 
 try:
     from collections import OrderedDict
