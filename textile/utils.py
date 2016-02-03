@@ -20,48 +20,15 @@ from xml.etree import ElementTree
 from textile.regex_strings import valign_re_s, halign_re_s
 
 
-def normalize_newlines(string):
-    out = string.strip()
-    out = re.sub(r'\r\n', '\n', out)
-    out = re.sub(r'\n{3,}', '\n\n', out)
-    out = re.sub(r'\n\s*\n', '\n\n', out)
-    out = re.sub(r'"$', '" ', out)
-    return out
-
-def has_raw_text(text):
-    """checks whether the text has text not already enclosed by a block tag"""
-    # The php version has orders the below list of tags differently.  The
-    # important thing to note here is that the pre must occur before the p or
-    # else the regex module doesn't properly match pre-s. It only matches the
-    # p in pre.
-    r = re.compile(r'<(pre|p|blockquote|div|form|table|ul|ol|dl|h[1-6])[^>]*?>.*</\1>',
-                   re.S).sub('', text.strip()).strip()
-    r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
-    return '' != r
-
-def list_type(list_string):
-    listtypes = {
-        list_string.startswith('*'): 'u',
-        list_string.startswith('#'): 'o',
-        (not list_string.startswith('*') and not list_string.startswith('#')):
-        'd'
-    }
-    return listtypes.get(True, False)
-
-def is_rel_url(url):
-    """Identify relative urls."""
-    (scheme, netloc) = urlparse(url)[0:2]
-    return not scheme and not netloc
-
-def encode_high(text):
-    """Encode the text so that it is an appropriate HTML entity."""
-    return ord(text)
-
 def decode_high(text):
     """Decode encoded HTML entities."""
     h = HTMLParser()
     text = '&#{0};'.format(text)
     return h.unescape(text)
+
+def encode_high(text):
+    """Encode the text so that it is an appropriate HTML entity."""
+    return ord(text)
 
 def encode_html(text, quotes=True):
     """Return text that's safe for an HTML attribute."""
@@ -103,19 +70,44 @@ def generate_tag(tag, content, attributes=None):
         element_text = six.text_type('{0}>{1}</{2}>').format(six.text_type(element_tag), content, tag)
     return element_text
 
+def has_raw_text(text):
+    """checks whether the text has text not already enclosed by a block tag"""
+    # The php version has orders the below list of tags differently.  The
+    # important thing to note here is that the pre must occur before the p or
+    # else the regex module doesn't properly match pre-s. It only matches the
+    # p in pre.
+    r = re.compile(r'<(pre|p|blockquote|div|form|table|ul|ol|dl|h[1-6])[^>]*?>.*</\1>',
+                   re.S).sub('', text.strip()).strip()
+    r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
+    return '' != r
+
+def is_rel_url(url):
+    """Identify relative urls."""
+    (scheme, netloc) = urlparse(url)[0:2]
+    return not scheme and not netloc
+
 def is_valid_url(url):
     parsed = urlparse(url)
     if parsed.scheme == '':
         return True
     return False
 
-def pba(block_attributes, element=None, include_id=True):
-    """Parse block attributes."""
-    attrs = parse_attributes(block_attributes, element, include_id)
-    if not attrs:
-        return ''
-    result = ' '.join(['{0}="{1}"'.format(k, v) for k, v in attrs.items()])
-    return ' {0}'.format(result)
+def list_type(list_string):
+    listtypes = {
+        list_string.startswith('*'): 'u',
+        list_string.startswith('#'): 'o',
+        (not list_string.startswith('*') and not list_string.startswith('#')):
+        'd'
+    }
+    return listtypes.get(True, False)
+
+def normalize_newlines(string):
+    out = string.strip()
+    out = re.sub(r'\r\n', '\n', out)
+    out = re.sub(r'\n{3,}', '\n\n', out)
+    out = re.sub(r'\n\s*\n', '\n\n', out)
+    out = re.sub(r'"$', '" ', out)
+    return out
 
 def parse_attributes(block_attributes, element=None, include_id=True):
     vAlign = {'^': 'top', '-': 'middle', '~': 'bottom'}
@@ -208,3 +200,11 @@ def parse_attributes(block_attributes, element=None, include_id=True):
     if width:
         result['width'] = width
     return result
+
+def pba(block_attributes, element=None, include_id=True):
+    """Parse block attributes."""
+    attrs = parse_attributes(block_attributes, element, include_id)
+    if not attrs:
+        return ''
+    result = ' '.join(['{0}="{1}"'.format(k, v) for k, v in attrs.items()])
+    return ' {0}'.format(result)
