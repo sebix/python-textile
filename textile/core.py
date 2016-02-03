@@ -312,6 +312,9 @@ class Textile(object):
         rows = []
         row_tags = []
         groups = []
+        enc = 'unicode'
+        if six.PY2:
+            enc = 'UTF-8'
         split = re.split(r'\|\s*?$', match.group('rows'), flags=re.M)
         for row in [x for x in split if x]:
             row = row.lstrip()
@@ -356,9 +359,6 @@ class Textile(object):
                         ElementTree.SubElement(colgroup, 'col', col_atts)
                     colgrp = "{0}\t<col{1}\n".format(colgrp, gatts)
                 colgrp = "{0}\t</colgroup>".format(colgrp)
-                enc = 'unicode'
-                if six.PY2:
-                    enc = 'UTF-8'
                 colgrp = '{0}\n'.format(ElementTree.tostring(colgroup, encoding=enc))
                 colgrp = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', colgrp)
                 colgrp = colgrp.replace('><', '>\n\t<')
@@ -442,7 +442,9 @@ class Textile(object):
 
             if rgrp and last_rgrp:
                 grp = "</t{0}>\n\t".format(last_rgrp)
-                o, c = ElementTree.tostring(rgrp_tag, encoding='UTF-8').split('\n')[1:]
+                rgrp_element = six.text_type(ElementTree.tostring(rgrp_tag, encoding=enc))
+                rgrp_element = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', rgrp_element)
+                o, c = rgrp_element.split('\n')
                 groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
 
             if rgrp:
@@ -465,7 +467,9 @@ class Textile(object):
 
         if last_rgrp:
             close = '\t</t{0}>\n'.format(last_rgrp)
-            o, c = ElementTree.tostring(rgrp_tag, encoding='UTF-8').split('\n')[1:]
+            rgrp_element = six.text_type(ElementTree.tostring(rgrp_tag, encoding=enc))
+            rgrp_element = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '', rgrp_element)
+            o, c = rgrp_element.split('\n')
             groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
         tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t"
             "</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':

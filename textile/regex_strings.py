@@ -23,7 +23,7 @@ except ImportError:
     import re
     from sys import maxunicode
     upper_re_s = "".join(
-            [unichr(c) for c in six.moves.range(maxunicode) if six.unichr(
+            [six.unichr(c) for c in six.moves.range(maxunicode) if six.unichr(
                 c).isupper()])
     regex_snippets = {
         'acr': r'{0}0-9'.format(upper_re_s),
