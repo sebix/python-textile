@@ -443,11 +443,12 @@ class Textile(object):
 
             if rgrp and last_rgrp:
                 grp = "</t{0}>\n\t".format(last_rgrp)
-                o, c = rgrp_tag.split('\n')
-                groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
+                groups.append(c)
 
             if rgrp:
                 grp = "{0}\t<t{1}{2}>\n".format(grp, rgrp, rgrpatts)
+                o, c = rgrp_tag.split('\n')
+                groups.append('{0}\n\t\t{1}'.format(o, '\n\t\t'.join(row_tags)))
 
             last_rgrp = rgrp if rgrp else last_rgrp
 
@@ -466,8 +467,8 @@ class Textile(object):
 
         if last_rgrp:
             close = '\t</t{0}>\n'.format(last_rgrp)
-            o, c = rgrp_tag.split('\n')
-            groups.append('{0}\n\t\t{1}\n\t{2}'.format(o, '\n\t\t'.join(row_tags), c))
+            c = rgrp_tag.split('\n')[1]
+            groups.append(c)
         tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t"
             "</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
             cap, 'colgrp': colgrp, 'close': close, 'rows': rows}))
