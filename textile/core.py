@@ -26,9 +26,9 @@ from xml.etree import ElementTree
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
         pnct_re_s, regex_snippets, syms_re_s, table_span_re_s, valign_re_s)
-from textile.utils import (encode_high, encode_html, decode_high, generate_tag,
+from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
-        pba, parse_attributes)
+        parse_attributes, pba)
 
 
 try:
