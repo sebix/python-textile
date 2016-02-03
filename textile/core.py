@@ -36,18 +36,10 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-
-try:
-    # Python 3
-    from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
-    xrange = range
-    unichr = chr
-    unicode = str
-except (ImportError):
-    # Python 2
-    from urllib import quote, unquote
-    from urlparse import urlparse, urlsplit, urlunsplit
-
+from six.moves import urllib
+urlparse, urlsplit, urlunsplit, quote, unquote = (urllib.parse.urlparse,
+        urllib.parse.urlsplit, urllib.parse.urlunsplit, urllib.parse.quote,
+        urllib.parse.unquote)
 
 try:
     import regex as re
@@ -1148,7 +1140,7 @@ class Textile(object):
             http://stackoverflow.com/a/804380/72656
         """
         # turn string into unicode
-        if not isinstance(url, unicode):
+        if not isinstance(url, six.text_type):
             url = url.decode('utf8')
 
         # parse it
