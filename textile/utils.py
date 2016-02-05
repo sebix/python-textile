@@ -47,7 +47,8 @@ def encode_html(text, quotes=True):
 
 def generate_tag(tag, content, attributes=None):
     """Generate a complete html tag using the ElementTree module.  tag and
-    content are strings, the attributes argument is a dictionary."""
+    content are strings, the attributes argument is a dictionary.  As
+    a convenience, if the content is ' /', a self-closing tag is generated."""
     content = six.text_type(content)
     element = ElementTree.Element(tag, attrib=attributes)
     enc = 'unicode'
@@ -66,11 +67,12 @@ def generate_tag(tag, content, attributes=None):
         # Python 2.6 doesn't have the tostringlist method, so we have to treat
         # it different.
         element_tag = ElementTree.tostring(element, encoding=enc)
-        element_tag = element_tag.rstrip(' />')
-        element_tag = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '',
-                element_tag)
-        element_text = six.text_type('{0}>{1}</{2}>').format(six.text_type(
-            element_tag), content, tag)
+        element_text = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n", '',
+                    element_tag)
+        if content is not ' /':
+            element_text = element_tag.rstrip(' />')
+            element_text = six.text_type('{0}>{1}</{2}>').format(six.text_type(
+                element_text), content, tag)
     return element_text
 
 def has_raw_text(text):
