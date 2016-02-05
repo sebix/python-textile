@@ -70,7 +70,7 @@ def generate_tag(tag, content, attributes=None):
         element_text = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n",
                 '', element_tag)
         if content is not six.text_type(' /'):
-            element_text = element_tag.rstrip(' />')
+            element_text = element_text.rstrip(' />')
             element_text = six.text_type('{0}>{1}</{2}>').format(six.text_type(
                 element_text), content, tag)
     return element_text
