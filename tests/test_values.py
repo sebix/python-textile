@@ -126,7 +126,7 @@ xhtml_known_values = (
 
     ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny." /></p>'),
 
-    ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif" /></a></p>'),
+    ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/"><img alt="" src="openwindow1.gif" /></a></p>'),
 
     ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
      '\t<p><img align="right" alt="" src="obake.gif" /></p>\n\n\t'
@@ -276,7 +276,7 @@ html_known_values = (
      '<a href="http://hobix.com">all</a> I ever<br />\n<a href="http://hobix.com">link to</a>!</p>'),
     ('!http://hobix.com/sample.jpg!', '\t<p><img alt="" src="http://hobix.com/sample.jpg" /></p>'),
     ('!openwindow1.gif(Bunny.)!', '\t<p><img alt="Bunny." src="openwindow1.gif" title="Bunny." /></p>'),
-    ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/" class="img"><img alt="" src="openwindow1.gif" /></a></p>'),
+    ('!openwindow1.gif!:http://hobix.com/', '\t<p><a href="http://hobix.com/"><img alt="" src="openwindow1.gif" /></a></p>'),
     ('!>obake.gif!\n\nAnd others sat all round the small\nmachine and paid it to sing to them.',
      '\t<p><img align="right" alt="" src="obake.gif" /></p>\n\n\t'
      '<p>And others sat all round the small<br />\nmachine and paid it to sing to them.</p>'),

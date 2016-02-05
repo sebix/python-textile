@@ -1254,8 +1254,8 @@ class Textile(object):
 
     def fImage(self, match):
         # (None, '', '/imgs/myphoto.jpg', None, None)
-        align, atts, url, title, href = match.groups()
-        atts = pba(atts)
+        align, attributes, url, title, href = match.groups()
+        atts = OrderedDict()
         size = None
 
         alignments = {'<': 'left', '=': 'center', '>': 'right'}
@@ -1271,27 +1271,25 @@ class Textile(object):
 
         url = self.shelveURL(url)
 
-        out = []
-        if href:
-            out.append('<a href="{0}" class="img">'.format(href))
-        out.append('<img')
         if align:
-            out.append(' align="{0}"'.format(alignments[align]))
-        out.append(' alt="{0}"'.format(title))
+            atts.update(align=alignments[align])
+        atts.update(alt=title)
         if size:
-            out.append(' height="{0}"'.format(size[1]))
-        out.append(' src="{0}"'.format(url))
-        if atts:
-            out.append(atts)
+            atts.update(height=six.text_type(size[1]))
+        atts.update(src=url)
+        if attributes:
+            atts.update(parse_attributes(attributes))
         if title:
-            out.append(' title="{0}"'.format(title))
+            atts.update(title=title)
         if size:
-            out.append(' width="{0}"'.format(size[0]))
-        out.append(' />')
+            atts.update(width=six.text_type(size[0]))
+        img = generate_tag('img', ' /', atts)
         if href:
-            out.append('</a>')
-
-        return ''.join(out)
+            a_atts = OrderedDict(href=href)
+            if self.rel:
+                a_atts.update(rel=self.rel)
+            img = generate_tag('a', img, a_atts)
+        return img
 
     def code(self, text):
         text = self.doSpecial(text, '<code>', '</code>', self.fCode)
