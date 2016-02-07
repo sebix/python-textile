@@ -26,9 +26,9 @@ from xml.etree import ElementTree
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
         pnct_re_s, regex_snippets, syms_re_s, table_span_re_s, valign_re_s)
-from textile.utils import (encode_high, encode_html, decode_high, generate_tag,
+from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
-        pba, parse_attributes)
+        parse_attributes, pba)
 
 
 try:
@@ -36,18 +36,10 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-
-try:
-    # Python 3
-    from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
-    xrange = range
-    unichr = chr
-    unicode = str
-except (ImportError):
-    # Python 2
-    from urllib import quote, unquote
-    from urlparse import urlparse, urlsplit, urlunsplit
-
+from six.moves import urllib
+urlparse, urlsplit, urlunsplit, quote, unquote = (urllib.parse.urlparse,
+        urllib.parse.urlsplit, urllib.parse.urlunsplit, urllib.parse.quote,
+        urllib.parse.unquote)
 
 try:
     import regex as re
@@ -299,17 +291,19 @@ class Textile(object):
         return pattern.sub(self.fTable, text)
 
     def fTable(self, match):
-        tatts = pba(match.group('tatts'), 'table')
         table_attributes = parse_attributes(match.group('tatts'), 'table')
 
-        summary = ''
-        if match.group('summary'):
-            summary = ' summary="{0}"'.format(match.group('summary').strip())
-            table_attributes.update(summary=match.group('summary').strip())
+        summ = match.group('summary')
+        if summ:
+            table_attributes.update(summary=summ.strip())
         cap = ''
         colgrp, last_rgrp = '', ''
         c_row = 1
         rows = []
+        groups = []
+        enc = 'unicode'
+        if six.PY2:
+            enc = 'UTF-8'
         split = re.split(r'\|\s*?$', match.group('rows'), flags=re.M)
         for row in [x for x in split if x]:
             row = row.lstrip()
@@ -322,11 +316,9 @@ class Textile(object):
             caption_re = re.compile(captionpattern, re.S)
             cmtch = caption_re.match(row)
             if c_row == 1 and cmtch:
-                capatts = pba(cmtch.group('capts'))
                 caption_atts = parse_attributes(cmtch.group('capts'))
-                cap = "\t<caption{0}>{1}</caption>\n".format(capatts,
-                        cmtch.group('cap').strip())
-                cap = '\t{0}\n'.format(generate_tag('caption', cmtch.group('cap').strip(), caption_atts))
+                cap = '\t{0}\n\t'.format(generate_tag('caption',
+                    cmtch.group('cap').strip(), caption_atts))
                 row = cmtch.group('row').lstrip()
                 if row == '':
                     continue
@@ -343,22 +335,20 @@ class Textile(object):
                 match_cols = gmtch.group('cols').replace('.', '').split('|')
                 group_atts = parse_attributes(match_cols[0].strip(), 'col')
                 colgroup = ElementTree.Element('colgroup', attrib=group_atts)
-                for idx, col in enumerate(match_cols):
-                    gatts = pba(col.strip(), 'col')
-                    if idx == 0:
-                        gatts = "group{0}>".format(gatts)
-                    else:
-                        gatts = "{0} />".format(gatts)
-                        col_atts = parse_attributes(col.strip(), 'col')
-                        ElementTree.SubElement(colgroup, 'col', col_atts)
-                    colgrp = "{0}\t<col{1}\n".format(colgrp, gatts)
-                colgrp = "{0}\t</colgroup>\n".format(colgrp)
-                enc = 'unicode'
-                if six.PY2:
-                    enc = 'UTF-8'
-                colgrp = '{0}\n'.format(six.text_type(ElementTree.tostring(colgroup, encoding=enc, method='html')))
-                colgrp = re.sub(r'(<col(?!group)[^>]*)>', r'\1 />', colgrp)
-                colgrp = '\t{0}'.format(colgrp.replace('><', '>\n\t<'))
+                colgroup.text = '\n\t'
+                # colgroup is the first item in match_cols, the remaining items
+                # are cols.
+                for idx, col in enumerate(match_cols[1:]):
+                    col_atts = parse_attributes(col.strip(), 'col')
+                    ElementTree.SubElement(colgroup, 'col', col_atts)
+                colgrp = ElementTree.tostring(colgroup, encoding=enc)
+                # cleanup the extra xml declaration if it exists, (python
+                # versions differ) and then format the resulting string
+                # accordingly: newline and tab between cols and a newline at
+                # the end
+                colgrp = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n",
+                        '', colgrp)
+                colgrp = '{0}\n'.format(colgrp.replace('><', '>\n\t<'))
 
                 # If the row has a newline in it, account for the missing
                 # closing pipe and process the rest of the line
@@ -374,33 +364,34 @@ class Textile(object):
             grpmatch = grpmatch_re.match(row.lstrip())
 
             # Row group
+            rgrp_atts = parse_attributes(grpmatch.group('rgrpatts'))
             rgrp = ''
-            rgrptypes = {'^': 'head', '~': 'foot', '-': 'body'}
+            rgrptypes = {'^': 'thead', '~': 'tfoot', '-': 'tbody'}
             if grpmatch.group('part'):
                 rgrp = rgrptypes[grpmatch.group('part')]
-            rgrpatts = pba(grpmatch.group('rgrpatts'))
+                rgrp_tag = generate_tag(rgrp, '\n', rgrp_atts)
             row = grpmatch.group('row')
 
             rmtch = re.search(r'^(?P<ratts>{0}{1}\. )(?P<row>.*)'.format(
                 align_re_s, cls_re_s), row.lstrip())
             if rmtch:
-                ratts = pba(rmtch.group('ratts'), 'tr')
+                row_atts = parse_attributes(rmtch.group('ratts'), 'tr')
                 row = rmtch.group('row')
             else:
-                ratts = ''
+                row_atts = {}
 
             cells = []
             for cellctr, cell in enumerate(row.split('|')):
-                ctyp = 'd'
+                ctag = 'td'
                 if cell.startswith('_'):
-                    ctyp = "h"
+                    ctag = 'th'
                 cmtch = re.search(r'^(?P<catts>_?{0}{1}{2}\. )(?P<cell>.*)'.format(
                     table_span_re_s, align_re_s, cls_re_s), cell, flags=re.S)
                 if cmtch:
-                    catts = pba(cmtch.group('catts'), 'td')
+                    cell_atts = parse_attributes(cmtch.group('catts'), 'td')
                     cell = cmtch.group('cell')
                 else:
-                    catts = ''
+                    cell_atts = {}
 
                 if not self.lite:
                     a_pattern = r'(?P<space>{0}*)(?P<cell>.*)'.format(
@@ -414,36 +405,43 @@ class Textile(object):
                 # row.split() gives us ['', 'cell 1 contents', '...']
                 # so we ignore the first cell.
                 if cellctr > 0:
-                    ctag = "t{0}".format(ctyp)
-                    cline = "\t\t\t<{ctag}{catts}>{cell}</{ctag}>".format(**{
-                        'ctag': ctag, 'catts': catts, 'cell': cell})
-                    cells.append(self.doTagBr(ctag, cline))
+                    cline_tag = generate_tag(ctag, cell, cell_atts)
+                    cells.append(self.doTagBr(ctag, cline_tag))
 
-            grp = ''
+            if cells:
+                cell_tag_string = '\n\t\t\t{0}\n\t\t'.format('\n\t\t\t'.join(
+                    cells))
 
+            row_tag = generate_tag('tr', cell_tag_string, row_atts)
+            rows.append(row_tag)
+
+            # if rgrp and last_rgrp are set, it means the group has changed.
+            # That also means the closing group tag has already been set
             if rgrp and last_rgrp:
-                grp = "\t</t{0}>\n".format(last_rgrp)
+                groups.append(group_close)
 
+            # if we see a new rgrp, start the group, and throw in all the
+            # current rows.
             if rgrp:
-                grp = "{0}\t<t{1}{2}>\n".format(grp, rgrp, rgrpatts)
+                group_open, group_close = rgrp_tag.split('\n')
+                groups.append('{0}\n\t\t{1}'.format(group_open,
+                    '\n\t\t'.join(rows)))
 
             last_rgrp = rgrp if rgrp else last_rgrp
 
-            trailing_newline = '\n' if cells else ''
-            rows.append("{0}\t\t<tr{1}>\n{2}{3}\t\t</tr>".format(grp, ratts,
-                '\n'.join(cells), trailing_newline))
+            # if no group was specified, just join the rows
+            if not rgrp:
+                groups.append('\t{0}'.format('\n\t\t'.join(rows)))
             cells = []
-            catts = None
-
-        rows = '{0}\n'.format('\n'.join(rows))
-        close = ''
+            rows = []
 
         if last_rgrp:
-            close = '\t</t{0}>\n'.format(last_rgrp)
-        tbl = ("\t<table{tatts}{summary}>\n{cap}{colgrp}{rows}{close}\t"
-            "</table>\n\n".format(**{'tatts': tatts, 'summary': summary, 'cap':
-            cap, 'colgrp': colgrp, 'close': close, 'rows': rows}))
-        return tbl
+            c = rgrp_tag.split('\n')[1]
+            groups.append(c)
+
+        content = '\n{0}{1}\t{2}\n\t'.format(cap, colgrp, '\n\t'.join(groups))
+        tbl = generate_tag('table', content, table_attributes)
+        return '\t{0}\n\n'.format(tbl)
 
     def textileLists(self, text):
         pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?){0}[ .].*)$'
@@ -1142,7 +1140,7 @@ class Textile(object):
             http://stackoverflow.com/a/804380/72656
         """
         # turn string into unicode
-        if not isinstance(url, unicode):
+        if not isinstance(url, six.text_type):
             url = url.decode('utf8')
 
         # parse it
@@ -1256,8 +1254,8 @@ class Textile(object):
 
     def fImage(self, match):
         # (None, '', '/imgs/myphoto.jpg', None, None)
-        align, atts, url, title, href = match.groups()
-        atts = pba(atts)
+        align, attributes, url, title, href = match.groups()
+        atts = OrderedDict()
         size = None
 
         alignments = {'<': 'left', '=': 'center', '>': 'right'}
@@ -1273,27 +1271,25 @@ class Textile(object):
 
         url = self.shelveURL(url)
 
-        out = []
-        if href:
-            out.append('<a href="{0}" class="img">'.format(href))
-        out.append('<img')
         if align:
-            out.append(' align="{0}"'.format(alignments[align]))
-        out.append(' alt="{0}"'.format(title))
+            atts.update(align=alignments[align])
+        atts.update(alt=title)
         if size:
-            out.append(' height="{0}"'.format(size[1]))
-        out.append(' src="{0}"'.format(url))
-        if atts:
-            out.append(atts)
+            atts.update(height=six.text_type(size[1]))
+        atts.update(src=url)
+        if attributes:
+            atts.update(parse_attributes(attributes))
         if title:
-            out.append(' title="{0}"'.format(title))
+            atts.update(title=title)
         if size:
-            out.append(' width="{0}"'.format(size[0]))
-        out.append(' />')
+            atts.update(width=six.text_type(size[0]))
+        img = generate_tag('img', ' /', atts)
         if href:
-            out.append('</a>')
-
-        return ''.join(out)
+            a_atts = OrderedDict(href=href)
+            if self.rel:
+                a_atts.update(rel=self.rel)
+            img = generate_tag('a', img, a_atts)
+        return img
 
     def code(self, text):
         text = self.doSpecial(text, '<code>', '</code>', self.fCode)

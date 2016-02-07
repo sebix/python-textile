@@ -22,11 +22,9 @@ try:
 except ImportError:
     import re
     from sys import maxunicode
-    if not six.PY2:
-        xrange = range
-        unichr = chr
-    upper_re_s = "".join([unichr(c) for c in xrange(maxunicode) if unichr(
-        c).isupper()])
+    upper_re_s = "".join(
+            [six.unichr(c) for c in six.moves.range(maxunicode) if six.unichr(
+                c).isupper()])
     regex_snippets = {
         'acr': r'{0}0-9'.format(upper_re_s),
         'abr': r'{0}'.format(upper_re_s),

@@ -6,17 +6,9 @@ try:
 except ImportError:
     import re
 
-try:
-    # Python 3
-    from urllib.parse import urlparse
-    from html.parser import HTMLParser
-    xrange = range
-    unichr = chr
-    unicode = str
-except ImportError:
-    # Python 2
-    from urlparse import urlparse
-    from HTMLParser import HTMLParser
+from six.moves import urllib, html_parser
+urlparse = urllib.parse.urlparse
+HTMLParser = html_parser.HTMLParser
 
 try:
     from collections import OrderedDict
@@ -28,48 +20,15 @@ from xml.etree import ElementTree
 from textile.regex_strings import valign_re_s, halign_re_s
 
 
-def normalize_newlines(string):
-    out = string.strip()
-    out = re.sub(r'\r\n', '\n', out)
-    out = re.sub(r'\n{3,}', '\n\n', out)
-    out = re.sub(r'\n\s*\n', '\n\n', out)
-    out = re.sub(r'"$', '" ', out)
-    return out
-
-def has_raw_text(text):
-    """checks whether the text has text not already enclosed by a block tag"""
-    # The php version has orders the below list of tags differently.  The
-    # important thing to note here is that the pre must occur before the p or
-    # else the regex module doesn't properly match pre-s. It only matches the
-    # p in pre.
-    r = re.compile(r'<(pre|p|blockquote|div|form|table|ul|ol|dl|h[1-6])[^>]*?>.*</\1>',
-                   re.S).sub('', text.strip()).strip()
-    r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
-    return '' != r
-
-def list_type(list_string):
-    listtypes = {
-        list_string.startswith('*'): 'u',
-        list_string.startswith('#'): 'o',
-        (not list_string.startswith('*') and not list_string.startswith('#')):
-        'd'
-    }
-    return listtypes.get(True, False)
-
-def is_rel_url(url):
-    """Identify relative urls."""
-    (scheme, netloc) = urlparse(url)[0:2]
-    return not scheme and not netloc
-
-def encode_high(text):
-    """Encode the text so that it is an appropriate HTML entity."""
-    return ord(text)
-
 def decode_high(text):
     """Decode encoded HTML entities."""
     h = HTMLParser()
     text = '&#{0};'.format(text)
     return h.unescape(text)
+
+def encode_high(text):
+    """Encode the text so that it is an appropriate HTML entity."""
+    return ord(text)
 
 def encode_html(text, quotes=True):
     """Return text that's safe for an HTML attribute."""
@@ -88,23 +47,49 @@ def encode_html(text, quotes=True):
 
 def generate_tag(tag, content, attributes=None):
     """Generate a complete html tag using the ElementTree module.  tag and
-    content are strings, the attributes argument is a dictionary."""
+    content are strings, the attributes argument is a dictionary.  As
+    a convenience, if the content is ' /', a self-closing tag is generated."""
     content = six.text_type(content)
     element = ElementTree.Element(tag, attrib=attributes)
     enc = 'unicode'
     if six.PY2:
         enc = 'UTF-8'
-    element_tag = ElementTree.tostring(element, encoding=enc, method='html')
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
     # adding text by assigning it to a.text.  That results in non-ascii text
     # being html-entity encoded.  Not bad, but not entirely matching
     # php-textile either.
-    #
-    # I thought I had found a fancy solution, using ElementTree.tostringlist,
-    # but it fails differently on different platforms.
-    element_tag = re.sub(r'</\w+>$', '', six.text_type(element_tag))
-    element_text = six.text_type('{0}{1}</{2}>').format(six.text_type(element_tag), content, tag)
+    try:
+        element_tag = ElementTree.tostringlist(element, encoding=enc,
+                method='html')
+        element_tag.insert(len(element_tag) - 1, content)
+        element_text = ''.join(element_tag)
+    except AttributeError:
+        # Python 2.6 doesn't have the tostringlist method, so we have to treat
+        # it different.
+        element_tag = ElementTree.tostring(element, encoding=enc)
+        element_text = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n",
+                '', element_tag)
+        if content != six.text_type(' /'):
+            element_text = element_text.rstrip(' />')
+            element_text = six.text_type('{0}>{1}</{2}>').format(six.text_type(
+                element_text), content, tag)
     return element_text
+
+def has_raw_text(text):
+    """checks whether the text has text not already enclosed by a block tag"""
+    # The php version has orders the below list of tags differently.  The
+    # important thing to note here is that the pre must occur before the p or
+    # else the regex module doesn't properly match pre-s. It only matches the
+    # p in pre.
+    r = re.compile(r'<(pre|p|blockquote|div|form|table|ul|ol|dl|h[1-6])[^>]*?>.*</\1>',
+                   re.S).sub('', text.strip()).strip()
+    r = re.compile(r'<(hr|br)[^>]*?/>').sub('', r)
+    return '' != r
+
+def is_rel_url(url):
+    """Identify relative urls."""
+    (scheme, netloc) = urlparse(url)[0:2]
+    return not scheme and not netloc
 
 def is_valid_url(url):
     parsed = urlparse(url)
@@ -112,13 +97,22 @@ def is_valid_url(url):
         return True
     return False
 
-def pba(block_attributes, element=None, include_id=True):
-    """Parse block attributes."""
-    attrs = parse_attributes(block_attributes, element, include_id)
-    if not attrs:
-        return ''
-    result = ' '.join(['{0}="{1}"'.format(k, v) for k, v in attrs.items()])
-    return ' {0}'.format(result)
+def list_type(list_string):
+    listtypes = {
+        list_string.startswith('*'): 'u',
+        list_string.startswith('#'): 'o',
+        (not list_string.startswith('*') and not list_string.startswith('#')):
+        'd'
+    }
+    return listtypes.get(True, False)
+
+def normalize_newlines(string):
+    out = string.strip()
+    out = re.sub(r'\r\n', '\n', out)
+    out = re.sub(r'\n{3,}', '\n\n', out)
+    out = re.sub(r'\n\s*\n', '\n\n', out)
+    out = re.sub(r'"$', '" ', out)
+    return out
 
 def parse_attributes(block_attributes, element=None, include_id=True):
     vAlign = {'^': 'top', '-': 'middle', '~': 'bottom'}
@@ -190,6 +184,9 @@ def parse_attributes(block_attributes, element=None, include_id=True):
         csp = re.match(pattern, matched)
         span, width = csp.groups()
 
+    if colspan:
+        result['colspan'] = colspan
+
     if style:
         # Previous splits that created style may have introduced extra
         # whitespace into the list elements.  Clean it up.
@@ -201,8 +198,6 @@ def parse_attributes(block_attributes, element=None, include_id=True):
         result['id'] = block_id
     if lang:
         result['lang'] = lang
-    if colspan:
-        result['colspan'] = colspan
     if rowspan:
         result['rowspan'] = rowspan
     if span:
@@ -210,3 +205,11 @@ def parse_attributes(block_attributes, element=None, include_id=True):
     if width:
         result['width'] = width
     return result
+
+def pba(block_attributes, element=None, include_id=True):
+    """Parse block attributes."""
+    attrs = parse_attributes(block_attributes, element, include_id)
+    if not attrs:
+        return ''
+    result = ' '.join(['{0}="{1}"'.format(k, v) for k, v in attrs.items()])
+    return ' {0}'.format(result)
