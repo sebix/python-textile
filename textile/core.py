@@ -996,7 +996,8 @@ class Textile(object):
         # remaining closing square brackets will later be tested for balance
         if (counts[']']):
             m = re.search('(?P<url>^.*\])(?P<tight>\[.*?)$', url, flags=re.U)
-            url, tight = m.groups()
+            if m:
+                url, tight = m.groups()
 
         # Split off any trailing text that isn't part of an array assignment.
         # eg. "text":...?q[]=value1&q[]=value2 ... is ok
