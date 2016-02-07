@@ -397,10 +397,9 @@ class Textile(object):
                     a_pattern = r'(?P<space>{0}*)(?P<cell>.*)'.format(
                             regex_snippets['space'])
                     a = re.search(a_pattern, cell, flags=re.S)
-                    if a:
-                        cell = self.redcloth_list(a.group('cell'))
-                        cell = self.textileLists(cell)
-                        cell = '{0}{1}'.format(a.group('space'), cell)
+                    cell = self.redcloth_list(a.group('cell'))
+                    cell = self.textileLists(cell)
+                    cell = '{0}{1}'.format(a.group('space'), cell)
 
                 # row.split() gives us ['', 'cell 1 contents', '...']
                 # so we ignore the first cell.
@@ -408,9 +407,8 @@ class Textile(object):
                     cline_tag = generate_tag(ctag, cell, cell_atts)
                     cells.append(self.doTagBr(ctag, cline_tag))
 
-            if cells:
-                cell_tag_string = '\n\t\t\t{0}\n\t\t'.format('\n\t\t\t'.join(
-                    cells))
+            cell_tag_string = '\n\t\t\t{0}\n\t\t'.format('\n\t\t\t'.join(
+                cells))
 
             row_tag = generate_tag('tr', cell_tag_string, row_atts)
             rows.append(row_tag)
@@ -461,87 +459,86 @@ class Textile(object):
 
             m = re.search(r"^([#*;:]+)(_|\d+)?({0})[ .](.*)$".format(cls_re_s),
                     line, re.S)
-            if m:
-                tl, start, atts, content = m.groups()
-                content = content.strip()
-                nl = ''
-                ltype = list_type(tl)
-                if ';' in tl:
-                    litem = 'dt'
-                elif ':' in tl:
-                    litem = 'dd'
-                else:
-                    litem = 'li'
+            tl, start, atts, content = m.groups()
+            content = content.strip()
+            nl = ''
+            ltype = list_type(tl)
+            if ';' in tl:
+                litem = 'dt'
+            elif ':' in tl:
+                litem = 'dd'
+            else:
+                litem = 'li'
 
-                showitem = len(content) > 0
+            showitem = len(content) > 0
 
-                # handle list continuation/start attribute on ordered lists
-                if ltype == 'o':
-                    if not hasattr(self, 'olstarts'):
-                        self.olstarts = {tl: 1}
+            # handle list continuation/start attribute on ordered lists
+            if ltype == 'o':
+                if not hasattr(self, 'olstarts'):
+                    self.olstarts = {tl: 1}
 
-                    # does the first line of this ol have a start attribute
-                    if len(tl) > len(pt):
-                        # no, set it to 1
-                        if start is None:
-                            self.olstarts[tl] = 1
-                        # yes, set it to the given number
-                        elif start != '_':
-                            self.olstarts[tl] = int(start)
-                        # we won't need to handle the '_' case, we'll just
-                        # print out the number when it's needed
+                # does the first line of this ol have a start attribute
+                if len(tl) > len(pt):
+                    # no, set it to 1
+                    if start is None:
+                        self.olstarts[tl] = 1
+                    # yes, set it to the given number
+                    elif start != '_':
+                        self.olstarts[tl] = int(start)
+                    # we won't need to handle the '_' case, we'll just
+                    # print out the number when it's needed
 
-                    # put together the start attribute if needed
-                    if len(tl) > len(pt) and start is not None:
-                        start = ' start="{0}"'.format(self.olstarts[tl])
+                # put together the start attribute if needed
+                if len(tl) > len(pt) and start is not None:
+                    start = ' start="{0}"'.format(self.olstarts[tl])
 
-                    # This will only increment the count for list items, not
-                    # definition items
-                    if showitem:
-                        self.olstarts[tl] = self.olstarts[tl] + 1
+                # This will only increment the count for list items, not
+                # definition items
+                if showitem:
+                    self.olstarts[tl] = self.olstarts[tl] + 1
 
-                nm = re.match("^([#\*;:]+)(_|[\d]+)?{0}[ .].*".format(
-                    cls_re_s), nextline)
-                if nm:
-                    nl = nm.group(1)
+            nm = re.match("^([#\*;:]+)(_|[\d]+)?{0}[ .].*".format(
+                cls_re_s), nextline)
+            if nm:
+                nl = nm.group(1)
 
-                # We need to handle nested definition lists differently.  If
-                # the next tag is a dt (';') of a lower nested level than the
-                # current dd (':'),
-                if ';' in pt and ':' in tl:
-                    ls[tl] = 2
+            # We need to handle nested definition lists differently.  If
+            # the next tag is a dt (';') of a lower nested level than the
+            # current dd (':'),
+            if ';' in pt and ':' in tl:
+                ls[tl] = 2
 
-                atts = pba(atts)
-                # If start is still None, set it to '', else leave the value
-                # that we've already formatted.
-                start = start or ''
+            atts = pba(atts)
+            # If start is still None, set it to '', else leave the value
+            # that we've already formatted.
+            start = start or ''
 
-                # if this item tag isn't in the list, create a new list and
-                # item, else just create the item
-                if tl not in ls:
-                    ls[tl] = 1
-                    itemtag = ("\n\t\t<{0}>{1}".format(litem, content) if
-                               showitem else '')
-                    line = "\t<{0}l{1}{2}>{3}".format(ltype, atts, start,
-                            itemtag)
-                else:
-                    line = ("\t\t<{0}{1}>{2}".format(litem, atts, content) if
-                            showitem else '')
+            # if this item tag isn't in the list, create a new list and
+            # item, else just create the item
+            if tl not in ls:
+                ls[tl] = 1
+                itemtag = ("\n\t\t<{0}>{1}".format(litem, content) if
+                           showitem else '')
+                line = "\t<{0}l{1}{2}>{3}".format(ltype, atts, start,
+                        itemtag)
+            else:
+                line = ("\t\t<{0}{1}>{2}".format(litem, atts, content) if
+                        showitem else '')
 
-                if len(nl) <= len(tl):
-                    if showitem:
+            if len(nl) <= len(tl):
+                if showitem:
+                    line = "{0}</{1}>".format(line, litem)
+            # work backward through the list closing nested lists/items
+            for k, v in reversed(list(ls.items())):
+                if len(k) > len(nl):
+                    if v != 2:
+                        line = "{0}\n\t</{1}l>".format(line, list_type(k))
+                    if len(k) > 1 and v != 2:
                         line = "{0}</{1}>".format(line, litem)
-                # work backward through the list closing nested lists/items
-                for k, v in reversed(list(ls.items())):
-                    if len(k) > len(nl):
-                        if v != 2:
-                            line = "{0}\n\t</{1}l>".format(line, list_type(k))
-                        if len(k) > 1 and v != 2:
-                            line = "{0}</{1}>".format(line, litem)
-                        del ls[k]
+                    del ls[k]
 
-                # Remember the current Textile tag
-                pt = tl
+            # Remember the current Textile tag
+            pt = tl
 
             # This else exists in the original php version.  I'm not sure how
             # to come up with a case where the line would not match.  I think
