@@ -996,8 +996,7 @@ class Textile(object):
         # remaining closing square brackets will later be tested for balance
         if (counts[']']):
             m = re.search('(?P<url>^.*\])(?P<tight>\[.*?)$', url, flags=re.U)
-            if m:
-                url, tight = m.groups()
+            url, tight = m.groups()
 
         # Split off any trailing text that isn't part of an array assignment.
         # eg. "text":...?q[]=value1&q[]=value2 ... is ok
@@ -1006,9 +1005,8 @@ class Textile(object):
         # balance
         if (counts[']']):
             m = re.search(r'(?P<url>^.*\])(?!=)(?P<end>.*?)$', url, flags=re.U)
-            if m:
-                url = m.group('url')
-                tight = '{0}{1}'.format(m.group('end'), tight)
+            url = m.group('url')
+            tight = '{0}{1}'.format(m.group('end'), tight)
 
         # Now we have the array of all the multi-byte chars in the url we will
         # parse the  uri backwards and pop off  any chars that don't belong
@@ -1296,8 +1294,7 @@ class Textile(object):
 
     def fCode(self, match):
         before, text, after = match.groups()
-        if after is None:
-            after = ''
+        after = after or ''
         # text needs to be escaped
         if not self.restricted:
             text = encode_html(text, quotes=False)
