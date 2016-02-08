@@ -109,7 +109,7 @@ class Textile(object):
         self.block_tags = block_tags
 
         cur = r''
-        if regex_snippets['cur']:
+        if regex_snippets['cur']: # pragma: no branch
             cur = r'(?:[{0}]{1}*)?'.format(regex_snippets['cur'],
                     regex_snippets['space'])
 
@@ -302,7 +302,7 @@ class Textile(object):
         rows = []
         groups = []
         enc = 'unicode'
-        if six.PY2:
+        if six.PY2: # pragma: no branch
             enc = 'UTF-8'
         split = re.split(r'\|\s*?$', match.group('rows'), flags=re.M)
         for row in [x for x in split if x]:
@@ -882,7 +882,7 @@ class Textile(object):
                 linkparts = []
                 i = 0
 
-                while balanced is not 0 or i is 0:
+                while balanced is not 0 or i is 0: # pragma: no branch
                     # Starting at the end, pop off the previous part of the
                     # slice's fragments.
 
@@ -1031,18 +1031,17 @@ class Textile(object):
             urlLeft = ''.join(url_chars)
 
             m = re.search(r'(?P<url_chars>.*)(?P<tag><\/[a-z]+)$', urlLeft)
-            if m:
-                url_chars = m.group('url_chars')
-                pop = '{0}{1}{2}'.format(m.group('tag'), c, pop)
-                popped = True
+            url_chars = m.group('url_chars')
+            pop = '{0}{1}{2}'.format(m.group('tag'), c, pop)
+            popped = True
             return pop, popped, url_chars, counts, pre
 
         def _closingsquarebracket(c, pop, popped, url_chars, counts, pre):
             """If we find a closing square bracket we are going to see if it is
             balanced.  If it is balanced with matching opening bracket then it
             is part of the URL else we spit it back out of the URL."""
-            if counts['['] is None:
-                counts['['] = url.count('[')
+            # If counts['['] is None, count the occurrences of '[' 
+            counts['['] = counts['['] or url.count('[')
 
             if counts['['] == counts[']']:
                 # It is balanced, so keep it
@@ -1058,7 +1057,7 @@ class Textile(object):
             return pop, popped, url_chars, counts, pre
 
         def _closingparenthesis(c, pop, popped, url_chars, counts, pre):
-            if counts[')'] is None:
+            if counts[')'] is None: # pragma: no branch
                 counts['('] = url.count('(')
                 counts[')'] = url.count(')')
 
@@ -1083,7 +1082,7 @@ class Textile(object):
                 ']': _closingsquarebracket,
                 ')': _closingparenthesis,
                 }
-        for c in url_chars[-1::-1]:
+        for c in url_chars[-1::-1]: # pragma: no branch
             popped = False
             pop, popped, url_chars, counts, pre = cases.get(c,
                     _casesdefault)(c, pop, popped, url_chars, counts, pre)
@@ -1408,7 +1407,7 @@ class Textile(object):
                 else:
                     self.unreferencedNotes[label] = info
 
-            if o:
+            if o: # pragma: no branch
                 # sort o by key
                 o = OrderedDict(sorted(o.items(), key=lambda t: t[0]))
             self.notes = o
