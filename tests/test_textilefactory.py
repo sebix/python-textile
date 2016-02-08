@@ -12,6 +12,11 @@ def test_TextileFactory():
     expect = '\t<p>more text here</p>'
     assert result == expect
 
+    f = textilefactory.TextileFactory(noimage=True)
+    result = f.process("this covers a partial branch.")
+    expect = '\t<p>this covers a partial branch.</p>'
+    assert result == expect
+
     # Certain parameter values are not permitted because they are illogical:
 
     with pytest.raises(ValueError) as ve:
