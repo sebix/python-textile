@@ -1052,7 +1052,7 @@ class Textile(object):
                 popped = True
                 url_chars.pop()
                 counts[']'] = counts[']'] - 1;
-                if first:
+                if first: # pragma: no branch
                     pre = ''
             return pop, popped, url_chars, counts, pre
 
@@ -1108,7 +1108,7 @@ class Textile(object):
         text = text.strip()
         title = encode_html(title)
 
-        if not self.noimage:
+        if not self.noimage: # pragma: no branch
             text = self.image(text)
         text = self.span(text)
         text = self.glyphs(text)
