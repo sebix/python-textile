@@ -10,3 +10,10 @@ def test_span():
     result = t.span('%:http://domain.tld test%')
     expect = '<span cite="http://domain.tld">test</span>'
     assert result == expect
+
+    t = Textile()
+    # cover the partial branch where we exceed the max_span_depth.
+    t.max_span_depth = 2
+    result = t.span('_-*test*-_')
+    expect = '<em><del>*test*</del></em>'
+    assert result == expect
