@@ -891,9 +891,9 @@ class Textile(object):
 
                     if len(possibility) > 0:
                         # did this part inc or dec the balanced count?
-                        if re.search(r'^\S|=$', possibility, flags=re.U):
+                        if re.search(r'^\S|=$', possibility, flags=re.U): # pragma: no branch
                             balanced = balanced - 1
-                        if re.search(r'\S$', possibility, flags=re.U):
+                        if re.search(r'\S$', possibility, flags=re.U): # pragma: no branch
                             balanced = balanced + 1
                         possibility = possible_start_quotes.pop()
                     else:
