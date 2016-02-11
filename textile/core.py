@@ -1319,7 +1319,7 @@ class Textile(object):
 
     def fTextile(self, match):
         before, notextile, after = match.groups()
-        if after is None:
+        if after is None: # pragma: no branch
             after = ''
         return ''.join([before, self.shelve(notextile), after])
 
