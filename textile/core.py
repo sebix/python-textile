@@ -1296,8 +1296,7 @@ class Textile(object):
         before, text, after = match.groups()
         after = after or ''
         # text needs to be escaped
-        if not self.restricted:
-            text = encode_html(text, quotes=False)
+        text = encode_html(text, quotes=False)
         return ''.join([before, self.shelve('<code>{0}</code>'.format(text)), after])
 
     def fPre(self, match):
@@ -1305,8 +1304,7 @@ class Textile(object):
         if after is None:
             after = ''
         # text needs to be escaped
-        if not self.restricted:
-            text = encode_html(text)
+        text = encode_html(text)
         return ''.join([before, '<pre>', self.shelve(text), '</pre>', after])
 
     def doSpecial(self, text, start, end, method):
