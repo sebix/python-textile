@@ -1421,9 +1421,9 @@ class Textile(object):
         index = '{0}{1}{2}'.format(g_links, extras, start_char)
         result = ''
 
-        if index not in self.notelist_cache:
+        if index not in self.notelist_cache: # pragma: no branch
             o = []
-            if self.notes:
+            if self.notes: # pragma: no branch
                 for seq, info in self.notes.items():
                     links = self.makeBackrefLink(info, g_links, start_char)
                     atts = ''
@@ -1440,16 +1440,14 @@ class Textile(object):
                     o.append(li)
             if '+' == extras and self.unreferencedNotes:
                 for seq, info in self.unreferencedNotes.items():
-                    if info['def']:
-                        atts = info['def']['atts']
-                        content = info['def']['content']
-                        li = '\t\t<li{0}>{1}</li>'.format(atts, content)
+                    atts = info['def']['atts']
+                    content = info['def']['content']
+                    li = '\t\t<li{0}>{1}</li>'.format(atts, content)
                     o.append(li)
             self.notelist_cache[index] = "\n".join(o)
             result = self.notelist_cache[index]
-        if result:
-            list_atts = pba(att)
-            result = '<ol{0}>\n{1}\n\t</ol>'.format(list_atts, result)
+        list_atts = pba(att)
+        result = '<ol{0}>\n{1}\n\t</ol>'.format(list_atts, result)
         return result
 
     def makeBackrefLink(self, info, g_links, i):
