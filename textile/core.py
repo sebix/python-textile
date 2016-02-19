@@ -1490,7 +1490,7 @@ class Textile(object):
                 self._increment_link_index())}
 
         # Ignores subsequent defs using the same label
-        if 'def' not in self.notes[label]:
+        if 'def' not in self.notes[label]: # pragma: no branch
             self.notes[label]['def'] = {'atts': pba(att), 'content':
                     self.graf(content), 'link': link}
         return ''
