@@ -457,18 +457,14 @@ class Textile(object):
             except IndexError:
                 nextline = ''
 
-            m = re.search(r"^([#*;:]+)(_|\d+)?({0})[ .](.*)$".format(cls_re_s),
-                    line, re.S)
+            m = re.search(r"^(?P<tl>[#*;:]+)(?P<st>_|\d+)?(?P<atts>{0})[ .]"
+                    "(?P<content>.*)$".format(cls_re_s), line, re.S)
             tl, start, atts, content = m.groups()
             content = content.strip()
             nl = ''
             ltype = list_type(tl)
-            if ';' in tl:
-                litem = 'dt'
-            elif ':' in tl:
-                litem = 'dd'
-            else:
-                litem = 'li'
+            tl_tags = {';': 'dt', ':': 'dd'}
+            litem = tl_tags.get(tl[0], 'li')
 
             showitem = len(content) > 0
 
