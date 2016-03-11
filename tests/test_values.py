@@ -104,15 +104,13 @@ xhtml_known_values = (
      '\t<ol>\n\t\t<li>A first item</li>\n\t\t<li>A second item</li>\n\t\t<li>A third</li>\n\t</ol>'),
 
     ('# Fuel could be:\n## Coal\n## Gasoline\n## Electricity\n# Humans need only:\n## Water\n## Protein',
-     '\t<ol>\n\t\t<li>Fuel could be:\n\t<ol>\n\t\t<li>Coal</li>\n\t\t<li>Gasoline</li>\n\t\t<li>Electricity</li>\n\t</ol></li>\n\t\t'
-     '<li>Humans need only:\n\t<ol>\n\t\t<li>Water</li>\n\t\t<li>Protein</li>\n\t</ol></li>\n\t</ol>'),
+     '\t<ol>\n\t\t<li>Fuel could be:\n\t\t<ol>\n\t\t\t<li>Coal</li>\n\t\t\t<li>Gasoline</li>\n\t\t\t<li>Electricity</li>\n\t\t</ol></li>\n\t\t<li>Humans need only:\n\t\t<ol>\n\t\t\t<li>Water</li>\n\t\t\t<li>Protein</li>\n\t\t</ol></li>\n\t\t</ol>'),
 
     ('* A first item\n* A second item\n* A third',
      '\t<ul>\n\t\t<li>A first item</li>\n\t\t<li>A second item</li>\n\t\t<li>A third</li>\n\t</ul>'),
 
     ('* Fuel could be:\n** Coal\n** Gasoline\n** Electricity\n* Humans need only:\n** Water\n** Protein',
-     '\t<ul>\n\t\t<li>Fuel could be:\n\t<ul>\n\t\t<li>Coal</li>\n\t\t<li>Gasoline</li>\n\t\t<li>Electricity</li>\n\t</ul></li>\n\t\t'
-     '<li>Humans need only:\n\t<ul>\n\t\t<li>Water</li>\n\t\t<li>Protein</li>\n\t</ul></li>\n\t</ul>'),
+     '\t<ul>\n\t\t<li>Fuel could be:\n\t\t<ul>\n\t\t\t<li>Coal</li>\n\t\t\t<li>Gasoline</li>\n\t\t\t<li>Electricity</li>\n\t\t</ul></li>\n\t\t<li>Humans need only:\n\t\t<ul>\n\t\t\t<li>Water</li>\n\t\t\t<li>Protein</li>\n\t\t</ul></li>\n\t\t</ul>'),
 
     ('I searched "Google":http://google.com.', '\t<p>I searched <a href="http://google.com">Google</a>.</p>'),
 
@@ -167,9 +165,7 @@ xhtml_known_values = (
      '\t<p><img alt="" src="http://render.mathim.com/A%5EtAx%20%3D%20A%5Et%28Ax%29." /></p>'),
 
     ('* Point one\n* Point two\n## Step 1\n## Step 2\n## Step 3\n* Point three\n** Sub point 1\n** Sub point 2',
-     '\t<ul>\n\t\t<li>Point one</li>\n\t\t<li>Point two\n\t<ol>\n\t\t<li>Step 1</li>\n\t\t<li>Step 2</li>\n\t\t'
-     '<li>Step 3</li>\n\t</ol></li>\n\t\t<li>Point three\n\t<ul>\n\t\t<li>Sub point 1</li>\n\t\t'
-     '<li>Sub point 2</li>\n\t</ul></li>\n\t</ul>'),
+     '\t<ul>\n\t\t<li>Point one</li>\n\t\t<li>Point two\n\t\t<ol>\n\t\t\t<li>Step 1</li>\n\t\t\t<li>Step 2</li>\n\t\t\t<li>Step 3</li>\n\t\t</ol></li>\n\t\t<li>Point three\n\t\t<ul>\n\t\t\t<li>Sub point 1</li>\n\t\t\t<li>Sub point 2</li>\n\t\t</ul></li>\n\t\t</ul>'),
 
     ('@array[4] = 8@', '\t<p><code>array[4] = 8</code></p>'),
 
@@ -238,7 +234,7 @@ xhtml_known_values = (
     ("""#_(first#list) one\n# two\n# three\n\ntest\n\n#(ordered#list2).\n# one\n# two\n# three\n\ntest\n\n#_(class_4).\n# four\n# five\n# six\n\ntest\n\n#_ seven\n# eight\n# nine\n\ntest\n\n# one\n# two\n# three\n\ntest\n\n#22 22\n# 23\n# 24""",
      """\t<ol class="first" id="list" start="1">\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol class="ordered" id="list2">\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol class="class_4" start="4">\n\t\t<li>four</li>\n\t\t<li>five</li>\n\t\t<li>six</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol start="7">\n\t\t<li>seven</li>\n\t\t<li>eight</li>\n\t\t<li>nine</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol>\n\t\t<li>one</li>\n\t\t<li>two</li>\n\t\t<li>three</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol start="22">\n\t\t<li>22</li>\n\t\t<li>23</li>\n\t\t<li>24</li>\n\t</ol>"""),
     ("""# one\n##3 one.three\n## one.four\n## one.five\n# two\n\ntest\n\n#_(continuation#section2).\n# three\n# four\n##_ four.six\n## four.seven\n# five\n\ntest\n\n#21 twenty-one\n# twenty-two""",
-     """\t<ol>\n\t\t<li>one\n\t<ol start="3">\n\t\t<li>one.three</li>\n\t\t<li>one.four</li>\n\t\t<li>one.five</li>\n\t</ol></li>\n\t\t<li>two</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol class="continuation" id="section2" start="3">\n\t\t<li>three</li>\n\t\t<li>four\n\t<ol start="6">\n\t\t<li>four.six</li>\n\t\t<li>four.seven</li>\n\t</ol></li>\n\t\t<li>five</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol start="21">\n\t\t<li>twenty-one</li>\n\t\t<li>twenty-two</li>\n\t</ol>"""),
+     """\t<ol>\n\t\t<li>one\n\t\t<ol start="3">\n\t\t\t<li>one.three</li>\n\t\t\t<li>one.four</li>\n\t\t\t<li>one.five</li>\n\t\t</ol></li>\n\t\t<li>two</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol class="continuation" id="section2" start="3">\n\t\t<li>three</li>\n\t\t<li>four\n\t\t<ol start="6">\n\t\t\t<li>four.six</li>\n\t\t\t<li>four.seven</li>\n\t\t</ol></li>\n\t\t<li>five</li>\n\t</ol>\n\n\t<p>test</p>\n\n\t<ol start="21">\n\t\t<li>twenty-one</li>\n\t\t<li>twenty-two</li>\n\t</ol>"""),
     ("""|* Foo[^2^]\n* _bar_\n* ~baz~ |\n|#4 *Four*\n# __Five__ |\n|-(hot) coffee := Hot and black\n-(hot#tea) tea := Also hot, but a little less black\n-(cold) milk :=\nNourishing beverage for baby cows.\nCold drink that goes great with cookies. =:\n|""",
      """\t<table>\n\t\t<tr>\n\t\t\t<td>\t<ul>\n\t\t<li>Foo<sup>2</sup></li>\n\t\t<li><em>bar</em></li>\n\t\t<li><sub>baz</sub></li>\n\t</ul></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td>\t<ol start="4">\n\t\t<li><strong>Four</strong></li>\n\t\t<li><i>Five</i></li>\n\t</ol></td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td><dl>\n\t<dt class="hot">coffee</dt>\n\t<dd>Hot and black</dd>\n\t<dt class="hot" id="tea">tea</dt>\n\t<dd>Also hot, but a little less black</dd>\n\t<dt class="cold">milk</dt>\n\t<dd><p>Nourishing beverage for baby cows.<br />\nCold drink that goes great with cookies.</p></dd><br />\n</dl></td>\n\t\t</tr>\n\t</table>"""),
     ("""h4. A more complicated table\n\ntable(tableclass#tableid){color:blue}.\n|_. table |_. more |_. badass |\n|\\3. Horizontal span of 3|\n(firstrow). |first|HAL(open the pod bay doors)|1|\n|some|{color:green}. styled|content|\n|/2. spans 2 rows|this is|quite a|\n| deep test | don't you think?|\n(lastrow). |fifth|I'm a lumberjack|5|\n|sixth| _*bold italics*_ |6|""",
@@ -248,7 +244,7 @@ xhtml_known_values = (
     ("""|_. attribute list |\n|<. align left |\n|>. align right|\n|=. center |\n|<>. justify me|\n|^. valign top |\n|~. bottom |""",
      """\t<table>\n\t\t<tr>\n\t\t\t<th>attribute list </th>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="text-align:left;">align left </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="text-align:right;">align right</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="text-align:center;">center </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="text-align:justify;">justify me</td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="vertical-align:top;">valign top </td>\n\t\t</tr>\n\t\t<tr>\n\t\t\t<td style="vertical-align:bottom;">bottom </td>\n\t\t</tr>\n\t</table>"""),
     ("""h2. A definition list\n\n;(class#id) Term 1\n: Def 1\n: Def 2\n: Def 3\n;; Center\n;; NATO(Why Em Cee Ayy)\n:: Subdef 1\n:: Subdef 2\n;;; SubSub Term\n::: SubSub Def 1\n::: SubSub Def 2\n::: Subsub Def 3\nWith newline\n::: Subsub Def 4\n:: Subdef 3\n: DEF 4\n; Term 2\n: Another def\n: And another\n: One more\n:: A def without a term\n:: More defness\n; Third term for good measure\n: My definition of a boombastic jazz""",
-     """\t<h2>A definition list</h2>\n\n\t<dl class="class" id="id">\n\t\t<dt>Term 1</dt>\n\t\t<dd>Def 1</dd>\n\t\t<dd>Def 2</dd>\n\t\t<dd>Def 3\n\t<dl>\n\t\t<dt>Center</dt>\n\t\t<dt><acronym title="Why Em Cee Ayy"><span class="caps">NATO</span></acronym></dt>\n\t\t<dd>Subdef 1</dd>\n\t\t<dd>Subdef 2\n\t<dl>\n\t\t<dt>SubSub Term</dt>\n\t\t<dd>SubSub Def 1</dd>\n\t\t<dd>SubSub Def 2</dd>\n\t\t<dd>Subsub Def 3<br />\nWith newline</dd>\n\t\t<dd>Subsub Def 4</dd>\n\t</dl></dd>\n\t\t<dd>Subdef 3</dd>\n\t</dl></dd>\n\t\t<dd><span class="caps">DEF</span> 4</dd>\n\t\t<dt>Term 2</dt>\n\t\t<dd>Another def</dd>\n\t\t<dd>And another</dd>\n\t\t<dd>One more\n\t<dl>\n\t\t<dd>A def without a term</dd>\n\t\t<dd>More defness</dd>\n\t</dl></dd>\n\t\t<dt>Third term for good measure</dt>\n\t\t<dd>My definition of a boombastic jazz</dd>\n\t</dl>"""),
+     """\t<h2>A definition list</h2>\n\n\t<dl class="class" id="id">\n\t\t<dt>Term 1</dt>\n\t\t<dd>Def 1</dd>\n\t\t<dd>Def 2</dd>\n\t\t<dd>Def 3\n\t\t<dl>\n\t\t\t<dt>Center</dt>\n\t\t\t<dt><acronym title="Why Em Cee Ayy"><span class="caps">NATO</span></acronym></dt>\n\t\t\t<dd>Subdef 1</dd>\n\t\t\t<dd>Subdef 2\n\t\t\t<dl>\n\t\t\t\t<dt>SubSub Term</dt>\n\t\t\t\t<dd>SubSub Def 1</dd>\n\t\t\t\t<dd>SubSub Def 2</dd>\n\t\t\t\t<dd>Subsub Def 3<br />\nWith newline</dd>\n\t\t\t\t<dd>Subsub Def 4</dd>\n\t\t\t</dl></dd>\n\t\t\t<dd>Subdef 3</dd>\n\t\t</dl></dd>\n\t\t<dd><span class="caps">DEF</span> 4</dd>\n\t\t<dt>Term 2</dt>\n\t\t<dd>Another def</dd>\n\t\t<dd>And another</dd>\n\t\t<dd>One more\n\t\t<dl>\n\t\t\t<dd>A def without a term</dd>\n\t\t\t<dd>More defness</dd>\n\t\t</dl></dd>\n\t\t<dt>Third term for good measure</dt>\n\t\t<dd>My definition of a boombastic jazz</dd>\n\t</dl>"""),
     ("""###. Here's a comment.\n\nh3. Hello\n\n###. And\nanother\none.\n\nGoodbye.""", """\t<h3>Hello</h3>\n\n\t<p>Goodbye.</p>"""),
     ("""h2. A Definition list which covers the instance where a new definition list is created with a term without a definition\n\n- term :=\n- term2 := def""", """\t<h2>A Definition list which covers the instance where a new definition list is created with a term without a definition</h2>\n\n<dl>\n\t<dt>term2</dt>\n\t<dd>def</dd>\n</dl>"""),
     ('!{height:20px;width:20px;}https://1.gravatar.com/avatar/!',

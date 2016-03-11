@@ -493,10 +493,10 @@ class Textile(object):
                 if showitem:
                     self.olstarts[tl] = self.olstarts[tl] + 1
 
-            nm = re.match("^([#\*;:]+)(_|[\d]+)?{0}[ .].*".format(
-                cls_re_s), nextline)
+            nm = re.match("^(?P<nextlistitem>[#\*;:]+)(_|[\d]+)?{0}"
+                    "[ .].*".format(cls_re_s), nextline)
             if nm:
-                nl = nm.group(1)
+                nl = nm.group('nextlistitem')
 
             # We need to handle nested definition lists differently.  If
             # the next tag is a dt (';') of a lower nested level than the
@@ -505,6 +505,7 @@ class Textile(object):
                 ls[tl] = 2
 
             atts = pba(atts)
+            tabs = '\t' * len(tl)
             # If start is still None, set it to '', else leave the value
             # that we've already formatted.
             start = start or ''
@@ -513,12 +514,12 @@ class Textile(object):
             # item, else just create the item
             if tl not in ls:
                 ls[tl] = 1
-                itemtag = ("\n\t\t<{0}>{1}".format(litem, content) if
+                itemtag = ("\n{0}\t<{1}>{2}".format(tabs, litem, content) if
                            showitem else '')
-                line = "\t<{0}l{1}{2}>{3}".format(ltype, atts, start,
+                line = "{0}<{1}l{2}{3}>{4}".format(tabs, ltype, atts, start,
                         itemtag)
             else:
-                line = ("\t\t<{0}{1}>{2}".format(litem, atts, content) if
+                line = ("{0}\t<{1}{2}>{3}".format(tabs, litem, atts, content) if
                         showitem else '')
 
             if len(nl) <= len(tl):
@@ -528,7 +529,8 @@ class Textile(object):
             for k, v in reversed(list(ls.items())):
                 if len(k) > len(nl):
                     if v != 2:
-                        line = "{0}\n\t</{1}l>".format(line, list_type(k))
+                        line = "{0}\n{1}</{2}l>".format(line, tabs,
+                                list_type(k))
                     if len(k) > 1 and v != 2:
                         line = "{0}</{1}>".format(line, litem)
                     del ls[k]
