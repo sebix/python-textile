@@ -516,11 +516,11 @@ class Textile(object):
                 ls[tl] = 1
                 itemtag = ("\n{0}\t<{1}>{2}".format(tabs, litem, content) if
                            showitem else '')
-                line = "{0}<{1}l{2}{3}>{4}".format(tabs, ltype, atts, start,
-                        itemtag)
+                line = "<{0}l{1}{2}>{3}".format(ltype, atts, start, itemtag)
             else:
-                line = ("{0}\t<{1}{2}>{3}".format(tabs, litem, atts, content) if
+                line = ("\t<{0}{1}>{2}".format(litem, atts, content) if
                         showitem else '')
+            line = '{0}{1}'.format(tabs, line)
 
             if len(nl) <= len(tl):
                 if showitem:
