@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
 from textile import Textile
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 def test_block():
     t = Textile()
