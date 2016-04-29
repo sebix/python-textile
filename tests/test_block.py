@@ -1,4 +1,6 @@
+from __future__ import unicode_literals
 from textile import Textile
+from collections import OrderedDict
 
 def test_block():
     t = Textile()
@@ -7,25 +9,26 @@ def test_block():
     assert result == expect
 
     result = t.fBlock("bq", "", None, "", "Hello BlockQuote")
-    expect = ('\t<blockquote>\n', '\t\t<p>', 'Hello BlockQuote', '</p>',
-            '\n\t</blockquote>', False)
+    expect = ('blockquote', OrderedDict(), 'p', OrderedDict(),
+            'Hello BlockQuote', False)
     assert result == expect
 
     result = t.fBlock("bq", "", None, "http://google.com", "Hello BlockQuote")
     citation = '{0}1:url'.format(t.uid)
-    expect = ('\t<blockquote cite="{0}">\n'.format(citation), '\t\t<p>',
-            'Hello BlockQuote', '</p>', '\n\t</blockquote>', False)
+    expect = ('blockquote', OrderedDict([('cite',
+        '{0.uid}{0.refIndex}:url'.format(t))]), 'p', OrderedDict(),
+        'Hello BlockQuote', False)
     assert result == expect
 
     result = t.fBlock("bc", "", None, "", 'printf "Hello, World";')
     # the content of text will be turned shelved, so we'll asert only the
     # deterministic portions of the expected values, below
-    expect = ('<pre>', '<code>', 'printf "Hello, World";', '</code>', '</pre>', False)
-    assert result[0:2] == expect[0:2]
-    assert result[3:] == expect[3:]
+    expect = ('pre', OrderedDict(), 'code', OrderedDict(), 'shelve', False)
+    assert result[0:3] == expect[0:3]
+    assert result[-1] == expect[-1]
 
     result = t.fBlock("h1", "", None, "", "foobar")
-    expect = ('', '\t<h1>', 'foobar', '</h1>', '', False)
+    expect = ('h1', OrderedDict(), '', OrderedDict(), 'foobar', False)
     assert result == expect
 
 def test_block_tags_false():

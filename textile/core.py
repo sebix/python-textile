@@ -569,8 +569,6 @@ class Textile(object):
 
         tag = 'p'
         atts = cite = graf = ext = ''
-        c1 = ''
-        eat = False
 
         out = []
 
@@ -581,38 +579,43 @@ class Textile(object):
                         align_re_s, cls_re_s))
             match = re.search(pattern, line, flags=re.S | re.U)
             if match:
-                if ext:
-                    out.append('{0}{1}'.format(out.pop(), c1))
-
                 tag, atts, ext, cite, content = match.groups()
-                o1, o2, content, c2, c1, eat = self.fBlock(**match.groupdict())
+                (outer_tag, outer_atts, inner_tag, inner_atts, content,
+                        eat) = self.fBlock(**match.groupdict())
                 # leave off c1 if this block is extended,
                 # we'll close it at the start of the next block
+                inner_block = generate_tag(inner_tag, content, inner_atts)
+                if inner_tag != 'code' and not has_raw_text(inner_block):
+                    inner_block = "\n\t\t{0}\n\t".format(inner_block)
                 if ext:
-                    line = "{0}{1}{2}{3}".format(o1, o2, content, c2)
+                    line = content
                 else:
-                    line = "{0}{1}{2}{3}{4}".format(o1, o2, content, c2, c1)
+                    line = generate_tag(outer_tag, inner_block, outer_atts)
+                    if outer_tag != 'pre' and not has_raw_text(line):
+                        line = "\t{0}".format(line)
 
             else:
+                if ext:
+                    line = '{0}\n{1}'.format(out.pop(), line)
                 anon = True
                 if ext or not re.search(r'^\s', line):
-                    o1, o2, content, c2, c1, eat = self.fBlock(tag, atts, ext,
-                                                               cite, line)
-                    # skip $o1/$c1 because this is part of a continuing
-                    # extended block
+                    (outer_tag, outer_atts, inner_tag, inner_atts, content,
+                        eat) = self.fBlock(tag, atts, ext, cite, line)
+                    # skip o1/c1 because this is part of a continuing extended
+                    # block
                     if tag == 'p' and not has_raw_text(content):
                         line = content
                     else:
-                        line = "{0}{1}{2}".format(o2, content, c2)
+                        line = generate_tag(outer_tag, content, outer_atts)
+                        if outer_tag != 'pre' and not has_raw_text(line):
+                            line = "\t{0}".format(line)
                 else:
                     line = self.graf(line)
 
             line = self.doPBr(line)
             line = re.sub(r'<br>', '<br />', line)
 
-            if ext and anon:
-                out.append("{0}\n{1}".format(out.pop(), line))
-            elif not eat and line:
+            if not eat and line:
                 out.append(line)
 
             if not ext:
@@ -622,14 +625,15 @@ class Textile(object):
                 graf = ''
 
         if ext:
-            out.append('{0}{1}'.format(out.pop(), c1))
+            out.append(generate_tag(outer_tag, out.pop(), outer_atts))
         return '\n\n'.join(out)
 
     def fBlock(self, tag, atts, ext, cite, content):
         att = atts
         atts = pba(atts, include_id=not self.restricted)
-        o1 = o2 = c2 = c1 = ''
-        eat = False
+        attributes = parse_attributes(att)
+        output = {'outer_tag': '', 'inner_tag': '', 'outer_atts': OrderedDict(),
+                'inner_atts': OrderedDict(), 'content': content, 'eat': False}
 
         if tag == 'p':
             # is this an anonymous block with a note definition?
@@ -643,11 +647,14 @@ class Textile(object):
             (?P<content>.*)$                      # content""".format(
                 space=regex_snippets['space'], cls=cls_re_s),
             flags=re.X | re.U)
-            notedef = notedef_re.sub(self.fParseNoteDefs, content)
+            notedef = notedef_re.sub(self.fParseNoteDefs, output['content'])
 
             # It will be empty if the regex matched and ate it.
             if '' == notedef:
-                return o1, o2, notedef, c2, c1, True
+                output['content'] = notedef
+                return (output['outer_tag'], output['outer_atts'],
+                        output['inner_tag'], output['inner_atts'],
+                        output['content'], output['eat'])
 
         fns = re.search(r'fn(?P<fnid>{0}+)'.format(regex_snippets['digit']),
                 tag, flags=re.U)
@@ -660,65 +667,66 @@ class Textile(object):
 
             # If there is an author-specified ID goes on the wrapper & the
             # auto-id gets pushed to the <sup>
-            supp_id = ''
+            supp_id = OrderedDict()
 
             # if class has not been previously specified, set it to "footnote"
-            if atts.find('class=') < 0:
-                atts = '{0} class="footnote"'.format(atts)
+            if 'class' not in attributes:
+                attributes.update({'class': 'footnote'})
 
             # if there's no specified id, use the generated one.
-            if atts.find('id=') < 0:
-                atts = '{0} id="fn{1}"'.format(atts, fnid)
+            if 'id' not in attributes:
+                attributes.update({'id': 'fn{0}'.format(fnid)})
             else:
-                supp_id = ' id="fn{0}"'.format(fnid)
+                supp_id = parse_attributes('(#fn{0})'.format(fnid))
 
-            if att.find('^') < 0:
-                sup = self.formatFootnote(fns.group('fnid'), supp_id)
+
+            if '^' not in att:
+                sup = generate_tag('sup', fns.group('fnid'), supp_id)
             else:
-                fnrev = '<a href="#fnrev{0}">{1}</a>'.format(fnid,
-                        fns.group('fnid'))
-                sup = self.formatFootnote(fnrev, supp_id)
+                fnrev = generate_tag('a', fns.group('fnid'), {'href':
+                    '#fnrev{0}'.format(fnid)})
+                sup = generate_tag('sup', fnrev, supp_id)
 
-            content = '{0} {1}'.format(sup, content)
+            output['content'] = '{0} {1}'.format(sup, output['content'])
 
         if tag == 'bq':
             if cite:
                 cite = self.shelveURL(cite)
+                cite_att = OrderedDict(cite=cite)
                 cite = ' cite="{0}"'.format(cite)
             else:
                 cite = ''
-            o1 = "\t<blockquote{0}{1}>\n".format(cite, atts)
-            o2 = "\t\t<p{0}>".format(atts)
-            c2 = "</p>"
-            c1 = "\n\t</blockquote>"
+                cite_att = OrderedDict()
+            cite_att.update(attributes)
+            output.update({'outer_tag': 'blockquote', 'outer_atts': cite_att,
+                'inner_tag': 'p', 'inner_atts': attributes, 'eat': False})
 
         elif tag == 'bc' or tag == 'pre':
-            o1 = "<pre{0}>".format(atts)
-            o2 = c2 = ''
+            i_tag = ''
             if tag == 'bc':
-                o2 = "<code{0}>".format(atts)
-                c2 = "</code>"
-            c1 = "</pre>"
-            content = self.shelve(encode_html('{0}\n'.format(
-                content.rstrip("\n"))))
+                i_tag = 'code'
+            content = self.shelve(encode_html('{0}\n'.format( output[
+                'content'].rstrip("\n"))))
+            output = {'outer_tag': 'pre', 'outer_atts': attributes,
+                    'inner_tag': i_tag, 'inner_atts': attributes, 'content':
+                    content, 'eat': False}
 
         elif tag == 'notextile':
-            content = self.shelve(content)
-            o1 = o2 = ''
-            c1 = c2 = ''
+            output['content'] = self.shelve(output['content'])
 
         elif tag == '###':
-            eat = True
+            output['eat'] = True
 
         else:
-            o2 = "\t<{0}{1}>".format(tag, atts)
-            c2 = "</{0}>".format(tag)
+            output['outer_tag'] = tag
+            output['outer_atts'] = attributes
 
-        if not eat:
-            content = self.graf(content)
+        if not output['eat']:
+            output['content'] = self.graf(output['content'])
         else:
-            content = ''
-        return o1, o2, content, c2, c1, eat
+            output['content'] = ''
+        return (output['outer_tag'], output['outer_atts'], output['inner_tag'],
+                output['inner_atts'], output['content'], output['eat'])
 
     def formatFootnote(self, marker, atts='', anchor=True):
         if anchor:
@@ -1539,7 +1547,7 @@ class Textile(object):
         # Build the link (if any)...
         result = '<span id="noteref{0}">{1}</span>'.format(refid, num)
         if not nolink:
-            result = """<a href="#note{0}">{1}</a>""".format(labelid, result)
+            result = '<a href="#note{0}">{1}</a>'.format(labelid, result)
 
         # Build the reference...
         result = '<sup{0}>{1}</sup>'.format(atts, result)

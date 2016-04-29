@@ -89,7 +89,7 @@ xhtml_known_values = (
 
     ('h2()>. Bingo.', '\t<h2 style="padding-left:1em; padding-right:1em; text-align:right;">Bingo.</h2>'),
 
-    ('h3()>[no]{color:red}. Bingo', '\t<h3 style="color:red; padding-left:1em; padding-right:1em; text-align:right;" lang="no">Bingo</h3>'),
+    ('h3()>[no]{color:red}. Bingo', '\t<h3 lang="no" style="color:red; padding-left:1em; padding-right:1em; text-align:right;">Bingo</h3>'),
 
     ('<pre>\n<code>\na.gsub!( /</, "" )\n</code>\n</pre>',
      '<pre>\n<code>\na.gsub!( /&lt;/, "" )\n</code>\n</pre>'),
