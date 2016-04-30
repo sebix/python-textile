@@ -728,13 +728,6 @@ class Textile(object):
         return (output['outer_tag'], output['outer_atts'], output['inner_tag'],
                 output['inner_atts'], output['content'], output['eat'])
 
-    def formatFootnote(self, marker, atts='', anchor=True):
-        if anchor:
-            pattern = self.glyph_definitions['fn_foot_pattern']
-        else:
-            pattern = self.glyph_definitions['fn_ref_pattern']
-        return pattern.format(**{'atts': atts, 'marker': marker})
-
     def footnoteRef(self, text):
         # somehow php-textile gets away with not capturing the space.
         return re.compile(r'(?<=\S)\[(?P<id>{0}+)(?P<nolink>!?)\]'
@@ -742,17 +735,18 @@ class Textile(object):
                     regex_snippets['space']), re.U).sub(self.footnoteID, text)
 
     def footnoteID(self, m):
-        backref = ' class="footnote"'
+        fn_att = OrderedDict({'class': 'footnote'})
         if m.group('id') not in self.fn:
             self.fn[m.group('id')] = '{0}{1}'.format(self.linkPrefix,
                     self._increment_link_index())
             fnid = self.fn[m.group('id')]
-            backref = '{0} id="fnrev{1}"'.format(backref, fnid)
+            fn_att['id'] = 'fnrev{0}'.format(fnid)
         fnid = self.fn[m.group('id')]
-        footref = '<a href="#fn{0}">{1}</a>'.format(fnid, m.group('id'))
+        footref = generate_tag('a', m.group('id'), {'href': '#fn{0}'.format(
+            fnid)})
         if '!' == m.group('nolink'):
             footref = m.group('id')
-        footref = self.formatFootnote(footref, backref, False)
+        footref = generate_tag('sup', footref, fn_att)
         return '{0}{1}'.format(footref, m.group('space'))
 
     def glyphs(self, text):
