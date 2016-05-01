@@ -80,9 +80,6 @@ class Textile(object):
         'threequarters':      '&#190;',
         'degrees':            '&#176;',
         'plusminus':          '&#177;',
-        'fn_ref_pattern':     '<sup{atts}>{marker}</sup>',
-        'fn_foot_pattern':    '<sup{atts}>{marker}</sup>',
-        'nl_ref_pattern':     '<sup{atts}>{marker}</sup>',
     }
 
     def __init__(self, restricted=False, lite=False, noimage=False,
