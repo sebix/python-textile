@@ -569,37 +569,37 @@ class Textile(object):
 
         out = []
 
-        anon = False
         for line in text:
             pattern = (r'^(?P<tag>{0})(?P<atts>{1}{2})\.(?P<ext>\.?)'
                     r'(?::(?P<cite>\S+))? (?P<content>.*)$'.format(tre,
                         align_re_s, cls_re_s))
             match = re.search(pattern, line, flags=re.S | re.U)
+            # tag specified on this line.
             if match:
                 tag, atts, ext, cite, content = match.groups()
                 (outer_tag, outer_atts, inner_tag, inner_atts, content,
                         eat) = self.fBlock(**match.groupdict())
-                # leave off c1 if this block is extended,
-                # we'll close it at the start of the next block
                 inner_block = generate_tag(inner_tag, content, inner_atts)
+                # code tags and raw text won't be indented inside outer_tag.
                 if inner_tag != 'code' and not has_raw_text(inner_block):
                     inner_block = "\n\t\t{0}\n\t".format(inner_block)
                 if ext:
                     line = content
                 else:
                     line = generate_tag(outer_tag, inner_block, outer_atts)
+                    # pre tags and raw text won't be indented.
                     if outer_tag != 'pre' and not has_raw_text(line):
                         line = "\t{0}".format(line)
-
+            # no tag specified
             else:
+                # if we're inside an extended block, add the text from the
+                # previous extension to the front
                 if ext:
                     line = '{0}\n{1}'.format(out.pop(), line)
-                anon = True
-                if ext or not re.search(r'^\s', line):
+                whitespace = ' \t\n\r\f\v'
+                if ext or not line[0] in whitespace:
                     (outer_tag, outer_atts, inner_tag, inner_atts, content,
                         eat) = self.fBlock(tag, atts, ext, cite, line)
-                    # skip o1/c1 because this is part of a continuing extended
-                    # block
                     if tag == 'p' and not has_raw_text(content):
                         line = content
                     else:
@@ -627,7 +627,6 @@ class Textile(object):
 
     def fBlock(self, tag, atts, ext, cite, content):
         att = atts
-        atts = pba(atts, include_id=not self.restricted)
         attributes = parse_attributes(att)
         output = {'outer_tag': '', 'inner_tag': '', 'outer_atts': OrderedDict(),
                 'inner_atts': OrderedDict(), 'content': content, 'eat': False}
