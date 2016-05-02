@@ -628,8 +628,11 @@ class Textile(object):
     def fBlock(self, tag, atts, ext, cite, content):
         att = atts
         attributes = parse_attributes(att)
-        output = {'outer_tag': '', 'inner_tag': '', 'outer_atts': OrderedDict(),
-                'inner_atts': OrderedDict(), 'content': content, 'eat': False}
+        outer_tag = ''
+        inner_tag = ''
+        outer_atts = OrderedDict()
+        inner_atts = OrderedDict()
+        eat = False
 
         if tag == 'p':
             # is this an anonymous block with a note definition?
@@ -643,14 +646,13 @@ class Textile(object):
             (?P<content>.*)$                      # content""".format(
                 space=regex_snippets['space'], cls=cls_re_s),
             flags=re.X | re.U)
-            notedef = notedef_re.sub(self.fParseNoteDefs, output['content'])
+            notedef = notedef_re.sub(self.fParseNoteDefs, content)
 
             # It will be empty if the regex matched and ate it.
             if '' == notedef:
-                output['content'] = notedef
-                return (output['outer_tag'], output['outer_atts'],
-                        output['inner_tag'], output['inner_atts'],
-                        output['content'], output['eat'])
+                content = notedef
+                return (outer_tag, outer_atts, inner_tag, inner_atts, content,
+                        eat)
 
         fns = re.search(r'fn(?P<fnid>{0}+)'.format(regex_snippets['digit']),
                 tag, flags=re.U)
@@ -683,7 +685,7 @@ class Textile(object):
                     '#fnrev{0}'.format(fnid)})
                 sup = generate_tag('sup', fnrev, supp_id)
 
-            output['content'] = '{0} {1}'.format(sup, output['content'])
+            content = '{0} {1}'.format(sup, content)
 
         if tag == 'bq':
             if cite:
@@ -694,35 +696,39 @@ class Textile(object):
                 cite = ''
                 cite_att = OrderedDict()
             cite_att.update(attributes)
-            output.update({'outer_tag': 'blockquote', 'outer_atts': cite_att,
-                'inner_tag': 'p', 'inner_atts': attributes, 'eat': False})
+            outer_tag = 'blockquote'
+            outer_atts = cite_att
+            inner_tag = 'p'
+            inner_atts = attributes
+            eat = False
 
         elif tag == 'bc' or tag == 'pre':
             i_tag = ''
             if tag == 'bc':
                 i_tag = 'code'
-            content = self.shelve(encode_html('{0}\n'.format( output[
-                'content'].rstrip("\n"))))
-            output = {'outer_tag': 'pre', 'outer_atts': attributes,
-                    'inner_tag': i_tag, 'inner_atts': attributes, 'content':
-                    content, 'eat': False}
+            content = self.shelve(encode_html('{0}\n'.format(
+                content.rstrip("\n"))))
+            outer_tag = 'pre'
+            outer_atts = attributes
+            inner_tag = i_tag
+            inner_atts = attributes
+            eat = False
 
         elif tag == 'notextile':
-            output['content'] = self.shelve(output['content'])
+            content = self.shelve(content)
 
         elif tag == '###':
-            output['eat'] = True
+            eat = True
 
         else:
-            output['outer_tag'] = tag
-            output['outer_atts'] = attributes
+            outer_tag = tag
+            outer_atts = attributes
 
-        if not output['eat']:
-            output['content'] = self.graf(output['content'])
+        if not eat:
+            content = self.graf(content)
         else:
-            output['content'] = ''
-        return (output['outer_tag'], output['outer_atts'], output['inner_tag'],
-                output['inner_atts'], output['content'], output['eat'])
+            content = ''
+        return (outer_tag, outer_atts, inner_tag, inner_atts, content, eat)
 
     def footnoteRef(self, text):
         # somehow php-textile gets away with not capturing the space.
