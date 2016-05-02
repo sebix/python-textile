@@ -29,6 +29,7 @@ from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
 from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
         parse_attributes, pba)
+from textile.objects import Block
 
 
 try:
@@ -577,18 +578,19 @@ class Textile(object):
             # tag specified on this line.
             if match:
                 tag, atts, ext, cite, content = match.groups()
-                (outer_tag, outer_atts, inner_tag, inner_atts,
-                        content) = self.fBlock(**match.groupdict())
-                inner_block = generate_tag(inner_tag, content, inner_atts)
+                block = Block(self, **match.groupdict())
+                inner_block = generate_tag(block.inner_tag, block.content,
+                        block.inner_atts)
                 # code tags and raw text won't be indented inside outer_tag.
-                if inner_tag != 'code' and not has_raw_text(inner_block):
+                if block.inner_tag != 'code' and not has_raw_text(inner_block):
                     inner_block = "\n\t\t{0}\n\t".format(inner_block)
                 if ext:
-                    line = content
+                    line = block.content
                 else:
-                    line = generate_tag(outer_tag, inner_block, outer_atts)
+                    line = generate_tag(block.outer_tag, inner_block,
+                            block.outer_atts)
                     # pre tags and raw text won't be indented.
-                    if outer_tag != 'pre' and not has_raw_text(line):
+                    if block.outer_tag != 'pre' and not has_raw_text(line):
                         line = "\t{0}".format(line)
             # no tag specified
             else:
@@ -598,13 +600,13 @@ class Textile(object):
                     line = '{0}\n{1}'.format(out.pop(), line)
                 whitespace = ' \t\n\r\f\v'
                 if ext or not line[0] in whitespace:
-                    (outer_tag, outer_atts, inner_tag, inner_atts,
-                            content) = self.fBlock(tag, atts, ext, cite, line)
-                    if tag == 'p' and not has_raw_text(content):
-                        line = content
+                    block = Block(self, tag, atts, ext, cite, line)
+                    if block.tag == 'p' and not has_raw_text(block.content):
+                        line = block.content
                     else:
-                        line = generate_tag(outer_tag, content, outer_atts)
-                        if outer_tag != 'pre' and not has_raw_text(line):
+                        line = generate_tag(block.outer_tag, block.content,
+                                block.outer_atts)
+                        if block.outer_tag != 'pre' and not has_raw_text(line):
                             line = "\t{0}".format(line)
                 else:
                     line = self.graf(line)
@@ -622,112 +624,9 @@ class Textile(object):
                 graf = ''
 
         if ext:
-            out.append(generate_tag(outer_tag, out.pop(), outer_atts))
+            out.append(generate_tag(block.outer_tag, out.pop(),
+                block.outer_atts))
         return '\n\n'.join(out)
-
-    def fBlock(self, tag, atts, ext, cite, content):
-        att = atts
-        attributes = parse_attributes(att)
-        outer_tag = ''
-        inner_tag = ''
-        outer_atts = OrderedDict()
-        inner_atts = OrderedDict()
-        eat = False
-
-        if tag == 'p':
-            # is this an anonymous block with a note definition?
-            notedef_re = re.compile(r"""
-            ^note\#                               # start of note def marker
-            (?P<label>[^%<*!@\#^([{{ {space}.]+)  # label
-            (?P<link>[*!^]?)                      # link
-            (?P<att>{cls})                        # att
-            \.?                                   # optional period.
-            [{space}]+                            # whitespace ends def marker
-            (?P<content>.*)$                      # content""".format(
-                space=regex_snippets['space'], cls=cls_re_s),
-            flags=re.X | re.U)
-            notedef = notedef_re.sub(self.fParseNoteDefs, content)
-
-            # It will be empty if the regex matched and ate it.
-            if '' == notedef:
-                content = notedef
-                return (outer_tag, outer_atts, inner_tag, inner_atts, content)
-
-        fns = re.search(r'fn(?P<fnid>{0}+)'.format(regex_snippets['digit']),
-                tag, flags=re.U)
-        if fns:
-            tag = 'p'
-            fnid = self.fn.get(fns.group('fnid'), None)
-            if fnid is None:
-                fnid = '{0}{1}'.format(self.linkPrefix,
-                        self._increment_link_index())
-
-            # If there is an author-specified ID goes on the wrapper & the
-            # auto-id gets pushed to the <sup>
-            supp_id = OrderedDict()
-
-            # if class has not been previously specified, set it to "footnote"
-            if 'class' not in attributes:
-                attributes.update({'class': 'footnote'})
-
-            # if there's no specified id, use the generated one.
-            if 'id' not in attributes:
-                attributes.update({'id': 'fn{0}'.format(fnid)})
-            else:
-                supp_id = parse_attributes('(#fn{0})'.format(fnid))
-
-
-            if '^' not in att:
-                sup = generate_tag('sup', fns.group('fnid'), supp_id)
-            else:
-                fnrev = generate_tag('a', fns.group('fnid'), {'href':
-                    '#fnrev{0}'.format(fnid)})
-                sup = generate_tag('sup', fnrev, supp_id)
-
-            content = '{0} {1}'.format(sup, content)
-
-        if tag == 'bq':
-            if cite:
-                cite = self.shelveURL(cite)
-                cite_att = OrderedDict(cite=cite)
-                cite = ' cite="{0}"'.format(cite)
-            else:
-                cite = ''
-                cite_att = OrderedDict()
-            cite_att.update(attributes)
-            outer_tag = 'blockquote'
-            outer_atts = cite_att
-            inner_tag = 'p'
-            inner_atts = attributes
-            eat = False
-
-        elif tag == 'bc' or tag == 'pre':
-            i_tag = ''
-            if tag == 'bc':
-                i_tag = 'code'
-            content = self.shelve(encode_html('{0}\n'.format(
-                content.rstrip("\n"))))
-            outer_tag = 'pre'
-            outer_atts = attributes
-            inner_tag = i_tag
-            inner_atts = attributes
-            eat = False
-
-        elif tag == 'notextile':
-            content = self.shelve(content)
-
-        elif tag == '###':
-            eat = True
-
-        else:
-            outer_tag = tag
-            outer_atts = attributes
-
-        if not eat:
-            content = self.graf(content)
-        else:
-            content = ''
-        return (outer_tag, outer_atts, inner_tag, inner_atts, content)
 
     def footnoteRef(self, text):
         # somehow php-textile gets away with not capturing the space.
