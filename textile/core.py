@@ -577,8 +577,8 @@ class Textile(object):
             # tag specified on this line.
             if match:
                 tag, atts, ext, cite, content = match.groups()
-                (outer_tag, outer_atts, inner_tag, inner_atts, content,
-                        eat) = self.fBlock(**match.groupdict())
+                (outer_tag, outer_atts, inner_tag, inner_atts,
+                        content) = self.fBlock(**match.groupdict())
                 inner_block = generate_tag(inner_tag, content, inner_atts)
                 # code tags and raw text won't be indented inside outer_tag.
                 if inner_tag != 'code' and not has_raw_text(inner_block):
@@ -598,8 +598,8 @@ class Textile(object):
                     line = '{0}\n{1}'.format(out.pop(), line)
                 whitespace = ' \t\n\r\f\v'
                 if ext or not line[0] in whitespace:
-                    (outer_tag, outer_atts, inner_tag, inner_atts, content,
-                        eat) = self.fBlock(tag, atts, ext, cite, line)
+                    (outer_tag, outer_atts, inner_tag, inner_atts,
+                            content) = self.fBlock(tag, atts, ext, cite, line)
                     if tag == 'p' and not has_raw_text(content):
                         line = content
                     else:
@@ -612,7 +612,7 @@ class Textile(object):
             line = self.doPBr(line)
             line = re.sub(r'<br>', '<br />', line)
 
-            if not eat and line:
+            if line.strip():
                 out.append(line)
 
             if not ext:
@@ -651,8 +651,7 @@ class Textile(object):
             # It will be empty if the regex matched and ate it.
             if '' == notedef:
                 content = notedef
-                return (outer_tag, outer_atts, inner_tag, inner_atts, content,
-                        eat)
+                return (outer_tag, outer_atts, inner_tag, inner_atts, content)
 
         fns = re.search(r'fn(?P<fnid>{0}+)'.format(regex_snippets['digit']),
                 tag, flags=re.U)
@@ -728,7 +727,7 @@ class Textile(object):
             content = self.graf(content)
         else:
             content = ''
-        return (outer_tag, outer_atts, inner_tag, inner_atts, content, eat)
+        return (outer_tag, outer_atts, inner_tag, inner_atts, content)
 
     def footnoteRef(self, text):
         # somehow php-textile gets away with not capturing the space.
