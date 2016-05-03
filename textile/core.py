@@ -344,8 +344,8 @@ class Textile(object):
                 # versions differ) and then format the resulting string
                 # accordingly: newline and tab between cols and a newline at
                 # the end
-                colgrp = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n",
-                        '', colgrp)
+                colgrp = colgrp.replace("<?xml version='1.0' "
+                        "encoding='UTF-8'?>\n", '')
                 colgrp = '{0}\n'.format(colgrp.replace('><', '>\n\t<'))
 
                 # If the row has a newline in it, account for the missing
