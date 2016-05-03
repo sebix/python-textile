@@ -612,7 +612,7 @@ class Textile(object):
                     line = self.graf(line)
 
             line = self.doPBr(line)
-            line = re.sub(r'<br>', '<br />', line)
+            line = line.replace('<br>', '<br />')
 
             if line.strip():
                 out.append(line)
