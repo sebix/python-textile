@@ -4,7 +4,9 @@
 *~
 *.pyo
 *.egg-info
+.cache/
 .coverage
+.eggs/
 .noseids*
 docs/build
 docs/coverage
@@ -12,6 +14,7 @@ build
 bin
 dist
 eggs
+htmlcov
 parts
 develop-eggs
 .DS_Store
