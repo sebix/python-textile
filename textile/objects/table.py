@@ -23,7 +23,6 @@ class Table(object):
         self.input = rows
         self.caption = ''
         self.colgroup = ''
-        self.rows = []
         self.content = []
 
     def process(self):
@@ -73,6 +72,8 @@ class Table(object):
 
             grptypes = {'^': Thead, '~': Tfoot, '-': Tbody}
             if grpmatch.group('part'):
+                # we're about to start a new group, so process the current one
+                # and add it to the output
                 if rgrp:
                     groups.append('\n\t{0}'.format(rgrp.process()))
                 rgrp = grptypes[grpmatch.group('part')](grpmatch.group(
@@ -87,12 +88,13 @@ class Table(object):
             else:
                 row_atts = {}
 
-            cells = []
+            # create a row to hold the cells.
             r = Row(row_atts, row)
             for cellctr, cell in enumerate(row.split('|')[1:]):
                 ctag = 'td'
                 if cell.startswith('_'):
                     ctag = 'th'
+
                 cmtch = re.search(r'^(?P<catts>_?{0}{1}{2}\. )'
                         '(?P<cell>.*)'.format(table_span_re_s, align_re_s,
                             cls_re_s), cell, flags=re.S)
@@ -111,23 +113,20 @@ class Table(object):
                     cell = self.textile.textileLists(cell)
                     cell = '{0}{1}'.format(a.group('space'), cell)
 
-                # row.split() gives us ['', 'cell 1 contents', '...']
-                # so we ignore the first cell. 
+                # create a cell
                 c = Cell(ctag, cell, cell_atts)
                 cline_tag = '\n\t\t\t{0}'.format(c.process())
+                # add the cell to the row
                 r.cells.append(self.textile.doTagBr(ctag, cline_tag))
 
+            # if we're in a group, add it to the group's rows, else add it
+            # directly to the content
             if rgrp:
                 rgrp.rows.append(r.process())
             else:
                 self.content.append(r.process())
 
-            # if no group was specified, just join the rows
-            if not rgrp:
-                groups.append('{0}'.format('\n\t'.join(self.rows)))
-            cells = []
-            self.rows = []
-
+        # if there's still an rgrp, process it and add it to the output
         if rgrp:
             groups.append('\n\t{0}'.format(rgrp.process()))
 
