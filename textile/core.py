@@ -21,7 +21,6 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import uuid
 import six
-from xml.etree import ElementTree
 
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
@@ -29,7 +28,7 @@ from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
 from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
         parse_attributes, pba)
-from textile.objects import Block
+from textile.objects import Block, Table
 
 
 try:
@@ -284,160 +283,12 @@ class Textile(object):
         pattern = re.compile(r'^(?:table(?P<tatts>_?{s}{a}{c})\.'
                 r'(?P<summary>.*?)\n)?^(?P<rows>{a}{c}\.? ?\|.*\|)'
                 r'[\s]*\n\n'.format(**{'s': table_span_re_s, 'a': align_re_s,
-                    'c': cls_re_s}),
-                flags=re.S | re.M | re.U)
-        return pattern.sub(self.fTable, text)
-
-    def fTable(self, match):
-        table_attributes = parse_attributes(match.group('tatts'), 'table')
-
-        summ = match.group('summary')
-        if summ:
-            table_attributes.update(summary=summ.strip())
-        cap = ''
-        colgrp, last_rgrp = '', ''
-        c_row = 1
-        rows = []
-        groups = []
-        enc = 'unicode'
-        if six.PY2: # pragma: no branch
-            enc = 'UTF-8'
-        split = re.split(r'\|\s*?$', match.group('rows'), flags=re.M)
-        for row in [x for x in split if x]:
-            row = row.lstrip()
-
-            # Caption -- only occurs on row 1, otherwise treat '|=. foo |...'
-            # as a normal center-aligned cell.
-            captionpattern = (r"^\|\=(?P<capts>{s}{a}{c})\. (?P<cap>[^\n]*)"
-                    r"(?P<row>.*)".format(**{'s': table_span_re_s, 'a':
-                        align_re_s, 'c': cls_re_s}))
-            caption_re = re.compile(captionpattern, re.S)
-            cmtch = caption_re.match(row)
-            if c_row == 1 and cmtch:
-                caption_atts = parse_attributes(cmtch.group('capts'))
-                cap = '\t{0}\n\t'.format(generate_tag('caption',
-                    cmtch.group('cap').strip(), caption_atts))
-                row = cmtch.group('row').lstrip()
-                if row == '':
-                    continue
-
-            c_row = c_row + 1
-
-            # Colgroup
-            grppattern = r"^\|:(?P<cols>{s}{a}{c}\. .*)".format(**{'s':
-                table_span_re_s, 'a': align_re_s, 'c': cls_re_s})
-            grp_re = re.compile(grppattern, re.M)
-            gmtch = grp_re.match(row.lstrip())
-            if gmtch:
-                has_newline = "\n" in row
-                match_cols = gmtch.group('cols').replace('.', '').split('|')
-                group_atts = parse_attributes(match_cols[0].strip(), 'col')
-                colgroup = ElementTree.Element('colgroup', attrib=group_atts)
-                colgroup.text = '\n\t'
-                # colgroup is the first item in match_cols, the remaining items
-                # are cols.
-                for idx, col in enumerate(match_cols[1:]):
-                    col_atts = parse_attributes(col.strip(), 'col')
-                    ElementTree.SubElement(colgroup, 'col', col_atts)
-                colgrp = ElementTree.tostring(colgroup, encoding=enc)
-                # cleanup the extra xml declaration if it exists, (python
-                # versions differ) and then format the resulting string
-                # accordingly: newline and tab between cols and a newline at
-                # the end
-                colgrp = colgrp.replace("<?xml version='1.0' "
-                        "encoding='UTF-8'?>\n", '')
-                colgrp = '{0}\n'.format(colgrp.replace('><', '>\n\t<'))
-
-                # If the row has a newline in it, account for the missing
-                # closing pipe and process the rest of the line
-                if not has_newline:
-                    continue
-                else:
-                    row = row[row.index('\n'):].lstrip()
-
-            grpmatchpattern = (r"(:?^\|(?P<part>{v})(?P<rgrpatts>{s}{a}{c})"
-                    r"\.\s*$\n)?^(?P<row>.*)").format(**{'v': valign_re_s, 's':
-                        table_span_re_s, 'a': align_re_s, 'c': cls_re_s})
-            grpmatch_re = re.compile(grpmatchpattern, re.S | re.M)
-            grpmatch = grpmatch_re.match(row.lstrip())
-
-            # Row group
-            rgrp_atts = parse_attributes(grpmatch.group('rgrpatts'))
-            rgrp = ''
-            rgrptypes = {'^': 'thead', '~': 'tfoot', '-': 'tbody'}
-            if grpmatch.group('part'):
-                rgrp = rgrptypes[grpmatch.group('part')]
-                rgrp_tag = generate_tag(rgrp, '\n', rgrp_atts)
-            row = grpmatch.group('row')
-
-            rmtch = re.search(r'^(?P<ratts>{0}{1}\. )(?P<row>.*)'.format(
-                align_re_s, cls_re_s), row.lstrip())
-            if rmtch:
-                row_atts = parse_attributes(rmtch.group('ratts'), 'tr')
-                row = rmtch.group('row')
-            else:
-                row_atts = {}
-
-            cells = []
-            for cellctr, cell in enumerate(row.split('|')):
-                ctag = 'td'
-                if cell.startswith('_'):
-                    ctag = 'th'
-                cmtch = re.search(r'^(?P<catts>_?{0}{1}{2}\. )(?P<cell>.*)'.format(
-                    table_span_re_s, align_re_s, cls_re_s), cell, flags=re.S)
-                if cmtch:
-                    cell_atts = parse_attributes(cmtch.group('catts'), 'td')
-                    cell = cmtch.group('cell')
-                else:
-                    cell_atts = {}
-
-                if not self.lite:
-                    a_pattern = r'(?P<space>{0}*)(?P<cell>.*)'.format(
-                            regex_snippets['space'])
-                    a = re.search(a_pattern, cell, flags=re.S)
-                    cell = self.redcloth_list(a.group('cell'))
-                    cell = self.textileLists(cell)
-                    cell = '{0}{1}'.format(a.group('space'), cell)
-
-                # row.split() gives us ['', 'cell 1 contents', '...']
-                # so we ignore the first cell.
-                if cellctr > 0:
-                    cline_tag = generate_tag(ctag, cell, cell_atts)
-                    cells.append(self.doTagBr(ctag, cline_tag))
-
-            cell_tag_string = '\n\t\t\t{0}\n\t\t'.format('\n\t\t\t'.join(
-                cells))
-
-            row_tag = generate_tag('tr', cell_tag_string, row_atts)
-            rows.append(row_tag)
-
-            # if rgrp and last_rgrp are set, it means the group has changed.
-            # That also means the closing group tag has already been set
-            if rgrp and last_rgrp:
-                groups.append(group_close)
-
-            # if we see a new rgrp, start the group, and throw in all the
-            # current rows.
-            if rgrp:
-                group_open, group_close = rgrp_tag.split('\n')
-                groups.append('{0}\n\t\t{1}'.format(group_open,
-                    '\n\t\t'.join(rows)))
-
-            last_rgrp = rgrp if rgrp else last_rgrp
-
-            # if no group was specified, just join the rows
-            if not rgrp:
-                groups.append('\t{0}'.format('\n\t\t'.join(rows)))
-            cells = []
-            rows = []
-
-        if last_rgrp:
-            c = rgrp_tag.split('\n')[1]
-            groups.append(c)
-
-        content = '\n{0}{1}\t{2}\n\t'.format(cap, colgrp, '\n\t'.join(groups))
-        tbl = generate_tag('table', content, table_attributes)
-        return '\t{0}\n\n'.format(tbl)
+                    'c': cls_re_s}), flags=re.S | re.M | re.U)
+        match = pattern.search(text)
+        if match:
+            table = Table(self, **match.groupdict())
+            return table.process()
+        return text
 
     def textileLists(self, text):
         pattern = re.compile(r'^((?:[*;:]+|[*;:#]*#(?:_|\d+)?){0}[ .].*)$'

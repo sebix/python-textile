@@ -182,7 +182,7 @@ def parse_attributes(block_attributes, element=None, include_id=True):
         aclass = m.group(1)
 
     if element == 'col':
-        pattern = r'(?:\\(\d+))?\s*(\d+)?'
+        pattern = r'(?:\\(\d+)\.?)?\s*(\d+)?'
         csp = re.match(pattern, matched)
         span, width = csp.groups()
 
