@@ -35,3 +35,9 @@ def test_github_issue_22():
     result = textile.textile(text)
     expect = '\t<p><em class="artist-name">Ty Segall</em>’s</p>'
     assert result == expect
+
+def test_github_issue_26():
+    text = ''
+    result = textile.textile(text)
+    expect = ''
+    assert result == expect

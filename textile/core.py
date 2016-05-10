@@ -231,6 +231,8 @@ class Textile(object):
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
 
+        if text == '':
+            return text
 
         if self.restricted:
             text = encode_html(text, quotes=False)
