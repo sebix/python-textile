@@ -10,7 +10,7 @@ h2. Develop Branch
 ** Fix handling of scheme in self-linked URLs ("#16":https://github.com/textile/python-textile/issues/16)
 ** Fix Markup not parsed if followed by certain characters ("#22":Markup not parsed if followed by certain characters)
 * Convert testing over to "py.test":http://pytest.org/, improving unicode testing
-* Update functionality for tables, notelists, and footnotes.  Mostly corrections to underlying html tags, but it now matches php-textile.
+* Update functionality for tables, notelists, and footnotes.  This involved a major reworking of parts of the code, but it should now match php-textile and txstyle.org precisely.  Please file an issue for any bugs you come across.
 
 h2. Version 2.2.2
 
