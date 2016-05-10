@@ -1,6 +1,6 @@
 h1. Textile Changelog
 
-h2. Develop Branch
+h2. Version 2.3.0
 
 * Bugfixes:
 ** Support data URIs in img tags
