@@ -44,9 +44,9 @@ def test_github_issue_26():
 
 def test_github_issue_27():
     test="""
-* Folders with ":" in their names are displayed with a forward slash "/" instead. (Filed as "#4581709":Radar:4581709, which was considered "normal behaviour" - quote: "Please note that Finder presents the 'Carbon filesystem' view, regardless of the underlying filesystem.")
+* Folders with ":" in their names are displayed with a forward slash "/" instead. (Filed as "#4581709":/test/link, which was considered "normal behaviour" - quote: "Please note that Finder presents the 'Carbon filesystem' view, regardless of the underlying filesystem.")
 
 """
     result = textile.textile(test)
-    expect = """\t<ul>\n\t\t<li>Folders with &#8220;:&#8221; in their names are displayed with a forward slash &#8220;/&#8221; instead. (Filed as <a href="Radar%3A4581709">#4581709</a>, which was considered &#8220;normal behaviour&#8221; &#8211; quote: &#8220;Please note that Finder presents the &#8216;Carbon filesystem&#8217; view, regardless of the underlying filesystem.&#8221;)</li>\n\t</ul>"""
+    expect = """\t<ul>\n\t\t<li>Folders with &#8220;:&#8221; in their names are displayed with a forward slash &#8220;/&#8221; instead. (Filed as <a href="/test/link">#4581709</a>, which was considered &#8220;normal behaviour&#8221; &#8211; quote: &#8220;Please note that Finder presents the &#8216;Carbon filesystem&#8217; view, regardless of the underlying filesystem.&#8221;)</li>\n\t</ul>"""
     assert result == expect
