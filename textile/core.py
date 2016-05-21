@@ -610,7 +610,8 @@ class Textile(object):
         # inline links between the link text and the url part and are much more
         # infrequent than '"' characters so we have less possible links to
         # process.
-        slices = text.split('":')
+        slice_re = re.compile(r'":(?={0})'.format(regex_snippets['char']))
+        slices = slice_re.split(text)
         output = []
 
         if len(slices) > 1:
@@ -619,6 +620,11 @@ class Textile(object):
             last_slice = slices.pop()
 
             for s in slices:
+                # If there is no possible start quote then this slice is not
+                # a link
+                if '"' not in s:
+                    output.append(s)
+                    continue
                 # Cut this slice into possible starting points wherever we find
                 # a '"' character. Any of these parts could represent the start
                 # of the link text - we have to find which one.
