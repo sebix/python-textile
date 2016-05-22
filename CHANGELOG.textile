@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 2.3.2
+* Bugfix: properly handle @":"@ as text, not a link.
+
 h2. Version 2.3.1
 * Regression bugfix: empty string input returns empty string again.
 
