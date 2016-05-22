@@ -39,7 +39,7 @@ def encode_html(text, quotes=True):
 
     if quotes:
         a = a + (("'", '&#39;'),
-                 ('"', '&#34;'))
+                 ('"', '&quot;'))
 
     for k, v in a:
         text = text.replace(k, v)

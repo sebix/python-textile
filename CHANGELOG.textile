@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 2.3.2
+* Bugfix: properly handle @":"@ as text, not a link.
+
 h2. Version 2.3.1
 * Regression bugfix: empty string input returns empty string again.
 
@@ -14,6 +17,7 @@ h2. Version 2.3.0
 ** Fix Markup not parsed if followed by certain characters ("#22":Markup not parsed if followed by certain characters)
 * Convert testing over to "py.test":http://pytest.org/, improving unicode testing
 * Update functionality for tables, notelists, and footnotes.  This involved a major reworking of parts of the code, but it should now match php-textile and txstyle.org precisely.  Please file an issue for any bugs you come across.
+* Remove @head_offset@ option from parse.  I'm not sure it ever existed in php-textile.
 
 h2. Version 2.2.2
 

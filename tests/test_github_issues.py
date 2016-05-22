@@ -41,3 +41,41 @@ def test_github_issue_26():
     result = textile.textile(text)
     expect = ''
     assert result == expect
+
+def test_github_issue_27():
+    test = """* Folders with ":" in their names are displayed with a forward slash "/" instead. (Filed as "#4581709":/test/link, which was considered "normal behaviour" - quote: "Please note that Finder presents the 'Carbon filesystem' view, regardless of the underlying filesystem.")"""
+    result = textile.textile(test)
+    expect = """\t<ul>\n\t\t<li>Folders with &#8220;:&#8221; in their names are displayed with a forward slash &#8220;/&#8221; instead. (Filed as <a href="/test/link">#4581709</a>, which was considered &#8220;normal behaviour&#8221; &#8211; quote: &#8220;Please note that Finder presents the &#8216;Carbon filesystem&#8217; view, regardless of the underlying filesystem.&#8221;)</li>\n\t</ul>"""
+    assert result == expect
+
+def test_github_issue_28():
+    test = """So here I am porting my ancient "newspipe":newspipe "front-end":blog/2006/09/30/0950 to "Snakelets":Snakelets and "Python":Python, and I've just trimmed down over 20 lines of "PHP":PHP down to essentially one line of "BeautifulSoup":BeautifulSoup retrieval:
+
+<pre>
+def parseWapProfile(self, url):
+  result = fetch.fetchURL(url)
+  soup = BeautifulStoneSoup(result['data'], convertEntities=BeautifulStoneSoup.HTML_ENTITIES)
+  try:
+    width, height = soup('prf:screensize')[0].contents[0].split('x')
+  except:
+    width = height = None
+  return {"width": width, "height": height}
+</pre>
+
+Of course there's a lot more error handling to do (and useful data to glean off the "XML":XML), but being able to cut through all the usual parsing crap is immensely gratifying."""
+    result = textile.textile(test)
+    expect = ("""\t<p>So here I am porting my ancient <a href="newspipe">newspipe</a> <a href="blog/2006/09/30/0950">front-end</a> to <a href="Snakelets">Snakelets</a> and <a href="Python">Python</a>, and I&#8217;ve just trimmed down over 20 lines of <a href="PHP"><span class="caps">PHP</span></a> down to essentially one line of <a href="BeautifulSoup">BeautifulSoup</a> retrieval:</p>
+
+<pre>
+def parseWapProfile(self, url):
+  result = fetch.fetchURL(url)
+  soup = BeautifulStoneSoup(result[&#39;data&#39;], convertEntities=BeautifulStoneSoup.HTML_ENTITIES)
+  try:
+    width, height = soup(&#39;prf:screensize&#39;)[0].contents[0].split(&#39;x&#39;)
+  except:
+    width = height = None
+  return {&quot;width&quot;: width, &quot;height&quot;: height}
+</pre>
+
+\t<p>Of course there&#8217;s a lot more error handling to do (and useful data to glean off the <a href="XML"><span class="caps">XML</span></a>), but being able to cut through all the usual parsing crap is immensely gratifying.</p>""")
+    assert result == expect
