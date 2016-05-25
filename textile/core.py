@@ -491,11 +491,7 @@ class Textile(object):
                 graf = ''
 
         if ext:
-            content = out.pop()
-            if block.inner_tag:
-                content = generate_tag(block.inner_tag, content,
-                        block.inner_atts)
-            out.append(generate_tag(block.outer_tag, content,
+            out.append(generate_tag(block.outer_tag, out.pop(),
                 block.outer_atts))
         return '\n\n'.join(out)
 
