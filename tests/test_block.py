@@ -47,3 +47,10 @@ def test_block_tags_false():
     result = t.parse('test')
     expect = 'test'
     assert result == expect
+
+def test_blockcode_extended():
+    input = 'bc.. text\nmoretext\n\nevenmoretext\n\nmoremoretext'
+    expect = '<pre><code>text\nmoretext\n\nevenmoretext\n\nmoremoretext</code></pre>'
+    t = Textile()
+    result = t.parse(input)
+    assert result == expect

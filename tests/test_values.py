@@ -150,7 +150,7 @@ xhtml_known_values = (
 
     ('<script>alert("hello");</script>', '\t<p><script>alert(&#8220;hello&#8221;);</script></p>'),
 
-    ('pre.. Hello\n\nHello Again\n\np. normal text', '<pre>Hello\n\nHello Again\n</pre>\n\n\t<p>normal text</p>'),
+    ('pre.. Hello\n\nHello Again\n\np. normal text', '<pre>Hello\n\nHello Again</pre>\n\n\t<p>normal text</p>'),
 
     ('<pre>this is in a pre tag</pre>', '<pre>this is in a pre tag</pre>'),
 
@@ -180,7 +180,7 @@ xhtml_known_values = (
 
     ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\t<p>some text</p>'),
 
-    ('pre.. foo bar baz\nquux', '<pre>foo bar baz\nquux\n</pre>'),
+    ('pre.. foo bar baz\nquux', '<pre>foo bar baz\nquux</pre>'),
 
     ('line of text\n\n    leading spaces',
      '\t<p>line of text</p>\n\n    leading spaces'),
@@ -286,7 +286,7 @@ html_known_values = (
     # issue 2 escaping
     ('"foo ==(bar)==":#foobar', '\t<p><a href="#foobar">foo (bar)</a></p>'),
     # issue 14 newlines in extended pre blocks
-    ("pre.. Hello\n\nAgain\n\np. normal text", '<pre>Hello\n\nAgain\n</pre>\n\n\t<p>normal text</p>'),
+    ("pre.. Hello\n\nAgain\n\np. normal text", '<pre>Hello\n\nAgain</pre>\n\n\t<p>normal text</p>'),
     # url with parentheses
     ('"python":http://en.wikipedia.org/wiki/Python_(programming_language)', '\t<p><a href="http://en.wikipedia.org/wiki/Python_%28programming_language%29">python</a></p>'),
     # table with hyphen styles
