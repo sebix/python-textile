@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Develop Branch
+* Bugfix: fix an issue with extended block code
+
 h2. Version 2.3.2
 * Bugfix: properly handle @":"@ as text, not a link.
 
