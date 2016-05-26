@@ -10,4 +10,6 @@ def test_console_script():
                 stdout=subprocess.PIPE).communicate()[0]
     with open('tests/fixtures/README.txt') as f:
         expect = ''.join(f.readlines())
-    assert six.text_type(result) == six.text_type(expect)
+    if type(r) == bytes:
+        result.decode('utf-8')
+    assert result == expect
