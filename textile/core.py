@@ -31,10 +31,7 @@ from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
 from textile.objects import Block, Table
 
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from six.moves import urllib
 urlparse, urlsplit, urlunsplit, quote, unquote = (urllib.parse.urlparse,
