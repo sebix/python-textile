@@ -57,8 +57,10 @@ def generate_tag(tag, content, attributes=None):
     # adding text by assigning it to element_tag.text.  That results in
     # non-ascii text being html-entity encoded.  Not bad, but not entirely
     # matching php-textile either.
-    element_tag = [v.decode(enc) for v in ElementTree.tostringlist(element, encoding=enc,
-            method='html')]
+    element_tag = ElementTree.tostringlist(element, encoding=enc,
+            method='html')
+    if six.PY2:
+        element_tag = [v.decode('utf8') for v in element_tag]
     element_tag.insert(len(element_tag) - 1, content)
     element_text = ''.join(element_tag)
     return element_text
