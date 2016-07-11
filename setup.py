@@ -26,7 +26,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.2',
@@ -37,7 +36,6 @@ setup(
     keywords='textile,text,html markup',
     install_requires=['six',],
     extras_require={
-        ':python_version=="2.6"': ['ordereddict>=1.1'],
         'develop': ['regex', 'pytest', 'pytest-cov'],
     },
     setup_requires=['pytest-runner'],
