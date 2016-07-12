@@ -874,8 +874,7 @@ class Textile(object):
         url = self.shelveURL(self.encode_url(urlunsplit(uri_parts)))
         attributes = parse_attributes(atts)
         if title:
-            title = six.text_type(title)
-            attributes['title'] = title
+            attributes['title'] = self.shelve(title)
         attributes['href'] = url
         if self.rel:
             attributes['rel'] = self.rel
