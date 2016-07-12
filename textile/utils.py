@@ -53,7 +53,7 @@ def generate_tag(tag, content, attributes=None):
     enc = 'unicode'
     if six.PY2:
         enc = 'UTF-8'
-        attributes = OrderedDict((k, v.decode('utf8')) for k, v in attributes.items())
+    attributes = OrderedDict((k, six.text_type(v)) for k, v in attributes.items())
     if not tag:
         return content
     element = ElementTree.Element(tag, attrib=attributes)
@@ -64,7 +64,8 @@ def generate_tag(tag, content, attributes=None):
     try:
         element_tag = ElementTree.tostringlist(element, encoding=enc,
                 method='html')
-        element_tag = [v.decode('utf8') for v in element_tag]
+        if six.PY2:
+            element_tag = [v.decode('utf8') for v in element_tag]
         element_tag.insert(len(element_tag) - 1, content)
         element_text = ''.join(element_tag)
     except AttributeError:
