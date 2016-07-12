@@ -1,5 +1,7 @@
-from collections import OrderedDict
-
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 try:
     import regex as re
 except ImportError:

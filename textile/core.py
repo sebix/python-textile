@@ -31,7 +31,10 @@ from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
 from textile.objects import Block, Table
 
 
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 from six.moves import urllib
 urlparse, urlsplit, urlunsplit, quote, unquote = (urllib.parse.urlparse,
@@ -871,6 +874,7 @@ class Textile(object):
         url = self.shelveURL(self.encode_url(urlunsplit(uri_parts)))
         attributes = parse_attributes(atts)
         if title:
+            title = title.encode('utf8')
             attributes['title'] = title
         attributes['href'] = url
         if self.rel:

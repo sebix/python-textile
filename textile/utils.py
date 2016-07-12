@@ -10,7 +10,10 @@ from six.moves import urllib, html_parser
 urlparse = urllib.parse.urlparse
 HTMLParser = html_parser.HTMLParser
 
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 from xml.etree import ElementTree
 
@@ -47,22 +50,33 @@ def generate_tag(tag, content, attributes=None):
     content are strings, the attributes argument is a dictionary.  As
     a convenience, if the content is ' /', a self-closing tag is generated."""
     content = six.text_type(content)
-    element = ElementTree.Element(tag, attrib=attributes)
     enc = 'unicode'
     if six.PY2:
         enc = 'UTF-8'
+        attributes = OrderedDict((k, v.decode('utf8')) for k, v in attributes.items())
     if not tag:
         return content
+    element = ElementTree.Element(tag, attrib=attributes)
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
     # adding text by assigning it to element_tag.text.  That results in
     # non-ascii text being html-entity encoded.  Not bad, but not entirely
     # matching php-textile either.
-    element_tag = ElementTree.tostringlist(element, encoding=enc,
-            method='html')
-    if six.PY2:
+    try:
+        element_tag = ElementTree.tostringlist(element, encoding=enc,
+                method='html')
         element_tag = [v.decode('utf8') for v in element_tag]
-    element_tag.insert(len(element_tag) - 1, content)
-    element_text = ''.join(element_tag)
+        element_tag.insert(len(element_tag) - 1, content)
+        element_text = ''.join(element_tag)
+    except AttributeError:
+        # Python 2.6 doesn't have the tostringlist method, so we have to treat
+        # it differently.
+        element_tag = ElementTree.tostring(element, encoding=enc)
+        element_text = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n",
+                '', element_tag)
+        if content != six.text_type(' /'):
+            element_text = element_text.rstrip(' />')
+            element_text = six.text_type('{0}>{1}</{2}>').format(six.text_type(
+                element_text), content, tag)
     return element_text
 
 def has_raw_text(text):
