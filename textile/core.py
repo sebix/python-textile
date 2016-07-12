@@ -874,6 +874,9 @@ class Textile(object):
         url = self.shelveURL(self.encode_url(urlunsplit(uri_parts)))
         attributes = parse_attributes(atts)
         if title:
+            # if the title contains unicode data, it is annoying to get Python
+            # 2.6 and all the latter versions working properly.  But shelving
+            # the title is a quick and dirty solution.
             attributes['title'] = self.shelve(title)
         attributes['href'] = url
         if self.rel:
