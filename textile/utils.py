@@ -50,16 +50,16 @@ def generate_tag(tag, content, attributes=None):
     content are strings, the attributes argument is a dictionary.  As
     a convenience, if the content is ' /', a self-closing tag is generated."""
     content = six.text_type(content)
-    element = ElementTree.Element(tag, attrib=attributes)
     enc = 'unicode'
     if six.PY2:
         enc = 'UTF-8'
     if not tag:
         return content
+    element = ElementTree.Element(tag, attrib=attributes)
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
-    # adding text by assigning it to a.text.  That results in non-ascii text
-    # being html-entity encoded.  Not bad, but not entirely matching
-    # php-textile either.
+    # adding text by assigning it to element_tag.text.  That results in
+    # non-ascii text being html-entity encoded.  Not bad, but not entirely
+    # matching php-textile either.
     try:
         element_tag = ElementTree.tostringlist(element, encoding=enc,
                 method='html')
@@ -67,7 +67,7 @@ def generate_tag(tag, content, attributes=None):
         element_text = ''.join(element_tag)
     except AttributeError:
         # Python 2.6 doesn't have the tostringlist method, so we have to treat
-        # it different.
+        # it differently.
         element_tag = ElementTree.tostring(element, encoding=enc)
         element_text = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n",
                 '', element_tag)
