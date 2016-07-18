@@ -79,3 +79,9 @@ def parseWapProfile(self, url):
 
 \t<p>Of course there&#8217;s a lot more error handling to do (and useful data to glean off the <a href="XML"><span class="caps">XML</span></a>), but being able to cut through all the usual parsing crap is immensely gratifying.</p>""")
     assert result == expect
+
+def test_github_issue_30():
+    text ='"Tëxtíle (Tëxtíle)":http://lala.com'
+    result = textile.textile(text)
+    expect = '\t<p><a href="http://lala.com" title="Tëxtíle">Tëxtíle</a></p>'
+    assert result == expect

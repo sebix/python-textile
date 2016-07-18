@@ -1,5 +1,9 @@
 h1. Textile Changelog
 
+h2. Version 2.3.3
+* Bugfix: Unicode in URL titles no longer break everything ("#30":https://github.com/textile/python-textile/issues/30)
+* Display DeprecationWarning when using textile on Python 2.6.
+
 h2. Version 2.3.2
 * Bugfix: properly handle @":"@ as text, not a link.
 
