@@ -437,9 +437,8 @@ class Textile(object):
                     last_item_is_a_shelf = out[-1] in self.shelf
                 if ext and match.group('tag') and last_item_is_a_shelf:
                     content = out.pop()
-                    if block.inner_tag:
-                        content = generate_tag(block.inner_tag, content,
-                                block.inner_atts)
+                    content = generate_tag(block.inner_tag, content,
+                            block.inner_atts)
                     out.append(generate_tag(block.outer_tag, content,
                         block.outer_atts))
                 tag, atts, ext, cite, content = match.groups()
