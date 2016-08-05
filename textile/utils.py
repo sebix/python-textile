@@ -143,7 +143,7 @@ def parse_attributes(block_attributes, element=None, include_id=True):
             rowspan = m.group(1)
 
     if element == 'td' or element == 'tr':
-        m = re.search(r'({0})'.format(valign_re_s), matched)
+        m = re.search(r'(^{0})'.format(valign_re_s), matched)
         if m:
             style.append("vertical-align:{0}".format(vAlign[m.group(1)]))
 

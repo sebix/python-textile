@@ -290,7 +290,7 @@ html_known_values = (
     # url with parentheses
     ('"python":http://en.wikipedia.org/wiki/Python_(programming_language)', '\t<p><a href="http://en.wikipedia.org/wiki/Python_%28programming_language%29">python</a></p>'),
     # table with hyphen styles
-    ('table(linkblog-thumbnail).\n|(linkblog-thumbnail-cell). apple|bear|', '\t<table class="linkblog-thumbnail">\n\t\t<tr>\n\t\t\t<td class="linkblog-thumbnail-cell" style="vertical-align:middle;">apple</td>\n\t\t\t<td>bear</td>\n\t\t</tr>\n\t</table>'),
+    ('table(linkblog-thumbnail).\n|(linkblog-thumbnail-cell). apple|bear|', '\t<table class="linkblog-thumbnail">\n\t\t<tr>\n\t\t\t<td class="linkblog-thumbnail-cell">apple</td>\n\t\t\t<td>bear</td>\n\t\t</tr>\n\t</table>'),
     # issue 32 empty table cells
     ("|thing|||otherthing|", "\t<table>\n\t\t<tr>\n\t\t\t<td>thing</td>\n\t\t\t<td></td>\n\t\t\t<td></td>\n\t\t\t<td>otherthing</td>\n\t\t</tr>\n\t</table>"),
     # issue 36 link reference names http and https
