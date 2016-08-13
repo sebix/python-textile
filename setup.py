@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 import os
 import sys
+import pytest
 
 def get_version():
     basedir = os.path.dirname(__file__)
@@ -42,6 +43,7 @@ setup(
     },
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-cov'],
+    cmdclass = {'test': pytest},
     include_package_data=True,
     zip_safe=False,
 )
