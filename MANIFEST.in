@@ -1,0 +1,10 @@
+exclude .gitignore
+exclude .travis.yml
+exclude MANIFEST.in
+exclude pytest.ini
+exclude requirements.txt
+exclude TODO.textile
+include CHANGELOG.textile
+include CONTRIBUTORS.txt
+include LICENSE.txt
+include README.textile
