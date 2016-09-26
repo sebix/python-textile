@@ -1,10 +1,11 @@
 exclude .gitignore
-exclude .travis.yml
-exclude MANIFEST.in
-exclude pytest.ini
-exclude requirements.txt
 exclude TODO.textile
+exclude .travis.yml
 include CHANGELOG.textile
 include CONTRIBUTORS.txt
+include .coveragerc
 include LICENSE.txt
+include MANIFEST.in
+include pytest.ini
 include README.textile
+include requirements.txt
