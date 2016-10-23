@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from textile import Textile
+import textile
 from textile.objects import Block
 
 try:
@@ -9,7 +9,7 @@ except ImportError:
     from ordereddict import OrderedDict
 
 def test_block():
-    t = Textile()
+    t = textile.Textile()
     result = t.block('h1. foobar baby')
     expect = '\t<h1>foobar baby</h1>'
     assert result == expect
@@ -41,9 +41,24 @@ def test_block():
     assert result == expect
 
 def test_block_tags_false():
-    t = Textile(block_tags=False)
+    t = textile.Textile(block_tags=False)
     assert t.block_tags is False
 
     result = t.parse('test')
     expect = 'test'
+    assert result == expect
+
+def test_blockcode_extended():
+    input = 'bc.. text\nmoretext\n\nevenmoretext\n\nmoremoretext\n\np. test'
+    expect = '<pre><code>text\nmoretext\n\nevenmoretext\n\nmoremoretext</code></pre>\n\n\t<p>test</p>'
+    t = textile.Textile()
+    result = t.parse(input)
+    assert result == expect
+
+def test_blockcode_in_README():
+    with open('README.textile') as f:
+        readme = ''.join(f.readlines())
+    result = textile.textile(readme)
+    with open('tests/fixtures/README.txt') as f:
+        expect = ''.join(f.readlines())
     assert result == expect

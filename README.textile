@@ -14,9 +14,7 @@ Optional dependencies include:
 
 h2. Usage
 
-<pre>
-<code>
->>> import textile
+bc.. import textile
 >>> s = """
 ... _This_ is a *test.*
 ...
@@ -38,8 +36,6 @@ h2. Usage
 
 	<p>Link to <a href="http://slashdot.org/">Slashdot</a></p>
 >>>
-</code>
-</pre>
 
 h3. Notes:
 
