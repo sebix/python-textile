@@ -1,5 +1,7 @@
 h1. Textile Changelog
 
+h2. Develop Branch
+
 h2. Version 2.3.4
 * Bugfix: fix an issue with extended block code
 * Remove misplaced shebang on non-callable files.
