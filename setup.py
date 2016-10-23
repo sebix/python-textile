@@ -14,6 +14,8 @@ def get_version():
 setup(
     name='textile',
     version=get_version(),
+    author='Dennis Burke',
+    author_email='ikirudennis@gmail.com',
     description='Textile processing for python.',
     url='http://github.com/textile/python-textile',
     packages=find_packages(),
