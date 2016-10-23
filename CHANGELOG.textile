@@ -2,6 +2,9 @@ h1. Textile Changelog
 
 h2. Develop Branch
 * Bugfix: fix an issue with extended block code
+* Remove misplaced shebang on non-callable files.
+* Packaging: Add test-command to setup.py directly.
+* Packaging: Included the tests/ directory for source-tarballs, useful for packaging checks. ("#33":https://github.com/textile/python-textile/issues/33)
 
 h2. Version 2.3.3
 * Bugfix: Unicode in URL titles no longer break everything ("#30":https://github.com/textile/python-textile/issues/30)
