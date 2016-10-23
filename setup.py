@@ -41,7 +41,7 @@ setup(
         ':python_version=="2.6"': ['ordereddict>=1.1'],
         'develop': ['regex', 'pytest', 'pytest-cov'],
     },
-    entry_points={'console_scripts': ['textile=textile.__main__:main']},
+    entry_points={'console_scripts': ['pytextile=textile.__main__:main']},
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-cov'],
     cmdclass = {'test': pytest},
