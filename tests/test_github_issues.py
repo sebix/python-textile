@@ -89,5 +89,5 @@ def test_github_issue_30():
 def test_github_issue_36():
     text = '"Chögyam Trungpa":https://www.google.com/search?q=Chögyam+Trungpa'
     result = textile.textile(text)
-    expect = '\t<p><a href="https://www.google.com/search?q=Ch%C3%B6gyam%2BTrungpa">Chögyam Trungpa</a></p>'
+    expect = '\t<p><a href="https://www.google.com/search?q=Chögyam+Trungpa">Chögyam Trungpa</a></p>'
     assert result == expect

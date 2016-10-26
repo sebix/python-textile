@@ -938,10 +938,6 @@ class Textile(object):
             quote(unquote(pce).encode('utf8'), b'')
             for pce in parsed.path.split('/')
         )
-        query_text = parsed.query
-        if six.PY2:
-            query_text = query_text.encode('utf-8')
-        query = quote(unquote(query_text), b'=&?/')
         fragment = quote(unquote(parsed.fragment))
 
         # put it back together
@@ -954,7 +950,7 @@ class Textile(object):
         netloc = '{0}{1}'.format(netloc, host)
         if port:
             netloc = '{0}:{1}'.format(netloc, port)
-        return urlunsplit((scheme, netloc, path, query, fragment))
+        return urlunsplit((scheme, netloc, path, parsed.query, fragment))
 
     def span(self, text):
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
