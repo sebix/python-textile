@@ -939,7 +939,7 @@ class Textile(object):
             for pce in parsed.path.split('/')
         )
         query_text = parsed.query
-        if isinstance(query_text, six.text_type):
+        if six.PY2:
             query_text = query_text.encode('utf-8')
         query = quote(unquote(query_text), b'=&?/')
         fragment = quote(unquote(parsed.fragment))
