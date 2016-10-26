@@ -938,7 +938,10 @@ class Textile(object):
             quote(unquote(pce).encode('utf8'), b'')
             for pce in parsed.path.split('/')
         )
-        query = quote(unquote(parsed.query), b'=&?/')
+        query_text = parsed.query
+        if isinstance(query_text, six.text_type):
+            query_text = query_text.encode('utf-8')
+        query = quote(unquote(query_text), b'=&?/')
         fragment = quote(unquote(parsed.fragment))
 
         # put it back together
