@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
@@ -421,6 +420,7 @@ class Textile(object):
         tag = 'p'
         atts = cite = graf = ext = ''
 
+        last_item_is_a_shelf = False
         out = []
 
         for line in text:
@@ -430,6 +430,16 @@ class Textile(object):
             match = re.search(pattern, line, flags=re.S | re.U)
             # tag specified on this line.
             if match:
+                # if we had a previous extended tag but not this time, close up
+                # the tag
+                if out:
+                    last_item_is_a_shelf = out[-1] in self.shelf
+                if ext and match.group('tag') and last_item_is_a_shelf:
+                    content = out.pop()
+                    content = generate_tag(block.inner_tag, content,
+                            block.inner_atts)
+                    out.append(generate_tag(block.outer_tag, content,
+                        block.outer_atts))
                 tag, atts, ext, cite, content = match.groups()
                 block = Block(self, **match.groupdict())
                 inner_block = generate_tag(block.inner_tag, block.content,
@@ -450,7 +460,7 @@ class Textile(object):
                 # if we're inside an extended block, add the text from the
                 # previous extension to the front
                 if ext:
-                    line = '{0}\n{1}'.format(out.pop(), line)
+                    line = '{0}\n\n{1}'.format(out.pop(), line)
                 whitespace = ' \t\n\r\f\v'
                 if ext or not line[0] in whitespace:
                     block = Block(self, tag, atts, ext, cite, line)
@@ -459,6 +469,8 @@ class Textile(object):
                     else:
                         line = generate_tag(block.outer_tag, block.content,
                                 block.outer_atts)
+                        if block.inner_tag == 'code':
+                            line = block.content
                         if block.outer_tag != 'pre' and not has_raw_text(line):
                             line = "\t{0}".format(line)
                 else:
@@ -926,7 +938,6 @@ class Textile(object):
             quote(unquote(pce).encode('utf8'), b'')
             for pce in parsed.path.split('/')
         )
-        query = quote(unquote(parsed.query), b'=&?/')
         fragment = quote(unquote(parsed.fragment))
 
         # put it back together
@@ -939,7 +950,7 @@ class Textile(object):
         netloc = '{0}{1}'.format(netloc, host)
         if port:
             netloc = '{0}:{1}'.format(netloc, port)
-        return urlunsplit((scheme, netloc, path, query, fragment))
+        return urlunsplit((scheme, netloc, path, parsed.query, fragment))
 
     def span(self, text):
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',

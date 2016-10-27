@@ -99,8 +99,10 @@ class Block(object):
             i_tag = ''
             if self.tag == 'bc':
                 i_tag = 'code'
-            self.content = self.textile.shelve(encode_html('{0}\n'.format(
-                self.content.rstrip("\n"))))
+            content = encode_html(self.content)
+            if not self.ext:
+                content = '{0}\n'.format(content)
+            self.content = self.textile.shelve(content)
             self.outer_tag = 'pre'
             self.outer_atts = self.attributes
             self.inner_tag = i_tag

@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 import os
 import sys
+import pytest
 
 def get_version():
     basedir = os.path.dirname(__file__)
@@ -13,6 +14,8 @@ def get_version():
 setup(
     name='textile',
     version=get_version(),
+    author='Dennis Burke',
+    author_email='ikirudennis@gmail.com',
     description='Textile processing for python.',
     url='http://github.com/textile/python-textile',
     packages=find_packages(),
@@ -40,8 +43,10 @@ setup(
         ':python_version=="2.6"': ['ordereddict>=1.1'],
         'develop': ['regex', 'pytest', 'pytest-cov'],
     },
+    entry_points={'console_scripts': ['pytextile=textile.__main__:main']},
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-cov'],
+    cmdclass = {'test': pytest},
     include_package_data=True,
     zip_safe=False,
 )
