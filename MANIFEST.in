@@ -9,3 +9,4 @@ include MANIFEST.in
 include pytest.ini
 include README.textile
 include requirements.txt
+recursive_include tests
