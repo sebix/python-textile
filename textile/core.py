@@ -309,8 +309,12 @@ class Textile(object):
 
             m = re.search(r"^(?P<tl>[#*;:]+)(?P<st>_|\d+)?(?P<atts>{0})[ .]"
                     "(?P<content>.*)$".format(cls_re_s), line, re.S)
-            tl, start, atts, content = m.groups()
-            content = content.strip()
+            if m:
+                tl, start, atts, content = m.groups()
+                content = content.strip()
+            else:
+                result.append(line)
+                break
             nl = ''
             ltype = list_type(tl)
             tl_tags = {';': 'dt', ':': 'dd'}
