@@ -314,7 +314,7 @@ class Textile(object):
             attributes = parse_attributes(atts)
             content = content.strip()
             if '\n' in content:
-                content = re.sub('\n', '<br />\n', content)
+                content = content.replace('\n', '<br />\n')
             nl = ''
             ltype = list_type(tl)
             if i == 0:
@@ -343,7 +343,7 @@ class Textile(object):
                 # put together the start attribute if needed
                 if len(tl) > len(pt) and start is not None:
                     start = ' start="{0}"'.format(self.olstarts[tl])
-                    _list.attributes['start'] = '{0}'.format(self.olstarts[tl])
+                    _list.attributes['start'] = str(self.olstarts[tl])
 
                 # This will only increment the count for list items, not
                 # definition items
