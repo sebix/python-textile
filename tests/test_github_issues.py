@@ -92,7 +92,7 @@ def test_github_issue_36():
     expect = '\t<p><a href="https://www.google.com/search?q=Chögyam+Trungpa">Chögyam Trungpa</a></p>'
     assert result == expect
 
-def test_github_issue_42():
+def test_github_issue_40():
     text = '\r\n'
     result = textile.textile(text)
     expect = '\r\n'
