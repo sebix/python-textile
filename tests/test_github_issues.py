@@ -22,7 +22,7 @@ def test_github_issue_20():
 def test_github_issue_21():
     text = '''h1. xml example
 
-bc. 
+bc.
 <foo>
   bar
 </foo>'''
@@ -90,4 +90,10 @@ def test_github_issue_36():
     text = '"Chögyam Trungpa":https://www.google.com/search?q=Chögyam+Trungpa'
     result = textile.textile(text)
     expect = '\t<p><a href="https://www.google.com/search?q=Chögyam+Trungpa">Chögyam Trungpa</a></p>'
+    assert result == expect
+
+def test_github_issue_42():
+    text = '\r\n'
+    result = textile.textile(text)
+    expect = '\r\n'
     assert result == expect
