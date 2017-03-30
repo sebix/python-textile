@@ -22,7 +22,7 @@ def test_github_issue_20():
 def test_github_issue_21():
     text = '''h1. xml example
 
-bc.
+bc. 
 <foo>
   bar
 </foo>'''
