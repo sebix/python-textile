@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 2.3.7
+* Bugfix: Don't assume pytest is available to be imported in setup.py ("#39":https://github.com/textile/python-textile/issues/39)
+
 h2. Version 2.3.6
 * Packaging: @tests@ directory is correctly included in source-tarball. ("#33":https://github.com/textile/python-textile/issues/33)
 
