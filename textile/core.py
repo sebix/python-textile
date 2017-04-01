@@ -230,7 +230,7 @@ class Textile(object):
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
 
-        if text == '':
+        if text.strip() == '':
             return text
 
         if self.restricted:
@@ -825,7 +825,7 @@ class Textile(object):
             """If we find a closing square bracket we are going to see if it is
             balanced.  If it is balanced with matching opening bracket then it
             is part of the URL else we spit it back out of the URL."""
-            # If counts['['] is None, count the occurrences of '[' 
+            # If counts['['] is None, count the occurrences of '['
             counts['['] = counts['['] or url.count('[')
 
             if counts['['] == counts[']']:

@@ -97,3 +97,9 @@ def test_github_issue_37():
     result = textile.textile(text)
     expect = '\t<ul>\n\t\t<li>xxx</li>\n\t\t<li>yyy<br />\n<strong>blah</strong></li>\n\t\t<li>test</li>\n\t</ul>'
     assert result == expect
+
+def test_github_issue_40():
+    text = '\r\n'
+    result = textile.textile(text)
+    expect = '\r\n'
+    assert result == expect
