@@ -1,5 +1,10 @@
 h1. Textile Changelog
 
+h2. Develop Branch
+* Bugfix: Fix process of string containing only whitespaces ("#40":https://github.com/textile/python-textile/issues/40)
+* Bugfix: Fix process of formatted text after lists ("#37":https://github.com/textile/python-textile/issues/37)
+* Test: Use sys.executable instead of 'python' to test the CLI ("#38":https://github.com/textile/python-textile/issues/38)
+
 h2. Version 2.3.7
 * Bugfix: Don't assume pytest is available to be imported in setup.py ("#39":https://github.com/textile/python-textile/issues/39)
 
