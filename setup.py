@@ -1,7 +1,23 @@
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 import os
 import sys
-import pytest
+
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to pytest")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def run_tests(self):
+        import shlex
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(shlex.split(self.pytest_args))
+        sys.exit(errno)
+
 
 def get_version():
     basedir = os.path.dirname(__file__)
@@ -46,7 +62,7 @@ setup(
     entry_points={'console_scripts': ['pytextile=textile.__main__:main']},
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-cov'],
-    cmdclass = {'test': pytest},
+    cmdclass = {'test': PyTest},
     include_package_data=True,
     zip_safe=False,
 )

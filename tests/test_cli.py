@@ -1,8 +1,9 @@
 import six
 import subprocess
+import sys
 
 def test_console_script():
-    command = ['python', '-m', 'textile', 'README.textile']
+    command = [sys.executable, '-m', 'textile', 'README.textile']
     try:
         result = subprocess.check_output(command)
     except AttributeError:

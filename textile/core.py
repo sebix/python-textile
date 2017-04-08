@@ -230,7 +230,7 @@ class Textile(object):
         self.unreferencedNotes = OrderedDict()
         self.notelist_cache = OrderedDict()
 
-        if text == '':
+        if text.strip() == '':
             return text
 
         if self.restricted:
@@ -298,6 +298,7 @@ class Textile(object):
 
     def fTextileList(self, match):
         text = re.split(r'\n(?=[*#;:])', match.group(), flags=re.M)
+        # import pdb; pdb.set_trace()
         pt = ''
         result = []
         ls = OrderedDict()
@@ -309,8 +310,13 @@ class Textile(object):
 
             m = re.search(r"^(?P<tl>[#*;:]+)(?P<st>_|\d+)?(?P<atts>{0})[ .]"
                     "(?P<content>.*)$".format(cls_re_s), line, re.S)
-            tl, start, atts, content = m.groups()
-            content = content.strip()
+            if m:
+                tl, start, atts, content = m.groups()
+                content = content.strip()
+            else:
+                result.append(line)
+                break
+
             nl = ''
             ltype = list_type(tl)
             tl_tags = {';': 'dt', ':': 'dd'}
@@ -365,7 +371,7 @@ class Textile(object):
             if tl not in ls:
                 ls[tl] = 1
                 itemtag = ("\n{0}\t<{1}>{2}".format(tabs, litem, content) if
-                           showitem else '')
+                            showitem else '')
                 line = "<{0}l{1}{2}>{3}".format(ltype, atts, start, itemtag)
             else:
                 line = ("\t<{0}{1}>{2}".format(litem, atts, content) if
@@ -811,7 +817,7 @@ class Textile(object):
             """If we find a closing square bracket we are going to see if it is
             balanced.  If it is balanced with matching opening bracket then it
             is part of the URL else we spit it back out of the URL."""
-            # If counts['['] is None, count the occurrences of '[' 
+            # If counts['['] is None, count the occurrences of '['
             counts['['] = counts['['] or url.count('[')
 
             if counts['['] == counts[']']:
