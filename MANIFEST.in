@@ -1,6 +1,7 @@
 exclude .gitignore
 exclude TODO.textile
 exclude .travis.yml
+exclude tests/.*
 include CHANGELOG.textile
 include CONTRIBUTORS.txt
 include .coveragerc
