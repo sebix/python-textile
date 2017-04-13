@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 2.3.10
+* Packaging: cleanup in MANIFEST.IN leads to better linux packaging, and smaller wheel size.
+
 h2. Version 2.3.9
 * Packaging: remove extraneous files from the source distribution upload.
 * Remove a lingering file from a feature branch for overhauling list handling.  This brings coverage back up to 100%
