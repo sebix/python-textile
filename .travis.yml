@@ -10,6 +10,8 @@ python:
   - "3.4"
   - "3.5"
   - "pypy"
+before_install:
+  - pip install --upgrade pip
 # command to install dependencies
 install:
   - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
