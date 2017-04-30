@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 2.3.11
+* Bugfix: Don't strip leading dot from image URIs ("#42":https://github.com/textile/python-textile/issues/42)
+
 h2. Version 2.3.10
 * Packaging: cleanup in MANIFEST.IN leads to better linux packaging, and smaller wheel size.
 

@@ -1016,7 +1016,7 @@ class Textile(object):
             \!                  # opening !
             (\<|\=|\>)?         # optional alignment atts
             ({0})               # optional style,class atts
-            (?:\. )?            # optional dot-space
+            (?:\.\s)?           # optional dot-space
             ([^\s(!]+)          # presume this is the src
             \s?                 # optional space
             (?:\(([^\)]+)\))?   # optional title

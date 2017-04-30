@@ -103,3 +103,9 @@ def test_github_issue_40():
     result = textile.textile(text)
     expect = '\r\n'
     assert result == expect
+
+def test_github_issue_42():
+    text = '!./image.png!'
+    result = textile.textile(text)
+    expect = '\t<p><img alt="" src="./image.png" /></p>'
+    assert result == expect
