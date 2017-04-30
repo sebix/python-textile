@@ -13,7 +13,7 @@ python:
 before_install:
   - export _PIP32=''
   - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]] ; then export _PIP32='<8'; fi
-  - pip install --upgrade pip${_PIP32}
+  - pip install --upgrade pip${_PIP32} urllib3[secure]
 # command to install dependencies
 install:
   - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
