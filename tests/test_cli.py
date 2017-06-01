@@ -26,4 +26,6 @@ def test_version_string():
         command[2] = 'textile.__main__'
         result = subprocess.Popen(command,
                 stdout=subprocess.PIPE).communicate()[0]
+    if type(result) == bytes:
+        result = result.decode('utf-8')
     assert result.strip() == textile.__version__
