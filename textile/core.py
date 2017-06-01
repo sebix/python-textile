@@ -465,7 +465,7 @@ class Textile(object):
             else:
                 # if we're inside an extended block, add the text from the
                 # previous extension to the front
-                if ext:
+                if ext and out:
                     line = '{0}\n\n{1}'.format(out.pop(), line)
                 whitespace = ' \t\n\r\f\v'
                 if ext or not line[0] in whitespace:
@@ -494,7 +494,7 @@ class Textile(object):
                 cite = ''
                 graf = ''
 
-        if ext:
+        if ext and out:
             out.append(generate_tag(block.outer_tag, out.pop(),
                 block.outer_atts))
         return '\n\n'.join(out)
