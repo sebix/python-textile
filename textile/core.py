@@ -672,7 +672,10 @@ class Textile(object):
                             balanced = balanced - 1
                         if re.search(r'\S$', possibility, flags=re.U): # pragma: no branch
                             balanced = balanced + 1
-                        possibility = possible_start_quotes.pop()
+                        try:
+                            possibility = possible_start_quotes.pop()
+                        except IndexError:
+                            break
                     else:
                         # If quotes occur next to each other, we get zero
                         # length strings.  eg. ...""Open the door,
