@@ -759,9 +759,9 @@ class Textile(object):
             $'''.format(cls_re_s, regex_snippets['space']), inner,
                 flags=re.X | re.U)
 
-        atts = m.group('atts') or ''
-        text = m.group('text') or '' or inner
-        title = m.group('title') or ''
+        atts = (m and m.group('atts')) or ''
+        text = (m and m.group('text')) or inner
+        title = (m and m.group('title')) or ''
 
         pop, tight = '', ''
         counts = { '[': None, ']': url.count(']'), '(': None, ')': None }
