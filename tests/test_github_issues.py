@@ -27,7 +27,7 @@ bc.
   bar
 </foo>'''
     result = textile.textile(text)
-    expect = '\t<h1>xml example</h1>\n\n<pre><code>\n&lt;foo&gt;\n  bar\n&lt;/foo&gt;\n</code></pre>'
+    expect = '\t<h1>xml example</h1>\n\n<pre><code>\n&lt;foo&gt;\n  bar\n&lt;/foo&gt;</code></pre>'
     assert result == expect
 
 def test_github_issue_22():
@@ -108,4 +108,10 @@ def test_github_issue_42():
     text = '!./image.png!'
     result = textile.textile(text)
     expect = '\t<p><img alt="" src="./image.png" /></p>'
+    assert result == expect
+
+def test_github_issue_43():
+    text = 'pre. smart ‘quotes’ are not smart!'
+    result = textile.textile(text)
+    expect = '<pre>smart ‘quotes’ are not smart!</pre>'
     assert result == expect
