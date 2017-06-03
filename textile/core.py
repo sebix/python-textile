@@ -298,7 +298,6 @@ class Textile(object):
 
     def fTextileList(self, match):
         text = re.split(r'\n(?=[*#;:])', match.group(), flags=re.M)
-        # import pdb; pdb.set_trace()
         pt = ''
         result = []
         ls = OrderedDict()
@@ -315,7 +314,7 @@ class Textile(object):
                 content = content.strip()
             else:
                 result.append(line)
-                break
+                continue
 
             nl = ''
             ltype = list_type(tl)

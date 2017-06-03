@@ -98,6 +98,21 @@ def test_github_issue_37():
     expect = '\t<p>\t<ol>\n\t\t<li>xxx</li>\n\t\t<li>yyy</li>\n\t</ol><br />\n<strong>blah</strong></p>'
     assert result == expect
 
+    text = '*Highlights*\n\n* UNITEK Y-3705A Type-C Universal DockingStation Pro\n* USB3.0/RJ45/EARPHONE/MICROPHONE/HDMI 6 PORT HUB 1.2m Data Cable 5V 4A Power Adaptor\n*\n* Dimensions: 25cm x 13cm x 9cm\n* Weight: 0.7kg'
+    result = textile.textile(text)
+    expect = '''\t<p><strong>Highlights</strong></p>
+
+\t<ul>
+\t\t<li><span class="caps">UNITEK</span> Y-3705A Type-C Universal DockingStation Pro</li>
+\t\t<li>USB3.0/RJ45/EARPHONE/MICROPHONE/HDMI 6 <span class="caps">PORT</span> <span class="caps">HUB</span> 1.2m Data Cable 5V 4A Power Adaptor</li>
+\t</ul>
+*
+\t<ul>
+\t\t<li>Dimensions: 25cm x 13cm x 9cm</li>
+\t\t<li>Weight: 0.7kg</li>
+\t</ul>'''
+    assert result == expect
+
 def test_github_issue_40():
     text = '\r\n'
     result = textile.textile(text)
