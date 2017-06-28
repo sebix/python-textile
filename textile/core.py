@@ -1356,7 +1356,7 @@ class Textile(object):
         return self.linkIndex
 
 
-def textile(text, html_type='xhtml', encoding=None, output=None):
+def textile(text, html_type='xhtml'):
     """
     Apply Textile to a block of text.
 
