@@ -942,10 +942,16 @@ class Textile(object):
                     quote(netloc_parsed['password']))
         host = netloc_parsed['host']
         port = netloc_parsed['port'] and netloc_parsed['port']
-        path = '/'.join(  # could be encoded slashes!
-            quote(unquote(pce.encode('utf8')), b'')
-            for pce in parsed.path.split('/')
-        )
+        if six.PY2:
+            path = '/'.join( # could be encoded slashes!
+                quote(unquote(pce.encode('utf8')), b'')
+                for pce in parsed.path.split('/')
+            )
+        else:
+            path = '/'.join( # could be encoded slashes!
+                quote(unquote(pce), b'')
+                for pce in parsed.path.split('/')
+            )
         fragment = quote(unquote(parsed.fragment))
 
         # put it back together
