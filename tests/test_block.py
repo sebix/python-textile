@@ -69,3 +69,25 @@ def test_blockcode_comment():
     t = textile.Textile()
     result = t.parse(input)
     assert result == expect
+
+def test_extended_pre_block_with_many_newlines():
+    """Extra newlines in an extended pre block should not get cut down to only
+    two."""
+    text = '''pre.. word
+
+another
+
+word
+
+
+yet anothe word'''
+    expect = '''<pre>word
+
+another
+
+word
+
+
+yet anothe word</pre>'''
+    result = textile.textile(text)
+    assert result == expect

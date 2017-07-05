@@ -433,12 +433,12 @@ class Textile(object):
                     r'(?::(?P<cite>\S+))? (?P<content>.*)$'.format(tre,
                         align_re_s, cls_re_s))
             match = re.search(pattern, line, flags=re.S | re.U)
+            if out:
+                last_item_is_a_shelf = out[-1] in self.shelf
             # tag specified on this line.
             if match:
                 # if we had a previous extended tag but not this time, close up
                 # the tag
-                if out:
-                    last_item_is_a_shelf = out[-1] in self.shelf
                 if ext and match.group('tag') and last_item_is_a_shelf:
                     content = out.pop()
                     content = generate_tag(block.inner_tag, content,
@@ -467,9 +467,14 @@ class Textile(object):
                 if ext and out:
                     line = '{0}\n\n{1}'.format(out.pop(), line)
                 whitespace = ' \t\n\r\f\v'
-                if ext or not line[0] in whitespace:
+                try:
+                    line_first_char_blank = line[0] in whitespace
+                except IndexError:
+                    line_first_char_blank = True
+                if ext or not line_first_char_blank:
                     block = Block(self, tag, atts, ext, cite, line)
-                    if block.tag == 'p' and not has_raw_text(block.content):
+                    if (block.tag == 'p' and not has_raw_text(block.content)
+                        or last_item_is_a_shelf):
                         line = block.content
                     else:
                         line = generate_tag(block.outer_tag, block.content,
