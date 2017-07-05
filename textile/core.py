@@ -479,8 +479,7 @@ class Textile(object):
                     else:
                         line = generate_tag(block.outer_tag, block.content,
                                 block.outer_atts)
-                        if block.outer_tag != 'pre' and not has_raw_text(line):
-                            line = "\t{0}".format(line)
+                        line = "\t{0}".format(line)
                 else:
                     line = self.graf(line)
 
