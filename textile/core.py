@@ -479,8 +479,6 @@ class Textile(object):
                     else:
                         line = generate_tag(block.outer_tag, block.content,
                                 block.outer_atts)
-                        if block.inner_tag == 'code':
-                            line = block.content
                         if block.outer_tag != 'pre' and not has_raw_text(line):
                             line = "\t{0}".format(line)
                 else:
