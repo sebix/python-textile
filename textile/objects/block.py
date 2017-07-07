@@ -49,6 +49,7 @@ class Block(object):
             # It will be empty if the regex matched and ate it.
             if '' == notedef:
                 self.content = notedef
+                self.eat = True
 
         fns = re.search(r'fn(?P<fnid>{0}+)'.format(regex_snippets['digit']),
                 self.tag, flags=re.U)

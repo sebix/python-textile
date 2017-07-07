@@ -420,31 +420,41 @@ class Textile(object):
             tre = '|'.join(self.btag)
         else:
             tre = '|'.join(self.btag_lite)
-        text = text.split('\n\n')
+
+        # split the text by two or more newlines, retaining the newlines in the
+        # split list
+        text = re.split(r'(\n{2,})', text)
+
+        eat_whitespace = False
 
         tag = 'p'
-        atts = cite = graf = ext = ''
+        atts = cite = ext = ''
 
-        last_item_is_a_shelf = False
         out = []
 
         for line in text:
+            if not line.strip():
+                if not eat_whitespace:
+                    out.append(line)
+                continue
+
+            eat_whitespace = False
+
             pattern = (r'^(?P<tag>{0})(?P<atts>{1}{2})\.(?P<ext>\.?)'
                     r'(?::(?P<cite>\S+))? (?P<content>.*)$'.format(tre,
                         align_re_s, cls_re_s))
             match = re.search(pattern, line, flags=re.S | re.U)
-            if out:
-                last_item_is_a_shelf = out[-1] in self.shelf
             # tag specified on this line.
             if match:
                 # if we had a previous extended tag but not this time, close up
                 # the tag
-                if ext and match.group('tag') and last_item_is_a_shelf:
-                    content = out.pop()
+                if ext and out:
+                    content = out[-2]
                     content = generate_tag(block.inner_tag, content,
                             block.inner_atts)
-                    out.append(generate_tag(block.outer_tag, content,
-                        block.outer_atts))
+                    content = generate_tag(block.outer_tag, content,
+                        block.outer_atts)
+                    out[-2] = content
                 tag, atts, ext, cite, content = match.groups()
                 block = Block(self, **match.groupdict())
                 inner_block = generate_tag(block.inner_tag, block.content,
@@ -465,16 +475,10 @@ class Textile(object):
                 # if we're inside an extended block, add the text from the
                 # previous extension to the front
                 if ext and out:
-                    line = '{0}\n\n{1}'.format(out.pop(), line)
-                whitespace = ' \t\n\r\f\v'
-                try:
-                    line_first_char_blank = line[0] in whitespace
-                except IndexError:
-                    line_first_char_blank = True
-                if ext or not line_first_char_blank:
+                    line = '{0}{1}'.format(out.pop(), line)
+                if not ext or line[0].strip():
                     block = Block(self, tag, atts, ext, cite, line)
-                    if (block.tag == 'p' and not has_raw_text(block.content)
-                        or last_item_is_a_shelf):
+                    if block.tag == 'p' and not has_raw_text(block.content):
                         line = block.content
                     else:
                         line = generate_tag(block.outer_tag, block.content,
@@ -486,19 +490,27 @@ class Textile(object):
             line = self.doPBr(line)
             line = line.replace('<br>', '<br />')
 
-            if line.strip():
+            if ext and not match:
+                try:
+                    last_item = out.pop()
+                except IndexError:
+                    last_item = ''
+                out.append('{0}{1}'.format(last_item, line))
+            elif not block.eat:
                 out.append(line)
 
             if not ext:
                 tag = 'p'
                 atts = ''
                 cite = ''
-                graf = ''
+
+            if block.eat:
+                eat_whitespace = True
 
         if ext and out:
             out.append(generate_tag(block.outer_tag, out.pop(),
                 block.outer_atts))
-        return '\n\n'.join(out)
+        return ''.join(out)
 
     def footnoteRef(self, text):
         # somehow php-textile gets away with not capturing the space.

@@ -91,3 +91,8 @@ word
 yet anothe word</pre>'''
     result = textile.textile(text)
     assert result == expect
+
+    text = 'p. text text\n\n\nh1. Hello\n'
+    expect = '\t<p>text text</p>\n\n\n\t<h1>Hello</h1>'
+    result = textile.textile(text)
+    assert result == expect
