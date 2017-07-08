@@ -277,6 +277,8 @@ class Textile(object):
         # a newline, replace it with a new style break tag and a newline.
         text = re.sub(r'<br( /)?>(?!\n)', '<br />\n', text)
 
+        text = text.rstrip('\n')
+
         return text
 
     def table(self, text):
@@ -449,7 +451,7 @@ class Textile(object):
                 # if we had a previous extended tag but not this time, close up
                 # the tag
                 if ext and out:
-                    content = out[-2]
+                    content = encode_html(out[-2], quotes=True)
                     content = generate_tag(block.inner_tag, content,
                             block.inner_atts)
                     content = generate_tag(block.outer_tag, content,
@@ -476,7 +478,10 @@ class Textile(object):
                 # previous extension to the front
                 if ext and out:
                     line = '{0}{1}'.format(out.pop(), line)
-                if not ext or line[0].strip():
+                # the logic in the if statement below is a bit confusing in
+                # php-textile. I'm still not sure I understand what the php
+                # code is doing.
+                if not ext and not line[0] == ' ':
                     block = Block(self, tag, atts, ext, cite, line)
                     if block.tag == 'p' and not has_raw_text(block.content):
                         line = block.content
@@ -491,10 +496,7 @@ class Textile(object):
             line = line.replace('<br>', '<br />')
 
             if ext and not match:
-                try:
-                    last_item = out.pop()
-                except IndexError:
-                    last_item = ''
+                last_item = out.pop()
                 out.append('{0}{1}'.format(last_item, line))
             elif not block.eat:
                 out.append(line)
