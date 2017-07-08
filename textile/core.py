@@ -348,7 +348,10 @@ class Textile(object):
                 # This will only increment the count for list items, not
                 # definition items
                 if showitem:
-                    self.olstarts[tl] = self.olstarts[tl] + 1
+                    try:
+                        self.olstarts[tl] = self.olstarts[tl] + 1
+                    except KeyError:
+                        self.olstarts[tl] = 1
 
             nm = re.match("^(?P<nextlistitem>[#\*;:]+)(_|[\d]+)?{0}"
                     "[ .].*".format(cls_re_s), nextline)
