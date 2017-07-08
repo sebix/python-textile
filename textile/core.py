@@ -346,8 +346,12 @@ class Textile(object):
                 # This will only increment the count for list items, not
                 # definition items
                 if showitem:
+                    # Assume properly formatted input
                     try:
                         self.olstarts[tl] = self.olstarts[tl] + 1
+                    # if we get here, we've got some poor textile formatting.
+                    # add this type of list to olstarts and assume we'llstart
+                    # it at 1. expect screwy output.
                     except KeyError:
                         self.olstarts[tl] = 1
 
