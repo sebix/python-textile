@@ -20,10 +20,12 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import uuid
 import six
+from six.moves.urllib_parse import (urlparse, urlsplit, urlunsplit, quote,
+        unquote)
 
 from textile.tools import sanitizer, imagesize
-from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
-        pnct_re_s, regex_snippets, syms_re_s, table_span_re_s, valign_re_s)
+from textile.regex_strings import (align_re_s, cls_re_s, pnct_re_s,
+        regex_snippets, syms_re_s, table_span_re_s)
 from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
         parse_attributes, pba)
@@ -35,10 +37,6 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-from six.moves import urllib
-urlparse, urlsplit, urlunsplit, quote, unquote = (urllib.parse.urlparse,
-        urllib.parse.urlsplit, urllib.parse.urlunsplit, urllib.parse.quote,
-        urllib.parse.unquote)
 
 try:
     import regex as re
@@ -430,6 +428,8 @@ class Textile(object):
         # split list
         text = re.split(r'(\n{2,})', text)
 
+        # some blocks, when processed, will ask us to output nothing, if that's
+        # the case, we'd want to drop the whitespace which comes after it.
         eat_whitespace = False
 
         tag = 'p'
@@ -438,6 +438,7 @@ class Textile(object):
         out = []
 
         for line in text:
+            # the line is just whitespace, add it to the output, and move on
             if not line.strip():
                 if not eat_whitespace:
                     out.append(line)
@@ -454,6 +455,8 @@ class Textile(object):
                 # if we had a previous extended tag but not this time, close up
                 # the tag
                 if ext and out:
+                    # it's out[-2] because the last element in out is the
+                    # whitespace that preceded this line
                     content = encode_html(out[-2], quotes=True)
                     content = generate_tag(block.inner_tag, content,
                             block.inner_atts)
@@ -478,14 +481,20 @@ class Textile(object):
             # no tag specified
             else:
                 # if we're inside an extended block, add the text from the
-                # previous extension to the front
+                # previous line to the front
                 if ext and out:
                     line = '{0}{1}'.format(out.pop(), line)
                 # the logic in the if statement below is a bit confusing in
                 # php-textile. I'm still not sure I understand what the php
-                # code is doing.
+                # code is doing. Something tells me it's a phpsadness. Anyway,
+                # this works, and is much easier to understand: if we're not in
+                # an extension, and the line doesn't begin with a space, treat
+                # it like a block to insert. Lines that begin with a space are
+                # not processed as a block.
                 if not ext and not line[0] == ' ':
                     block = Block(self, tag, atts, ext, cite, line)
+                    # if the block contains html tags, generate_tag would
+                    # mangle it, so process as is.
                     if block.tag == 'p' and not has_raw_text(block.content):
                         line = block.content
                     else:
@@ -498,10 +507,14 @@ class Textile(object):
             line = self.doPBr(line)
             line = line.replace('<br>', '<br />')
 
+            # if we're in an extended block, and we haven't specified a new
+            # tag, join this line to the last item of the output
             if ext and not match:
                 last_item = out.pop()
                 out.append('{0}{1}'.format(last_item, line))
             elif not block.eat:
+                # or if it's a type of block which indicates we shouldn't drop
+                # it, add it to the output.
                 out.append(line)
 
             if not ext:
@@ -509,12 +522,16 @@ class Textile(object):
                 atts = ''
                 cite = ''
 
+            # if it's a block we should drop, don't keep the whitespace which
+            # will come after it.
             if block.eat:
                 eat_whitespace = True
 
+        # at this point, we've gone through all the lines, and if there's still
+        # an extension in effect, we close it here.
         if ext and out:
-            out.append(generate_tag(block.outer_tag, out.pop(),
-                block.outer_atts))
+            final = generate_tag(block.outer_tag, out.pop(), block.outer_atts)
+            out.append(final)
         return ''.join(out)
 
     def footnoteRef(self, text):
