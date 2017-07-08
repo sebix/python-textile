@@ -350,7 +350,7 @@ class Textile(object):
                     try:
                         self.olstarts[tl] = self.olstarts[tl] + 1
                     # if we get here, we've got some poor textile formatting.
-                    # add this type of list to olstarts and assume we'llstart
+                    # add this type of list to olstarts and assume we'll start
                     # it at 1. expect screwy output.
                     except KeyError:
                         self.olstarts[tl] = 1
@@ -982,16 +982,19 @@ class Textile(object):
                     quote(netloc_parsed['password']))
         host = netloc_parsed['host']
         port = netloc_parsed['port'] and netloc_parsed['port']
+        # the below splits the path portion of the url by slashes, translates
+        # percent-encoded characters back into strings, then re-percent-encodes
+        # what's necessary. Sounds screwy, but the url could include encoded
+        # slashes, and this is a way to clean that up. It branches for PY2/3
+        # because the quote and unquote functions expects different input
+        # types: unicode strings for PY2 and str for PY3.
         if six.PY2:
-            path = '/'.join( # could be encoded slashes!
-                quote(unquote(pce.encode('utf8')), b'')
-                for pce in parsed.path.split('/')
-            )
+            path_parts = (quote(unquote(pce.encode('utf8')), b'') for pce in
+                    parsed.path.split('/'))
         else:
-            path = '/'.join( # could be encoded slashes!
-                quote(unquote(pce), b'')
-                for pce in parsed.path.split('/')
-            )
+            path_parts = (quote(unquote(pce), b'') for pce in
+                    parsed.path.split('/'))
+        path = '/'.join(path_parts)
         fragment = quote(unquote(parsed.fragment))
 
         # put it back together
