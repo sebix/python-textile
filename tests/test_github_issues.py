@@ -130,3 +130,39 @@ def test_github_issue_43():
     result = textile.textile(text)
     expect = '<pre>smart ‘quotes’ are not smart!</pre>'
     assert result == expect
+
+def test_github_issue_45():
+    """Incorrect transform unicode url"""
+    text = '"test":https://myabstractwiki.ru/index.php/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0'
+    result = textile.textile(text)
+    expect = '\t<p><a href="https://myabstractwiki.ru/index.php/%D0%97%D0%B0%D0%B3%D0%BB%D0%B0%D0%B2%D0%BD%D0%B0%D1%8F_%D1%81%D1%82%D1%80%D0%B0%D0%BD%D0%B8%D1%86%D0%B0">test</a></p>'
+    assert result == expect
+
+def test_github_issue_46():
+    """Key error on mal-formed numbered lists. CAUTION: both the input and the
+    ouput are ugly."""
+    text = '# test\n### test\n## test'
+    expect = ('\t<ol>\n\t\t<li>test\n\t\t\t<ol>\n\t\t\t\t<li>test</li>'
+              '\n\t\t\t</ol></li>\n\t\t<ol>\n\t\t\t<li>test</li>'
+              '\n\t\t</ol></li>\n\t\t</ol>')
+    result = textile.textile(text)
+    assert result == expect
+
+def test_github_issue_47():
+    """Incorrect wrap pre-formatted value"""
+    text = '''pre.. word
+
+another
+
+word
+
+yet anothe word'''
+    result = textile.textile(text)
+    expect = '''<pre>word
+
+another
+
+word
+
+yet anothe word</pre>'''
+    assert result == expect

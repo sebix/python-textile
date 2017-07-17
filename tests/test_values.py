@@ -178,7 +178,7 @@ xhtml_known_values = (
     ('@monospaced text@, followed by text',
      '\t<p><code>monospaced text</code>, followed by text</p>'),
 
-    ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\t<p>some text</p>'),
+    ('h2. A header\n\n\n\n\n\nsome text', '\t<h2>A header</h2>\n\n\n\n\n\n\t<p>some text</p>'),
 
     ('pre.. foo bar baz\nquux', '<pre>foo bar baz\nquux</pre>'),
 
