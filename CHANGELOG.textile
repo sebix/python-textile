@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 2.3.14
+* Bugfix: Fix textile on Python 2.6 ("#48":https://github.com/textile/python-textile/issues/48)
+
 h2. Version 2.3.13
 * Remove extraneous arguments from textile method. These were originally added long ago to work with django, but markup languages are long gone from django.
 * Bugfix: Don't mangle percent-encoded URLs so much. ("#45":https://github.com/textile/python-textile/issues/45)
