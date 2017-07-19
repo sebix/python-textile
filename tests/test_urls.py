@@ -59,3 +59,11 @@ def test_rel_attribute():
     result = t.parse('"$":http://domain.tld')
     expect = '\t<p><a href="http://domain.tld" rel="nofollow">domain.tld</a></p>'
     assert result == expect
+
+def test_quotes_in_link_text():
+    """quotes in link text are tricky."""
+    test = '""this is a quote in link text"":url'
+    t = Textile()
+    result = t.parse(test)
+    expect = '\t<p><a href="url">&#8220;this is a quote in link text&#8221;</a></p>'
+    assert result == expect

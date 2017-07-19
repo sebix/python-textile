@@ -577,10 +577,6 @@ class Textile(object):
         So, for the first pass, we use the glyph_search_initial set of
         regexes.  For all remaining passes, we use glyph_search
         """
-        # fix: hackish
-        if text.endswith('"'):
-            text = '{0} '.format(text)
-
         text = text.rstrip('\n')
         result = []
         searchlist = self.glyph_search_initial
@@ -729,7 +725,7 @@ class Textile(object):
 
                         try:
                             possibility = possible_start_quotes.pop()
-                        except IndexError:
+                        except IndexError: # pragma: no branch
                             # If out of possible starting segments we back the
                             # last one from the linkparts array
                             linkparts.pop()
