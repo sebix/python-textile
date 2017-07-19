@@ -725,7 +725,7 @@ class Textile(object):
 
                         try:
                             possibility = possible_start_quotes.pop()
-                        except IndexError: # pragma: no branch
+                        except IndexError: # pragma: no cover
                             # If out of possible starting segments we back the
                             # last one from the linkparts array
                             linkparts.pop()
