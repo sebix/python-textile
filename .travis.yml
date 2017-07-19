@@ -10,8 +10,8 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "pypy-5.8"
-  - "pypy3-5.8"
+  - "pypy-5.4"
+  - "pypy3-5.4"
 # command to install dependencies
 install:
   - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
