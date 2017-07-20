@@ -10,14 +10,14 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "pypy"
+  - "pypy-5.4"
 # command to install dependencies
 install:
   - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
   - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]] ; then pip install coverage==3.7.1; fi
   - pip install coveralls pytest pytest-cov coverage codecov
   - pip install -e .
-  - if [[ ! $TRAVIS_PYTHON_VERSION == 'pypy' ]] ; then pip install regex; fi
+  - if [[ ! $TRAVIS_PYTHON_VERSION == 'pypy-5.4' ]] ; then pip install regex; fi
 # command to run tests
 script: py.test
 sudo: false

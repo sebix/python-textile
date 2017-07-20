@@ -20,10 +20,12 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 import uuid
 import six
+from six.moves.urllib_parse import (urlparse, urlsplit, urlunsplit, quote,
+        unquote)
 
 from textile.tools import sanitizer, imagesize
-from textile.regex_strings import (align_re_s, cls_re_s, halign_re_s,
-        pnct_re_s, regex_snippets, syms_re_s, table_span_re_s, valign_re_s)
+from textile.regex_strings import (align_re_s, cls_re_s, pnct_re_s,
+        regex_snippets, syms_re_s, table_span_re_s)
 from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
         parse_attributes, pba)
@@ -35,10 +37,6 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-from six.moves import urllib
-urlparse, urlsplit, urlunsplit, quote, unquote = (urllib.parse.urlparse,
-        urllib.parse.urlsplit, urllib.parse.urlunsplit, urllib.parse.quote,
-        urllib.parse.unquote)
 
 try:
     import regex as re
@@ -277,6 +275,8 @@ class Textile(object):
         # a newline, replace it with a new style break tag and a newline.
         text = re.sub(r'<br( /)?>(?!\n)', '<br />\n', text)
 
+        text = text.rstrip('\n')
+
         return text
 
     def table(self, text):
@@ -346,7 +346,14 @@ class Textile(object):
                 # This will only increment the count for list items, not
                 # definition items
                 if showitem:
-                    self.olstarts[tl] = self.olstarts[tl] + 1
+                    # Assume properly formatted input
+                    try:
+                        self.olstarts[tl] = self.olstarts[tl] + 1
+                    # if we get here, we've got some poor textile formatting.
+                    # add this type of list to olstarts and assume we'll start
+                    # it at 1. expect screwy output.
+                    except KeyError:
+                        self.olstarts[tl] = 1
 
             nm = re.match("^(?P<nextlistitem>[#\*;:]+)(_|[\d]+)?{0}"
                     "[ .].*".format(cls_re_s), nextline)
@@ -420,15 +427,29 @@ class Textile(object):
             tre = '|'.join(self.btag)
         else:
             tre = '|'.join(self.btag_lite)
-        text = text.split('\n\n')
+
+        # split the text by two or more newlines, retaining the newlines in the
+        # split list
+        text = re.split(r'(\n{2,})', text)
+
+        # some blocks, when processed, will ask us to output nothing, if that's
+        # the case, we'd want to drop the whitespace which comes after it.
+        eat_whitespace = False
 
         tag = 'p'
-        atts = cite = graf = ext = ''
+        atts = cite = ext = ''
 
-        last_item_is_a_shelf = False
         out = []
 
         for line in text:
+            # the line is just whitespace, add it to the output, and move on
+            if not line.strip():
+                if not eat_whitespace:
+                    out.append(line)
+                continue
+
+            eat_whitespace = False
+
             pattern = (r'^(?P<tag>{0})(?P<atts>{1}{2})\.(?P<ext>\.?)'
                     r'(?::(?P<cite>\S+))? (?P<content>.*)$'.format(tre,
                         align_re_s, cls_re_s))
@@ -437,14 +458,15 @@ class Textile(object):
             if match:
                 # if we had a previous extended tag but not this time, close up
                 # the tag
-                if out:
-                    last_item_is_a_shelf = out[-1] in self.shelf
-                if ext and match.group('tag') and last_item_is_a_shelf:
-                    content = out.pop()
+                if ext and out:
+                    # it's out[-2] because the last element in out is the
+                    # whitespace that preceded this line
+                    content = encode_html(out[-2], quotes=True)
                     content = generate_tag(block.inner_tag, content,
                             block.inner_atts)
-                    out.append(generate_tag(block.outer_tag, content,
-                        block.outer_atts))
+                    content = generate_tag(block.outer_tag, content,
+                        block.outer_atts)
+                    out[-2] = content
                 tag, atts, ext, cite, content = match.groups()
                 block = Block(self, **match.groupdict())
                 inner_block = generate_tag(block.inner_tag, block.content,
@@ -463,40 +485,58 @@ class Textile(object):
             # no tag specified
             else:
                 # if we're inside an extended block, add the text from the
-                # previous extension to the front
+                # previous line to the front
                 if ext and out:
-                    line = '{0}\n\n{1}'.format(out.pop(), line)
-                whitespace = ' \t\n\r\f\v'
-                if ext or not line[0] in whitespace:
+                    line = '{0}{1}'.format(out.pop(), line)
+                # the logic in the if statement below is a bit confusing in
+                # php-textile. I'm still not sure I understand what the php
+                # code is doing. Something tells me it's a phpsadness. Anyway,
+                # this works, and is much easier to understand: if we're not in
+                # an extension, and the line doesn't begin with a space, treat
+                # it like a block to insert. Lines that begin with a space are
+                # not processed as a block.
+                if not ext and not line[0] == ' ':
                     block = Block(self, tag, atts, ext, cite, line)
+                    # if the block contains html tags, generate_tag would
+                    # mangle it, so process as is.
                     if block.tag == 'p' and not has_raw_text(block.content):
                         line = block.content
                     else:
                         line = generate_tag(block.outer_tag, block.content,
                                 block.outer_atts)
-                        if block.inner_tag == 'code':
-                            line = block.content
-                        if block.outer_tag != 'pre' and not has_raw_text(line):
-                            line = "\t{0}".format(line)
+                        line = "\t{0}".format(line)
                 else:
                     line = self.graf(line)
 
             line = self.doPBr(line)
             line = line.replace('<br>', '<br />')
 
-            if line.strip():
+            # if we're in an extended block, and we haven't specified a new
+            # tag, join this line to the last item of the output
+            if ext and not match:
+                last_item = out.pop()
+                out.append('{0}{1}'.format(last_item, line))
+            elif not block.eat:
+                # or if it's a type of block which indicates we shouldn't drop
+                # it, add it to the output.
                 out.append(line)
 
             if not ext:
                 tag = 'p'
                 atts = ''
                 cite = ''
-                graf = ''
 
+            # if it's a block we should drop, don't keep the whitespace which
+            # will come after it.
+            if block.eat:
+                eat_whitespace = True
+
+        # at this point, we've gone through all the lines, and if there's still
+        # an extension in effect, we close it here.
         if ext and out:
-            out.append(generate_tag(block.outer_tag, out.pop(),
-                block.outer_atts))
-        return '\n\n'.join(out)
+            final = generate_tag(block.outer_tag, out.pop(), block.outer_atts)
+            out.append(final)
+        return ''.join(out)
 
     def footnoteRef(self, text):
         # somehow php-textile gets away with not capturing the space.
@@ -537,10 +577,6 @@ class Textile(object):
         So, for the first pass, we use the glyph_search_initial set of
         regexes.  For all remaining passes, we use glyph_search
         """
-        # fix: hackish
-        if text.endswith('"'):
-            text = '{0} '.format(text)
-
         text = text.rstrip('\n')
         result = []
         searchlist = self.glyph_search_initial
@@ -689,7 +725,7 @@ class Textile(object):
 
                         try:
                             possibility = possible_start_quotes.pop()
-                        except IndexError:
+                        except IndexError: # pragma: no cover
                             # If out of possible starting segments we back the
                             # last one from the linkparts array
                             linkparts.pop()
@@ -942,11 +978,19 @@ class Textile(object):
                     quote(netloc_parsed['password']))
         host = netloc_parsed['host']
         port = netloc_parsed['port'] and netloc_parsed['port']
-        path = '/'.join(  # could be encoded slashes!
-            quote(unquote(pce).encode('utf8'), b'')
-            for pce in parsed.path.split('/')
-        )
-        fragment = quote(unquote(parsed.fragment))
+        # the below splits the path portion of the url by slashes, translates
+        # percent-encoded characters back into strings, then re-percent-encodes
+        # what's necessary. Sounds screwy, but the url could include encoded
+        # slashes, and this is a way to clean that up. It branches for PY2/3
+        # because the quote and unquote functions expects different input
+        # types: unicode strings for PY2 and str for PY3.
+        if six.PY2:
+            path_parts = (quote(unquote(pce.encode('utf8')), b'') for pce in
+                    parsed.path.split('/'))
+        else:
+            path_parts = (quote(unquote(pce), b'') for pce in
+                    parsed.path.split('/'))
+        path = '/'.join(path_parts)
 
         # put it back together
         netloc = ''
@@ -958,7 +1002,7 @@ class Textile(object):
         netloc = '{0}{1}'.format(netloc, host)
         if port:
             netloc = '{0}:{1}'.format(netloc, port)
-        return urlunsplit((scheme, netloc, path, parsed.query, fragment))
+        return urlunsplit((scheme, netloc, path, parsed.query, parsed.fragment))
 
     def span(self, text):
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
@@ -1356,7 +1400,7 @@ class Textile(object):
         return self.linkIndex
 
 
-def textile(text, html_type='xhtml', encoding=None, output=None):
+def textile(text, html_type='xhtml'):
     """
     Apply Textile to a block of text.
 

@@ -26,7 +26,3 @@ def test_glyphs():
     result = t.glyphs("<p><cite>Cat's Cradle</cite> by Vonnegut</p>")
     expect = '<p><cite>Cat&#8217;s Cradle</cite> by Vonnegut</p>'
     assert result == expect
-
-    result = t.glyphs('test"')
-    expect = 'test&#8221; '
-    assert result == expect

@@ -1,5 +1,17 @@
 h1. Textile Changelog
 
+h2. Version 2.3.15
+* Bugfix: Don't break on unicode characters in the fragment of a url.
+
+h2. Version 2.3.14
+* Bugfix: Fix textile on Python 2.6 ("#48":https://github.com/textile/python-textile/issues/48)
+
+h2. Version 2.3.13
+* Remove extraneous arguments from textile method. These were originally added long ago to work with django, but markup languages are long gone from django.
+* Bugfix: Don't mangle percent-encoded URLs so much. ("#45":https://github.com/textile/python-textile/issues/45)
+* Bugfix: More fixes for poorly-formatted lists. ("#46":https://github.com/textile/python-textile/issues/46)
+* Bugfix: Improve handling of whitespace in pre-formatted blocks. This now matches php-textile's handling of pre blocks much more closely. ("#47":https://github.com/textile/python-textile/issues/47)
+
 h2. Version 2.3.12
 * Bugfix: Don't die on pre blocks with unicode characters. ("#43":https://github.com/textile/python-textile/issues/43)
 * Bugfix: Fix regressions introduced into the code between 2.2.2 and 2.3.11. (Special thanks to "@adam-iris":https://github.com/adam-iris for providing pull request "#44":https://github.com/textile/python-textile/pull/44)
