@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 2.3.15
+* Bugfix: Don't break on unicode characters in the fragment of a url.
+
 h2. Version 2.3.14
 * Bugfix: Fix textile on Python 2.6 ("#48":https://github.com/textile/python-textile/issues/48)
 
