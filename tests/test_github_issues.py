@@ -166,3 +166,10 @@ word
 
 yet anothe word</pre>'''
     assert result == expect
+
+def test_github_issue_49():
+    """Key error on russian hash-route link"""
+    s = '"link":https://ru.vuejs.org/v2/guide/components.html#Входные-параметры'
+    result = textile.textile(s)
+    expect = '\t<p><a href="https://ru.vuejs.org/v2/guide/components.html#Входные-параметры">link</a></p>'
+    assert result == expect

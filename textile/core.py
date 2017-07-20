@@ -991,7 +991,6 @@ class Textile(object):
             path_parts = (quote(unquote(pce), b'') for pce in
                     parsed.path.split('/'))
         path = '/'.join(path_parts)
-        fragment = quote(unquote(parsed.fragment))
 
         # put it back together
         netloc = ''
@@ -1003,7 +1002,7 @@ class Textile(object):
         netloc = '{0}{1}'.format(netloc, host)
         if port:
             netloc = '{0}:{1}'.format(netloc, port)
-        return urlunsplit((scheme, netloc, path, parsed.query, fragment))
+        return urlunsplit((scheme, netloc, path, parsed.query, parsed.fragment))
 
     def span(self, text):
         qtags = (r'\*\*', r'\*', r'\?\?', r'\-', r'__',
