@@ -920,7 +920,7 @@ class Textile(object):
             text = url
             if "://" in text:
                 text = text.split("://")[1]
-            else:
+            elif ":" in text:
                 text = text.split(":")[1]
 
         text = text.strip()

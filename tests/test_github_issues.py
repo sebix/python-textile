@@ -183,3 +183,10 @@ def test_github_issue_50():
               'final List&lt;List&lt;String&gt;&gt; multipleList = new '
               'ArrayList&lt;&gt;();</pre>')
     assert result == expect
+
+def test_github_issue_51():
+    """Link build with $ sign without "http" prefix broken."""
+    test = '"$":www.google.com.br'
+    result = textile.textile(test)
+    expect = '\t<p><a href="www.google.com.br">www.google.com.br</a></p>'
+    assert result == expect
