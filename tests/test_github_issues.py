@@ -190,3 +190,12 @@ def test_github_issue_51():
     result = textile.textile(test)
     expect = '\t<p><a href="www.google.com.br">www.google.com.br</a></p>'
     assert result == expect
+
+def test_github_issue_52():
+    """Table build without space after aligment raise a AttributeError."""
+    test = '|=.First Header |=. Second Header |'
+    result = textile.textile(test)
+    expect = ('\t<table>\n\t\t<tr>\n\t\t\t<td>=.First Header '
+              '</td>\n\t\t\t<td style="text-align:center;">Second Header </td>'
+              '\n\t\t</tr>\n\t</table>')
+    assert result == expect
