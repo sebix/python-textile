@@ -534,7 +534,10 @@ class Textile(object):
         # at this point, we've gone through all the lines, and if there's still
         # an extension in effect, we close it here.
         if ext and out:
-            final = generate_tag(block.outer_tag, out.pop(), block.outer_atts)
+            block.content = out.pop()
+            block.process()
+            final = generate_tag(block.outer_tag, block.content,
+                                 block.outer_atts)
             out.append(final)
         return ''.join(out)
 
@@ -917,7 +920,7 @@ class Textile(object):
             text = url
             if "://" in text:
                 text = text.split("://")[1]
-            else:
+            elif ":" in text:
                 text = text.split(":")[1]
 
         text = text.strip()

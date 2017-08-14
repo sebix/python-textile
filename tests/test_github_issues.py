@@ -173,3 +173,29 @@ def test_github_issue_49():
     result = textile.textile(s)
     expect = '\t<p><a href="https://ru.vuejs.org/v2/guide/components.html#Входные-параметры">link</a></p>'
     assert result == expect
+
+def test_github_issue_50():
+    """Incorrect wrap code with Java generics in pre"""
+    test = ('pre.. public class Tynopet<T extends Framework> {}\n\nfinal '
+            'List<List<String>> multipleList = new ArrayList<>();')
+    result = textile.textile(test)
+    expect = ('<pre>public class Tynopet&lt;T extends Framework&gt; {}\n\n'
+              'final List&lt;List&lt;String&gt;&gt; multipleList = new '
+              'ArrayList&lt;&gt;();</pre>')
+    assert result == expect
+
+def test_github_issue_51():
+    """Link build with $ sign without "http" prefix broken."""
+    test = '"$":www.google.com.br'
+    result = textile.textile(test)
+    expect = '\t<p><a href="www.google.com.br">www.google.com.br</a></p>'
+    assert result == expect
+
+def test_github_issue_52():
+    """Table build without space after aligment raise a AttributeError."""
+    test = '|=.First Header |=. Second Header |'
+    result = textile.textile(test)
+    expect = ('\t<table>\n\t\t<tr>\n\t\t\t<td>=.First Header '
+              '</td>\n\t\t\t<td style="text-align:center;">Second Header </td>'
+              '\n\t\t</tr>\n\t</table>')
+    assert result == expect
