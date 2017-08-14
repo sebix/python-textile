@@ -1,5 +1,11 @@
 h1. Textile Changelog
 
+h2. Version 2.3.16
+* Bugfixes:
+** Fix processing of extended code blocks ("#50":https://github.com/textile/python-textile/issues/50)
+** Don't break when links fail to include "http:" ("#51":https://github.com/textile/python-textile/issues/51)
+** Better handling of poorly-formatted tables ("#52":https://github.com/textile/python-textile/issues/52)
+
 h2. Version 2.3.15
 * Bugfix: Don't break on unicode characters in the fragment of a url.
 
