@@ -80,7 +80,7 @@ def test_sanitize():
         result = '<p>a paragraph of benign text<br />\nand more text</p>'
         expect = textile.Textile(html_type='html5').parse(test, sanitize=True)
         assert result == expect
-    except ImportError as e:
+    except Exception as e:
         message = '{0}'.format(e)
         assert "html5lib not available" in message
 
