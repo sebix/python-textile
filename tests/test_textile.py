@@ -71,8 +71,8 @@ def test_sanitize():
         expect = textile.Textile().parse(test, sanitize=True)
         assert result == expect
 
-        test = """<p style="width: expression(alert('evil'));">a paragraph of evil text</p>"""
-        result = '<p style="">a paragraph of evil text</p>'
+        test = """<p onclick="alert('evil');">a paragraph of evil text</p>"""
+        result = '<p>a paragraph of evil text</p>'
         expect = textile.Textile().parse(test, sanitize=True)
         assert result == expect
 
@@ -80,7 +80,7 @@ def test_sanitize():
         result = '<p>a paragraph of benign text<br />\nand more text</p>'
         expect = textile.Textile(html_type='html5').parse(test, sanitize=True)
         assert result == expect
-    except Exception as e:
+    except ImportError as e:
         message = '{0}'.format(e)
         assert "html5lib not available" in message
 
