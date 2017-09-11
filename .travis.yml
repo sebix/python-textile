@@ -14,7 +14,7 @@ python:
 # command to install dependencies
 install:
   - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]] ; then pip install coverage==3.7.1 setuptools==29.0.1; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.2' ]] ; then pip install setuptools==29.0.1 coverage==3.7.1; fi
   - pip install coveralls pytest pytest-cov coverage codecov
   - pip install -e .
   - if [[ ! $TRAVIS_PYTHON_VERSION == 'pypy-5.4' ]] ; then pip install regex; fi
