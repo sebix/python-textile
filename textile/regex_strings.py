@@ -3,18 +3,37 @@ from __future__ import unicode_literals
 
 import six
 
-import regex as re
-upper_re_s = r'\p{Lu}'
-regex_snippets = {
-    'acr': r'\p{Lu}\p{Nd}',
-    'abr': r'\p{Lu}',
-    'nab': r'\p{Ll}',
-    'wrd': r'(?:\p{L}|\p{M}|\p{N}|\p{Pc})',
-    'cur': r'\p{Sc}',
-    'digit': r'\p{N}',
-    'space': r'(?:\p{Zs}|\v)',
-    'char': r'(?:[^\p{Zs}\v])',
-}
+try:
+    # Use regex module for matching uppercase characters if installed,
+    # otherwise fall back to finding all the uppercase chars in a loop.
+    import regex as re
+    upper_re_s = r'\p{Lu}'
+    regex_snippets = {
+        'acr': r'\p{Lu}\p{Nd}',
+        'abr': r'\p{Lu}',
+        'nab': r'\p{Ll}',
+        'wrd': r'(?:\p{L}|\p{M}|\p{N}|\p{Pc})',
+        'cur': r'\p{Sc}',
+        'digit': r'\p{N}',
+        'space': r'(?:\p{Zs}|\v)',
+        'char': r'(?:[^\p{Zs}\v])',
+        }
+except ImportError:
+    import re
+    from sys import maxunicode
+    upper_re_s = "".join(
+            [six.unichr(c) for c in six.moves.range(maxunicode) if six.unichr(
+                c).isupper()])
+    regex_snippets = {
+        'acr': r'{0}0-9'.format(upper_re_s),
+        'abr': r'{0}'.format(upper_re_s),
+        'nab': r'a-z',
+        'wrd': r'\w',
+        'cur': r'',
+        'digit': r'\d',
+        'space': r'(?:\s|\v)',
+        'char': r'\S',
+        }
 
 halign_re_s = r'(?:\<(?!>)|(?<!<)\>|\<\>|\=|[()]+(?! ))'
 valign_re_s = r'[\-^~]'
