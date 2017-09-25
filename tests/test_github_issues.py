@@ -210,103 +210,45 @@ def test_github_issue_55():
     assert result == expect
 
     # supplied input
-    test = ('''pre.. import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.onyma.job.Context;
-import ru.onyma.job.RescheduleTask;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-/**
- * @author ustits
- */
-public abstract class MainService<T> extends RescheduleTask implements Context<T> {
-
-  private static final Logger log = LoggerFactory.getLogger(MainService.class);
-  private final ScheduledExecutorService scheduler;
-
-  private boolean isFirstRun = true;
-  private T configs;
-
-  public MainService(final ScheduledExecutorService scheduler) {
-    super(scheduler);
-    this.scheduler = scheduler;
-  }
-
-  @Override
-  public void setConfig(final T configs) {
-    this.configs = configs;
-    if (isFirstRun) {
-      scheduler.schedule(this, 0, TimeUnit.SECONDS);
-      isFirstRun = false;
-    }
-  }
-
-  @Override
-  public void stop() {
-    super.stop();
-    scheduler.shutdown();
-    try {
-      scheduler.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-    } catch (InterruptedException ie) {
-      log.warn("Unable to wait for syncs termination", ie);
-      Thread.currentThread().interrupt();
-    }
-  }
-
-  protected final T getConfigs() {
-    return configs;
-  }
-}''')
+    test = ('pre.. import org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;'
+            '\nimport ru.onyma.job.Context;\nimport ru.onyma.job.'
+            'RescheduleTask;\n\nimport java.util.concurrent.'
+            'ScheduledExecutorService;\nimport java.util.concurrent.TimeUnit;'
+            '\n\n/**\n* @author ustits\n*/\npublic abstract class '
+            'MainService<T> extends RescheduleTask implements Context<T> {\n\n'
+            'private static final Logger log = LoggerFactory.getLogger('
+            'MainService.class);\nprivate final ScheduledExecutorService '
+            'scheduler;\n\nprivate boolean isFirstRun = true;\nprivate T '
+            'configs;\n\npublic MainService(final ScheduledExecutorService '
+            'scheduler) {\nsuper(scheduler);\nthis.scheduler = scheduler;\n}\n'
+            '\n@Override\npublic void setConfig(final T configs) {\nthis.'
+            'configs = configs;\nif (isFirstRun) {\nscheduler.schedule(this, '
+            '0, TimeUnit.SECONDS);\nisFirstRun = false;\n}\n}\n\n@Override\n'
+            'public void stop() {\nsuper.stop();\nscheduler.shutdown();\ntry {'
+            '\nscheduler.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);\n} '
+            'catch (InterruptedException ie) {\nlog.warn("Unable to wait for '
+            'syncs termination", ie);\nThread.currentThread().interrupt();\n}'
+            '\n}\n\nprotected final T getConfigs() {\nreturn configs;\n}\n}')
     result = textile.textile(test)
-    expect = ('''<pre>import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import ru.onyma.job.Context;
-import ru.onyma.job.RescheduleTask;
-
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-/**
- * @author ustits
- */
-public abstract class MainService&lt;T&gt; extends RescheduleTask implements Context&lt;T&gt; {
-
-  private static final Logger log = LoggerFactory.getLogger(MainService.class);
-  private final ScheduledExecutorService scheduler;
-
-  private boolean isFirstRun = true;
-  private T configs;
-
-  public MainService(final ScheduledExecutorService scheduler) {
-    super(scheduler);
-    this.scheduler = scheduler;
-  }
-
-  @Override
-  public void setConfig(final T configs) {
-    this.configs = configs;
-    if (isFirstRun) {
-      scheduler.schedule(this, 0, TimeUnit.SECONDS);
-      isFirstRun = false;
-    }
-  }
-
-  @Override
-  public void stop() {
-    super.stop();
-    scheduler.shutdown();
-    try {
-      scheduler.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
-    } catch (InterruptedException ie) {
-      log.warn(&quot;Unable to wait for syncs termination&quot;, ie);
-      Thread.currentThread().interrupt();
-    }
-  }
-
-  protected final T getConfigs() {
-    return configs;
-  }
-}</pre>''')
+    expect = ('<pre>import org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;'
+              '\nimport ru.onyma.job.Context;\nimport ru.onyma.job.'
+              'RescheduleTask;\n\nimport java.util.concurrent.'
+              'ScheduledExecutorService;\nimport java.util.concurrent.'
+              'TimeUnit;\n\n/**\n* @author ustits\n*/\npublic abstract class '
+              'MainService&lt;T&gt; extends RescheduleTask implements '
+              'Context&lt;T&gt; {\n\nprivate static final Logger log = '
+              'LoggerFactory.getLogger(MainService.class);\nprivate final '
+              'ScheduledExecutorService scheduler;\n\nprivate boolean '
+              'isFirstRun = true;\nprivate T configs;\n\npublic MainService('
+              'final ScheduledExecutorService scheduler) {\nsuper(scheduler);'
+              '\nthis.scheduler = scheduler;\n}\n\n@Override\npublic void '
+              'setConfig(final T configs) {\nthis.configs = configs;\nif ('
+              'isFirstRun) {\nscheduler.schedule(this, 0, TimeUnit.SECONDS);'
+              '\nisFirstRun = false;\n}\n}\n\n@Override\npublic void stop() {'
+              '\nsuper.stop();\nscheduler.shutdown();\ntry {\nscheduler.'
+              'awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);\n} catch '
+              '(InterruptedException ie) {\nlog.warn(&quot;Unable to wait '
+              'for syncs termination&quot;, ie);\nThread.currentThread().'
+              'interrupt();\n}\n}\n\nprotected final T getConfigs() {\n'
+              'return configs;\n}\n}</pre>')
     assert result == expect
