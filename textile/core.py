@@ -506,7 +506,10 @@ class Textile(object):
                                 block.outer_atts)
                         line = "\t{0}".format(line)
                 else:
-                    line = self.graf(line)
+                    if block.tag == 'pre':
+                        line = self.shelve(encode_html(line, quotes=True))
+                    else:
+                        line = self.graf(line)
 
             line = self.doPBr(line)
             line = line.replace('<br>', '<br />')
