@@ -1,5 +1,9 @@
 h1. Textile Changelog
 
+h2. Version 2.3.17 (in development)
+* Bugfixes:
+** Empty definitions in definition lists raised an exception ("#56":https://github.com/textile/python-textile/issues/56)
+
 h2. Version 2.3.16
 * Bugfixes:
 ** Fix processing of extended code blocks ("#50":https://github.com/textile/python-textile/issues/50)
