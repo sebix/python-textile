@@ -72,8 +72,10 @@ def generate_tag(tag, content, attributes=None):
     except AttributeError:
         # Python 2.6 doesn't have the tostringlist method, so we have to treat
         # it differently.
+        attributes = dict(map(lambda (k, v): (k, v.decode(enc)),
+            attributes.items()))
+        element = ElementTree.Element(tag, attrib=attributes)
         element_tag = ElementTree.tostring(element, encoding=enc)
-        element_tag = [v.decode(enc) for v in element_tag]
         element_text = re.sub(r"<\?xml version='1.0' encoding='UTF-8'\?>\n",
                 '', element_tag)
         if content != six.text_type(' /'):
