@@ -72,7 +72,7 @@ def generate_tag(tag, content, attributes=None):
     except AttributeError:
         # Python 2.6 doesn't have the tostringlist method, so we have to treat
         # it differently.
-        attributes = dict(map(lambda k, v: (k, six.text_type(v)),
+        attributes = dict(map(lambda (k, v): (k, six.text_type(v)),
             six.iteritems(attributes)))
         element = ElementTree.Element(tag, attrib=attributes)
         element_tag = ElementTree.tostring(element, encoding=enc)
