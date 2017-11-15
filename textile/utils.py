@@ -50,6 +50,8 @@ def generate_tag(tag, content, attributes=None):
     content are strings, the attributes argument is a dictionary.  As
     a convenience, if the content is ' /', a self-closing tag is generated."""
     content = six.text_type(content)
+    # In PY2, ElementTree tostringlist only works with bytes, not with
+    # unicode().
     enc = 'unicode'
     if six.PY2:
         enc = 'UTF-8'
@@ -63,6 +65,8 @@ def generate_tag(tag, content, attributes=None):
     try:
         element_tag = ElementTree.tostringlist(element, encoding=enc,
                 method='html')
+        if six.PY2:
+            element_tag = [v.decode(enc) for v in element_tag]
         element_tag.insert(len(element_tag) - 1, content)
         element_text = ''.join(element_tag)
     except AttributeError:
