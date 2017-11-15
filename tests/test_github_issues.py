@@ -252,3 +252,8 @@ def test_github_issue_55():
               'interrupt();\n}\n}\n\nprotected final T getConfigs() {\n'
               'return configs;\n}\n}</pre>')
     assert result == expect
+
+def test_issue_56():
+    result = textile.textile("- :=\n-")
+    expect = '<dl>\n</dl>'
+    assert result == expect

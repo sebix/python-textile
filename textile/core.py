@@ -1187,6 +1187,8 @@ class Textile(object):
             # parse the attributes and content
             m = re.match(r'^[-]+({0})[ .](.*)$'.format(cls_re_s), line,
                     flags=re.M | re.S)
+            if not m:
+                continue
 
             atts, content = m.groups()
             # cleanup
