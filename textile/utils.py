@@ -10,10 +10,7 @@ from six.moves import urllib, html_parser
 urlparse = urllib.parse.urlparse
 HTMLParser = html_parser.HTMLParser
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from xml.etree import ElementTree
 
