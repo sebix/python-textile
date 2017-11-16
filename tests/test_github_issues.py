@@ -86,6 +86,11 @@ def test_github_issue_30():
     expect = '\t<p><a href="http://lala.com" title="Tëxtíle">Tëxtíle</a></p>'
     assert result == expect
 
+    text ='!http://lala.com/lol.gif(♡ imáges)!'
+    result = textile.textile(text)
+    expect = '\t<p><img alt="♡ imáges" src="http://lala.com/lol.gif" title="♡ imáges" /></p>'
+    assert result == expect
+
 def test_github_issue_36():
     text = '"Chögyam Trungpa":https://www.google.com/search?q=Chögyam+Trungpa'
     result = textile.textile(text)
@@ -198,4 +203,62 @@ def test_github_issue_52():
     expect = ('\t<table>\n\t\t<tr>\n\t\t\t<td>=.First Header '
               '</td>\n\t\t\t<td style="text-align:center;">Second Header </td>'
               '\n\t\t</tr>\n\t</table>')
+    assert result == expect
+
+def test_github_issue_55():
+    """Incorrect handling of quote entities in extended pre block"""
+    test = ('pre.. this is the first line\n\nbut "quotes" in an extended pre '
+            'block need to be handled properly.')
+    result = textile.textile(test)
+    expect = ('<pre>this is the first line\n\nbut &quot;quotes&quot; in an '
+              'extended pre block need to be handled properly.</pre>')
+    assert result == expect
+
+    # supplied input
+    test = ('pre.. import org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;'
+            '\nimport ru.onyma.job.Context;\nimport ru.onyma.job.'
+            'RescheduleTask;\n\nimport java.util.concurrent.'
+            'ScheduledExecutorService;\nimport java.util.concurrent.TimeUnit;'
+            '\n\n/**\n* @author ustits\n*/\npublic abstract class '
+            'MainService<T> extends RescheduleTask implements Context<T> {\n\n'
+            'private static final Logger log = LoggerFactory.getLogger('
+            'MainService.class);\nprivate final ScheduledExecutorService '
+            'scheduler;\n\nprivate boolean isFirstRun = true;\nprivate T '
+            'configs;\n\npublic MainService(final ScheduledExecutorService '
+            'scheduler) {\nsuper(scheduler);\nthis.scheduler = scheduler;\n}\n'
+            '\n@Override\npublic void setConfig(final T configs) {\nthis.'
+            'configs = configs;\nif (isFirstRun) {\nscheduler.schedule(this, '
+            '0, TimeUnit.SECONDS);\nisFirstRun = false;\n}\n}\n\n@Override\n'
+            'public void stop() {\nsuper.stop();\nscheduler.shutdown();\ntry {'
+            '\nscheduler.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);\n} '
+            'catch (InterruptedException ie) {\nlog.warn("Unable to wait for '
+            'syncs termination", ie);\nThread.currentThread().interrupt();\n}'
+            '\n}\n\nprotected final T getConfigs() {\nreturn configs;\n}\n}')
+    result = textile.textile(test)
+    expect = ('<pre>import org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;'
+              '\nimport ru.onyma.job.Context;\nimport ru.onyma.job.'
+              'RescheduleTask;\n\nimport java.util.concurrent.'
+              'ScheduledExecutorService;\nimport java.util.concurrent.'
+              'TimeUnit;\n\n/**\n* @author ustits\n*/\npublic abstract class '
+              'MainService&lt;T&gt; extends RescheduleTask implements '
+              'Context&lt;T&gt; {\n\nprivate static final Logger log = '
+              'LoggerFactory.getLogger(MainService.class);\nprivate final '
+              'ScheduledExecutorService scheduler;\n\nprivate boolean '
+              'isFirstRun = true;\nprivate T configs;\n\npublic MainService('
+              'final ScheduledExecutorService scheduler) {\nsuper(scheduler);'
+              '\nthis.scheduler = scheduler;\n}\n\n@Override\npublic void '
+              'setConfig(final T configs) {\nthis.configs = configs;\nif ('
+              'isFirstRun) {\nscheduler.schedule(this, 0, TimeUnit.SECONDS);'
+              '\nisFirstRun = false;\n}\n}\n\n@Override\npublic void stop() {'
+              '\nsuper.stop();\nscheduler.shutdown();\ntry {\nscheduler.'
+              'awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);\n} catch '
+              '(InterruptedException ie) {\nlog.warn(&quot;Unable to wait '
+              'for syncs termination&quot;, ie);\nThread.currentThread().'
+              'interrupt();\n}\n}\n\nprotected final T getConfigs() {\n'
+              'return configs;\n}\n}</pre>')
+    assert result == expect
+
+def test_issue_56():
+    result = textile.textile("- :=\n-")
+    expect = '<dl>\n</dl>'
     assert result == expect

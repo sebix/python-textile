@@ -32,10 +32,7 @@ from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
 from textile.objects import Block, Table
 
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 
 try:
@@ -506,7 +503,10 @@ class Textile(object):
                                 block.outer_atts)
                         line = "\t{0}".format(line)
                 else:
-                    line = self.graf(line)
+                    if block.tag == 'pre':
+                        line = self.shelve(encode_html(line, quotes=True))
+                    else:
+                        line = self.graf(line)
 
             line = self.doPBr(line)
             line = line.replace('<br>', '<br />')
@@ -1184,6 +1184,8 @@ class Textile(object):
             # parse the attributes and content
             m = re.match(r'^[-]+({0})[ .](.*)$'.format(cls_re_s), line,
                     flags=re.M | re.S)
+            if not m:
+                continue
 
             atts, content = m.groups()
             # cleanup

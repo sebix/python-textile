@@ -1,5 +1,13 @@
 h1. Textile Changelog
 
+h2. Version 3.0.0
+* Drop support for Python 2.6 and 3.2.
+* Update to the current version of html5lib
+* Bugfixes:
+** Fix handling of HTML entities in extended pre blocks. ("#55":https://github.com/textile/python-textile/issues/55)
+** Empty definitions in definition lists raised an exception ("#56":https://github.com/textile/python-textile/issues/56)
+** Fix handling of unicode in img attributes ("#58":https://github.com/textile/python-textile/issues/58)
+
 h2. Version 2.3.16
 * Bugfixes:
 ** Fix processing of extended code blocks ("#50":https://github.com/textile/python-textile/issues/50)
