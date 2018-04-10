@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 3.0.1
+* BUGFIX: Fix improper handling of extended code blocks. ("#61":https://github.com/textile/python-textile/pull/61)
+
 h2. Version 3.0.0
 * Drop support for Python 2.6 and 3.2.
 * Update to the current version of html5lib
