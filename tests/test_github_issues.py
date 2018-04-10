@@ -262,3 +262,37 @@ def test_issue_56():
     result = textile.textile("- :=\n-")
     expect = '<dl>\n</dl>'
     assert result == expect
+
+def test_github_issue_57():
+    input = '''bc.. This is some TEXT inside a "Code BLOCK"
+
+{
+  if (JSON) {
+
+    return {"JSON":"value"}
+  }
+}
+
+Back to 10-4 CAPS 
+
+p.. Some multiline Paragragh
+
+Here is some output!!! "Some" CAPS'''
+
+    expect = '''<pre><code>This is some TEXT inside a &quot;Code BLOCK&quot;
+
+{
+  if (JSON) {
+
+    return {&quot;JSON&quot;:&quot;value&quot;}
+  }
+}
+
+Back to 10-4 CAPS </code></pre>
+
+<p>Some multiline Paragragh
+
+Here is some output!!! &#8220;Some&#8221; <span class="caps">CAPS</span></p>'''
+    t = textile.Textile()
+    result = t.parse(input)
+    assert result == expect
