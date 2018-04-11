@@ -433,6 +433,12 @@ class Textile(object):
         # the case, we'd want to drop the whitespace which comes after it.
         eat_whitespace = False
 
+        # check to see if previous block has already been escaped
+        escaped = False
+
+        # check if multiline paragraph (p..) tags <p>..</p> are added to line
+        multiline_para = False
+
         tag = 'p'
         atts = cite = ext = ''
 
@@ -458,11 +464,17 @@ class Textile(object):
                 if ext and out:
                     # it's out[-2] because the last element in out is the
                     # whitespace that preceded this line
-                    content = encode_html(out[-2], quotes=True)
-                    content = generate_tag(block.inner_tag, content,
-                            block.inner_atts)
-                    content = generate_tag(block.outer_tag, content,
-                        block.outer_atts)
+                    if not escaped:
+                        content = encode_html(out[-2], quotes=True)
+                        escaped = True
+                    else:
+                        content = out[-2]
+
+                    if not multiline_para:
+                        content = generate_tag(block.inner_tag, content,
+                                block.inner_atts)
+                        content = generate_tag(block.outer_tag, content,
+                            block.outer_atts)
                     out[-2] = content
                 tag, atts, ext, cite, content = match.groups()
                 block = Block(self, **match.groupdict())
@@ -479,11 +491,18 @@ class Textile(object):
                     # pre tags and raw text won't be indented.
                     if block.outer_tag != 'pre' and not has_raw_text(line):
                         line = "\t{0}".format(line)
+
+            # set having paragraph tags to false
+                if block.tag == 'p' and ext:
+                    multiline_para = False
             # no tag specified
             else:
                 # if we're inside an extended block, add the text from the
                 # previous line to the front
                 if ext and out:
+                    if block.tag == 'p':
+                        line = generate_tag(block.tag, line, block.outer_atts)
+                        multiline_para = True
                     line = '{0}{1}'.format(out.pop(), line)
                 # the logic in the if statement below is a bit confusing in
                 # php-textile. I'm still not sure I understand what the php
@@ -508,7 +527,15 @@ class Textile(object):
                     else:
                         line = self.graf(line)
 
-            line = self.doPBr(line)
+                    if block.tag == 'p':
+                        escaped = True
+
+            if block.tag == 'p' and ext and not multiline_para:
+                line = generate_tag(block.tag, line, block.outer_atts)
+                multiline_para = True
+            else:
+                line = self.doPBr(line)
+
             line = line.replace('<br>', '<br />')
 
             # if we're in an extended block, and we haven't specified a new
@@ -533,7 +560,7 @@ class Textile(object):
 
         # at this point, we've gone through all the lines, and if there's still
         # an extension in effect, we close it here.
-        if ext and out:
+        if ext and out and not block.tag == 'p':
             block.content = out.pop()
             block.process()
             final = generate_tag(block.outer_tag, block.content,

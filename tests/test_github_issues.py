@@ -290,9 +290,49 @@ Here is some output!!! "Some" CAPS'''
 
 Back to 10-4 CAPS </code></pre>
 
-<p>Some multiline Paragragh
+<p>Some multiline Paragragh</p>
 
-Here is some output!!! &#8220;Some&#8221; <span class="caps">CAPS</span></p>'''
+<p>Here is some output!!! &#8220;Some&#8221; <span class="caps">CAPS</span></p>'''
+    t = textile.Textile()
+    result = t.parse(input)
+    assert result == expect
+
+def test_issue_58():
+    input = '''p.. First one 'is'
+
+ESCAPED "bad"
+
+p.. Second one 'is'
+
+
+
+ESCAPED "bad"
+
+p.. Third one 'is'
+
+ESCAPED "bad"
+
+p.. Last one 'is'
+
+ESCAPED "good" test'''
+
+    expect = '''<p>First one &#8216;is&#8217;</p>
+
+<p><span class="caps">ESCAPED</span> &#8220;bad&#8221;</p>
+
+<p>Second one &#8216;is&#8217;</p>
+
+
+
+<p><span class="caps">ESCAPED</span> &#8220;bad&#8221;</p>
+
+<p>Third one &#8216;is&#8217;</p>
+
+<p><span class="caps">ESCAPED</span> &#8220;bad&#8221;</p>
+
+<p>Last one &#8216;is&#8217;</p>
+
+<p><span class="caps">ESCAPED</span> &#8220;good&#8221; test</p>'''
     t = textile.Textile()
     result = t.parse(input)
     assert result == expect
