@@ -1,5 +1,8 @@
 h1. Textile Changelog
 
+h2. Version 3.0.2
+* BUGFIX: Fix for multiple multi-line paragraphs. ("#62":https://github.com/textile/python-textile/pull/62)
+
 h2. Version 3.0.1
 * BUGFIX: Fix improper handling of extended code blocks. ("#61":https://github.com/textile/python-textile/pull/61)
 
