@@ -336,3 +336,67 @@ ESCAPED "good" test'''
     t = textile.Textile()
     result = t.parse(input)
     assert result == expect
+
+def test_issue_59():
+    input = '''p.. First one 'is'
+
+ESCAPED "bad"
+
+bc.. {
+ First code BLOCK
+
+ {"JSON":'value'}
+}
+
+p.. Second one 'is'
+
+
+
+ESCAPED "bad"
+
+p.. Third one 'is'
+
+ESCAPED "bad"
+
+bc.. {
+ Last code BLOCK
+
+ {"JSON":'value'}
+}
+
+p.. Last one 'is'
+
+ESCAPED "good" test'''
+
+    expect = '''<p>First one &#8216;is&#8217;</p>
+
+<p><span class="caps">ESCAPED</span> &#8220;bad&#8221;</p>
+
+<pre><code>{
+ First code BLOCK
+
+ {&quot;JSON&quot;:&#39;value&#39;}
+}</code></pre>
+
+<p>Second one &#8216;is&#8217;</p>
+
+
+
+<p><span class="caps">ESCAPED</span> &#8220;bad&#8221;</p>
+
+<p>Third one &#8216;is&#8217;</p>
+
+<p><span class="caps">ESCAPED</span> &#8220;bad&#8221;</p>
+
+<pre><code>{
+ Last code BLOCK
+
+ {&quot;JSON&quot;:&#39;value&#39;}
+}</code></pre>
+
+<p>Last one &#8216;is&#8217;</p>
+
+<p><span class="caps">ESCAPED</span> &#8220;good&#8221; test</p>'''
+    t = textile.Textile()
+    result = t.parse(input)
+    assert result == expect
