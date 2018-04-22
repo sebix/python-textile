@@ -536,6 +536,9 @@ class Textile(object):
             else:
                 line = self.doPBr(line)
 
+            if not block.tag == 'p':
+                multiline_para = False
+
             line = line.replace('<br>', '<br />')
 
             # if we're in an extended block, and we haven't specified a new
