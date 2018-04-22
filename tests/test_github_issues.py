@@ -258,12 +258,14 @@ def test_github_issue_55():
               'return configs;\n}\n}</pre>')
     assert result == expect
 
-def test_issue_56():
+def test_github_issue_56():
+    """Empty description lists throw error"""
     result = textile.textile("- :=\n-")
     expect = '<dl>\n</dl>'
     assert result == expect
 
-def test_github_issue_57():
+def test_github_pull_61():
+    """Fixed code block multiline encoding on quotes/span"""
     input = '''bc.. This is some TEXT inside a "Code BLOCK"
 
 {
@@ -297,7 +299,9 @@ Back to 10-4 CAPS </code></pre>
     result = t.parse(input)
     assert result == expect
 
-def test_issue_58():
+def test_github_pull_62():
+    """Fix for paragraph multiline, only last paragraph is rendered
+    correctly"""
     input = '''p.. First one 'is'
 
 ESCAPED "bad"
@@ -337,7 +341,8 @@ ESCAPED "good" test'''
     result = t.parse(input)
     assert result == expect
 
-def test_issue_59():
+def test_github_pull_63():
+    """Forgot to set multiline_para to False"""
     input = '''p.. First one 'is'
 
 ESCAPED "bad"
