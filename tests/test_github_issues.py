@@ -266,7 +266,7 @@ def test_github_issue_56():
 
 def test_github_pull_61():
     """Fixed code block multiline encoding on quotes/span"""
-    input = '''bc.. This is some TEXT inside a "Code BLOCK"
+    test = '''bc.. This is some TEXT inside a "Code BLOCK"
 
 {
   if (JSON) {
@@ -296,13 +296,13 @@ Back to 10-4 CAPS </code></pre>
 
 <p>Here is some output!!! &#8220;Some&#8221; <span class="caps">CAPS</span></p>'''
     t = textile.Textile()
-    result = t.parse(input)
+    result = t.parse(test)
     assert result == expect
 
 def test_github_pull_62():
     """Fix for paragraph multiline, only last paragraph is rendered
     correctly"""
-    input = '''p.. First one 'is'
+    test = '''p.. First one 'is'
 
 ESCAPED "bad"
 
@@ -338,12 +338,12 @@ ESCAPED "good" test'''
 
 <p><span class="caps">ESCAPED</span> &#8220;good&#8221; test</p>'''
     t = textile.Textile()
-    result = t.parse(input)
+    result = t.parse(test)
     assert result == expect
 
 def test_github_pull_63():
     """Forgot to set multiline_para to False"""
-    input = '''p.. First one 'is'
+    test = '''p.. First one 'is'
 
 ESCAPED "bad"
 
@@ -403,5 +403,5 @@ ESCAPED "good" test'''
 
 <p><span class="caps">ESCAPED</span> &#8220;good&#8221; test</p>'''
     t = textile.Textile()
-    result = t.parse(input)
+    result = t.parse(test)
     assert result == expect
