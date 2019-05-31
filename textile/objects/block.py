@@ -20,7 +20,7 @@ class Block(object):
         self.cite = cite
         self.content = content
 
-        self.attributes = parse_attributes(atts)
+        self.attributes = parse_attributes(atts, restricted=self.textile.restricted)
         self.outer_tag = ''
         self.inner_tag = ''
         self.outer_atts = OrderedDict()
@@ -69,7 +69,7 @@ class Block(object):
             if 'id' not in self.attributes:
                 self.attributes.update({'id': 'fn{0}'.format(fnid)})
             else:
-                supp_id = parse_attributes('(#fn{0})'.format(fnid))
+                supp_id = parse_attributes('(#fn{0})'.format(fnid), restricted=self.textile.restricted)
 
 
             if '^' not in self.atts:

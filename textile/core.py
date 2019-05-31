@@ -363,7 +363,7 @@ class Textile(object):
             if ';' in pt and ':' in tl:
                 ls[tl] = 2
 
-            atts = pba(atts)
+            atts = pba(atts, restricted=self.restricted)
             tabs = '\t' * len(tl)
             # If start is still None, set it to '', else leave the value
             # that we've already formatted.
@@ -961,7 +961,7 @@ class Textile(object):
         text = self.span(text)
         text = self.glyphs(text)
         url = self.shelveURL(self.encode_url(urlunsplit(uri_parts)))
-        attributes = parse_attributes(atts)
+        attributes = parse_attributes(atts, restricted=self.restricted)
         if title:
             # if the title contains unicode data, it is annoying to get Python
             # 2.6 and all the latter versions working properly.  But shelving
@@ -1078,7 +1078,7 @@ class Textile(object):
         }
 
         tag = qtags[tag]
-        atts = pba(atts)
+        atts = pba(atts, restricted=self.restricted)
         if cite:
             atts = '{0} cite="{1}"'.format(atts, cite.rstrip())
 
@@ -1131,7 +1131,7 @@ class Textile(object):
             atts.update(height=six.text_type(size[1]))
         atts.update(src=url)
         if attributes:
-            atts.update(parse_attributes(attributes))
+            atts.update(parse_attributes(attributes, restricted=self.restricted))
         if title:
             atts.update(title=title)
         if size:
@@ -1220,7 +1220,7 @@ class Textile(object):
             atts, content = m.groups()
             # cleanup
             content = content.strip()
-            atts = pba(atts)
+            atts = pba(atts, restricted=self.restricted)
 
             # split the content into the term and definition
             xm = re.match(r'^(.*?)[\s]*:=(.*?)[\s]*(=:|:=)?[\s]*$', content,
@@ -1306,7 +1306,7 @@ class Textile(object):
                     o.append(li)
             self.notelist_cache[index] = "\n".join(o)
             result = self.notelist_cache[index]
-        list_atts = pba(att)
+        list_atts = pba(att, restricted=self.restricted)
         result = '<ol{0}>\n{1}\n\t</ol>'.format(list_atts, result)
         return result
 
@@ -1351,7 +1351,7 @@ class Textile(object):
 
         # Ignores subsequent defs using the same label
         if 'def' not in self.notes[label]: # pragma: no branch
-            self.notes[label]['def'] = {'atts': pba(att), 'content':
+            self.notes[label]['def'] = {'atts': pba(att, restricted=self.restricted), 'content':
                     self.graf(content), 'link': link}
         return ''
 
@@ -1373,7 +1373,7 @@ class Textile(object):
         processed into the notes array. So now we can resolve the link numbers
         in the order we process the refs..."""
         atts, label, nolink = match.groups()
-        atts = pba(atts)
+        atts = pba(atts, restricted=self.restricted)
         nolink = nolink == '!'
 
         # Assign a sequence number to this reference if there isn't one already
