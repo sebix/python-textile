@@ -1,5 +1,9 @@
 h1. Textile Changelog
 
+h2. Version 3.0.4
+* BUGFIX: Restricted mode strips out CSS attributes again.
+* Update travis to more current versions and test against current Pillow version.
+
 h2. Version 3.0.3
 * BUGFIX: Improve handling code block following extended p block ("#63":https://github.com/textile/python-textile/pull/63)
 
