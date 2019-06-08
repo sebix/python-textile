@@ -105,7 +105,7 @@ def normalize_newlines(string):
     out = re.sub(r'"$', '" ', out)
     return out
 
-def parse_attributes(block_attributes, element=None, include_id=True):
+def parse_attributes(block_attributes, element=None, include_id=True, restricted=False):
     vAlign = {'^': 'top', '-': 'middle', '~': 'bottom'}
     hAlign = {'<': 'left', '=': 'center', '>': 'right', '<>': 'justify'}
     style = []
@@ -136,10 +136,11 @@ def parse_attributes(block_attributes, element=None, include_id=True):
         if m:
             style.append("vertical-align:{0}".format(vAlign[m.group(1)]))
 
-    m = re.search(r'\{([^}]*)\}', matched)
-    if m:
-        style.extend(m.group(1).rstrip(';').split(';'))
-        matched = matched.replace(m.group(0), '')
+    if not restricted:
+        m = re.search(r'\{([^}]*)\}', matched)
+        if m:
+            style.extend(m.group(1).rstrip(';').split(';'))
+            matched = matched.replace(m.group(0), '')
 
     m = re.search(r'\[([^\]]+)\]', matched, re.U)
     if m:
@@ -197,9 +198,9 @@ def parse_attributes(block_attributes, element=None, include_id=True):
         result['width'] = width
     return result
 
-def pba(block_attributes, element=None, include_id=True):
+def pba(block_attributes, element=None, include_id=True, restricted=False):
     """Parse block attributes."""
-    attrs = parse_attributes(block_attributes, element, include_id)
+    attrs = parse_attributes(block_attributes, element, include_id, restricted)
     if not attrs:
         return ''
     result = ' '.join(['{0}="{1}"'.format(k, v) for k, v in attrs.items()])
