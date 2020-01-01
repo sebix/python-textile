@@ -4,13 +4,12 @@ env:
   - REQUIREMENTS=true
   - REQUIREMENTS=false
 python:
-  - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
   # PyPy versions
-  - "pypy3.5"
+  - "pypy3"
 # command to install dependencies
 install:
   - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
