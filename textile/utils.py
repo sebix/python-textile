@@ -50,6 +50,10 @@ def generate_tag(tag, content, attributes=None):
     if not tag:
         return content
     element = ElementTree.Element(tag, attrib=attributes)
+    try:
+        element = ElementTree.canonicalize(element)
+    except:
+        pass
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
     # adding text by assigning it to element_tag.text.  That results in
     # non-ascii text being html-entity encoded.  Not bad, but not entirely
