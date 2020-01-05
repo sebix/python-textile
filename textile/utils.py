@@ -7,7 +7,7 @@ except ImportError:
     import re
 
 from urllib.parse import urlparse
-from html.parser import HTMLParser
+import html
 
 from collections import OrderedDict
 
@@ -18,9 +18,8 @@ from textile.regex_strings import valign_re_s, halign_re_s
 
 def decode_high(text):
     """Decode encoded HTML entities."""
-    h = HTMLParser()
     text = '&#{0};'.format(text)
-    return h.unescape(text)
+    return html.unescape(text)
 
 def encode_high(text):
     """Encode the text so that it is an appropriate HTML entity."""
