@@ -49,6 +49,13 @@ def generate_tag(tag, content, attributes=None):
     if not tag:
         return content
     element = ElementTree.Element(tag, attrib=attributes)
+    # Sort attributes for Python 3.8+, as suggested in
+    # https://docs.python.org/3/library/xml.etree.elementtree.html
+    if len(element.attrib) > 1:
+        # adjust attribute order, e.g. by sorting
+        attribs = sorted(element.attrib.items())
+        element.attrib.clear()
+        element.attrib.update(attribs)
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
     # adding text by assigning it to element_tag.text.  That results in
     # non-ascii text being html-entity encoded.  Not bad, but not entirely
