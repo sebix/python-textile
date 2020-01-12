@@ -19,7 +19,7 @@ try:
 except ImportError:
     from sys import maxunicode
     upper_re_s = "".join(
-                [unichr(c) for c in range(maxunicode) if unichr(c).isupper()]
+                [chr(c) for c in range(maxunicode) if chr(c).isupper()]
             )
     regex_snippets = {
         'acr': r'{0}0-9'.format(upper_re_s),
