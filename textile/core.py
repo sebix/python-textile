@@ -1013,12 +1013,8 @@ class Textile(object):
         # slashes, and this is a way to clean that up. It branches for PY2/3
         # because the quote and unquote functions expects different input
         # types: unicode strings for PY2 and str for PY3.
-        if six.PY2:
-            path_parts = (quote(unquote(pce.encode('utf8')), b'') for pce in
-                    parsed.path.split('/'))
-        else:
-            path_parts = (quote(unquote(pce), b'') for pce in
-                    parsed.path.split('/'))
+        path_parts = (quote(unquote(pce), b'') for pce in
+                parsed.path.split('/'))
         path = '/'.join(path_parts)
 
         # put it back together
