@@ -28,7 +28,6 @@ from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         parse_attributes, pba)
 from textile.objects import Block, Table
 
-
 from collections import OrderedDict
 
 
@@ -364,7 +363,6 @@ class Textile(object):
             # If start is still None, set it to '', else leave the value
             # that we've already formatted.
             start = start or ''
-
             # if this item tag isn't in the list, create a new list and
             # item, else just create the item
             if tl not in ls:
@@ -389,10 +387,8 @@ class Textile(object):
                     if len(k) > 1 and v != 2:
                         line = "{0}</{1}>".format(line, litem)
                     del ls[k]
-
             # Remember the current Textile tag
             pt = tl
-
             # This else exists in the original php version.  I'm not sure how
             # to come up with a case where the line would not match.  I think
             # it may have been necessary due to the way php returns matches.
@@ -426,7 +422,7 @@ class Textile(object):
         text = re.split(r'(\n{2,})', text)
 
         # some blocks, when processed, will ask us to output nothing, if that's
-        # the case, we'd want to drop the whitespace which comes after it.
+        # the case, we'd want to drop the whitespace which follows it.
         eat_whitespace = False
 
         # check to see if previous block has already been escaped
@@ -494,7 +490,7 @@ class Textile(object):
             # no tag specified
             else:
                 # if we're inside an extended block, add the text from the
-                # previous line to the front
+                # previous line to the front.
                 if ext and out:
                     if block.tag == 'p':
                         line = generate_tag(block.tag, line, block.outer_atts)
@@ -557,8 +553,8 @@ class Textile(object):
             if block.eat:
                 eat_whitespace = True
 
-        # at this point, we've gone through all the lines, and if there's still
-        # an extension in effect, we close it here.
+        # at this point, we've gone through all the lines. if there's still an
+        # extension in effect, we close it here.
         if ext and out and not block.tag == 'p':
             block.content = out.pop()
             block.process()
@@ -587,6 +583,7 @@ class Textile(object):
             footref = m.group('id')
         footref = generate_tag('sup', footref, fn_att)
         return '{0}{1}'.format(footref, m.group('space'))
+
 
     def glyphs(self, text):
         """
