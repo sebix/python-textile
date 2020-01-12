@@ -57,12 +57,11 @@ setup(
     keywords='textile,text,html markup',
     install_requires=[
         'html5lib>=1.0.1',
+        'regex ; python_implementation != PyPy',
         ],
     extras_require={
-        ':python_version=="2.6"': ['ordereddict>=1.1'],
         'develop': ['pytest', 'pytest-cov'],
         'imagesize': ['Pillow>=3.0.0'],
-        'regex': ['regex'],
     },
     entry_points={'console_scripts': ['pytextile=textile.__main__:main']},
     setup_requires=['pytest-runner'],
