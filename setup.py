@@ -57,7 +57,7 @@ setup(
     keywords='textile,text,html markup',
     install_requires=[
         'html5lib>=1.0.1',
-        'regex ; python_implementation != PyPy',
+        'regex>1.0; implementation_name != "pypy"',
         ],
     extras_require={
         'develop': ['pytest', 'pytest-cov'],
