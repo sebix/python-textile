@@ -19,9 +19,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 
 import uuid
-import six
-from six.moves.urllib_parse import (urlparse, urlsplit, urlunsplit, quote,
-        unquote)
+from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
 
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, pnct_re_s,
@@ -1120,14 +1118,14 @@ class Textile(object):
             atts.update(align=alignments[align])
         atts.update(alt=title)
         if size:
-            atts.update(height=six.text_type(size[1]))
+            atts.update(height="{0}".format(size[1]))
         atts.update(src=url)
         if attributes:
             atts.update(parse_attributes(attributes, restricted=self.restricted))
         if title:
             atts.update(title=title)
         if size:
-            atts.update(width=six.text_type(size[0]))
+            atts.update(width="{0}".format(size[0]))
         img = generate_tag('img', ' /', atts)
         if href:
             a_atts = OrderedDict(href=href)

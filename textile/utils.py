@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import six
 
 try:
     import regex as re
@@ -44,7 +43,6 @@ def generate_tag(tag, content, attributes=None):
     """Generate a complete html tag using the ElementTree module.  tag and
     content are strings, the attributes argument is a dictionary.  As
     a convenience, if the content is ' /', a self-closing tag is generated."""
-    content = six.text_type(content)
     enc = 'unicode'
     if not tag:
         return content

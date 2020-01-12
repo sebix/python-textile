@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import six
 from xml.etree import ElementTree
 
 from textile.regex_strings import (align_re_s, cls_re_s, regex_snippets,

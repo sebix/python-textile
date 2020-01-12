@@ -56,7 +56,6 @@ setup(
     ],
     keywords='textile,text,html markup',
     install_requires=[
-        'six',
         'html5lib>=0.999999999',
         ],
     extras_require={
