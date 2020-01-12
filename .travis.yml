@@ -12,9 +12,10 @@ python:
   - "pypy3"
 # command to install dependencies
 install:
+  - imagesize=''
   - pip install -U coveralls pytest pytest-cov 'coverage<5' codecov
-  - if [[ $IMAGESIZE == true ]] ; then pip install -e '.[imagesize]' ; fi
-  - if [[ $IMAGESIZE == false ]] ; then pip install -e . ; fi
+  - if [[ $IMAGESIZE == true ]] ; then imagesize='[imagesize]' ; fi
+  - pip install -e '.${imagesize}'
 # command to run tests
 script: py.test
 after_success:
