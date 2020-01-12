@@ -1,4 +1,4 @@
-!https://travis-ci.org/textile/python-textile.svg!:https://travis-ci.org/textile/python-textile !https://coveralls.io/repos/github/textile/python-textile/badge.svg!:https://coveralls.io/github/textile/python-textile?branch=master !https://codecov.io/github/textile/python-textile/coverage.svg!:https://codecov.io/github/textile/python-textile
+!https://travis-ci.org/textile/python-textile.svg!:https://travis-ci.org/textile/python-textile !https://coveralls.io/repos/github/textile/python-textile/badge.svg!:https://coveralls.io/github/textile/python-textile?branch=master !https://codecov.io/github/textile/python-textile/coverage.svg!:https://codecov.io/github/textile/python-textile !https://img.shields.io/pypi/pyversions/textile! !https://img.shields.io/pypi/wheel/textile!
 
 h1. python-textile
 
@@ -8,9 +8,12 @@ h2. Installation
 
 @pip install textile@
 
+Dependencies:
+* "html5lib":https://pypi.org/project/html5lib/
+* "regex":https://pypi.org/project/regex/ (The regex package causes problems with PyPy, and is not installed as a dependency in such environments. If you are upgrading a textile install on PyPy which had regex previously included, you may need to uninstall it.)
+
 Optional dependencies include:
-* "PIL/Pillow":http://python-pillow.github.io/ (for checking images size)
-* "regex":https://pypi.python.org/pypi/regex (for faster unicode-aware string matching).
+* "PIL/Pillow":http://python-pillow.github.io/ (for checking image sizes). If needed, install via @pip install 'textile[imagesize]'@
 
 h2. Usage
 
@@ -39,4 +42,4 @@ bc.. import textile
 
 h3. Notes:
 
-* Active development supports Python 2.7 or later (including Python 3.3+).
+* Active development supports Python 3.5 or later.
