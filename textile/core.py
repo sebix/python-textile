@@ -17,7 +17,6 @@ Textile's procedural code into a class framework
 Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 """
-
 import uuid
 from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
 
