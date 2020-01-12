@@ -168,7 +168,6 @@ class Textile(object):
                     regex_snippets['space'], 'abr': regex_snippets['abr'],
                     'nab': regex_snippets['nab'], 'pnct': pnct_re_s}), re.U),
         ]
-
         # These are the changes that need to be made for characters that occur
         # at the beginning of the string.
         self.glyph_search_initial = list(self.glyph_search)
