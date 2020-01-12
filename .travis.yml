@@ -15,7 +15,7 @@ install:
   - imagesize=''
   - pip install -U coveralls pytest pytest-cov 'coverage<5' codecov
   - if [[ $IMAGESIZE == true ]] ; then imagesize='[imagesize]' ; fi
-  - pip install -e '.${imagesize}'
+  - pip install -e ".${imagesize}"
 # command to run tests
 script: py.test
 after_success:
