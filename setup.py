@@ -56,7 +56,7 @@ setup(
     ],
     keywords='textile,text,html markup',
     install_requires=[
-        'html5lib>=0.999999999',
+        'html5lib>=1.0.1',
         ],
     extras_require={
         ':python_version=="2.6"': ['ordereddict>=1.1'],
