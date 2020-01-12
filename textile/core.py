@@ -19,6 +19,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 import uuid
 from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
+from collections import OrderedDict
 
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, pnct_re_s,
@@ -27,9 +28,6 @@ from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
         parse_attributes, pba)
 from textile.objects import Block, Table
-
-from collections import OrderedDict
-
 
 try:
     import regex as re
@@ -254,7 +252,6 @@ class Textile(object):
 
         if not self.lite:
             text = self.placeNoteLists(text)
-
         text = self.retrieve(text)
         text = text.replace('{0}:glyph:'.format(self.uid), '')
 
@@ -322,7 +319,7 @@ class Textile(object):
 
                 # does the first line of this ol have a start attribute
                 if len(tl) > len(pt):
-                    # no, set it to 1
+                    # no, set it to 1.
                     if start is None:
                         self.olstarts[tl] = 1
                     # yes, set it to the given number
@@ -360,8 +357,8 @@ class Textile(object):
 
             atts = pba(atts, restricted=self.restricted)
             tabs = '\t' * len(tl)
-            # If start is still None, set it to '', else leave the value
-            # that we've already formatted.
+            # If start is still None, set it to '', else leave the value that
+            # we've already formatted.
             start = start or ''
             # if this item tag isn't in the list, create a new list and
             # item, else just create the item
@@ -374,7 +371,6 @@ class Textile(object):
                 line = ("\t<{0}{1}>{2}".format(litem, atts, content) if
                         showitem else '')
             line = '{0}{1}'.format(tabs, line)
-
             if len(nl) <= len(tl):
                 if showitem:
                     line = "{0}</{1}>".format(line, litem)
@@ -387,12 +383,12 @@ class Textile(object):
                     if len(k) > 1 and v != 2:
                         line = "{0}</{1}>".format(line, litem)
                     del ls[k]
-            # Remember the current Textile tag
+            # Remember the current Textile tag:
             pt = tl
             # This else exists in the original php version.  I'm not sure how
             # to come up with a case where the line would not match.  I think
             # it may have been necessary due to the way php returns matches.
-            #else:
+            # else:
                 #line = "{0}\n".format(line)
             result.append(line)
         return self.doTagBr(litem, "\n".join(result))
@@ -416,7 +412,6 @@ class Textile(object):
             tre = '|'.join(self.btag)
         else:
             tre = '|'.join(self.btag_lite)
-
         # split the text by two or more newlines, retaining the newlines in the
         # split list
         text = re.split(r'(\n{2,})', text)
@@ -527,7 +522,6 @@ class Textile(object):
                 multiline_para = True
             else:
                 line = self.doPBr(line)
-
             if not block.tag == 'p':
                 multiline_para = False
 
@@ -554,7 +548,7 @@ class Textile(object):
                 eat_whitespace = True
 
         # at this point, we've gone through all the lines. if there's still an
-        # extension in effect, we close it here.
+        # extension in effect, we close it here
         if ext and out and not block.tag == 'p':
             block.content = out.pop()
             block.process()
@@ -583,7 +577,6 @@ class Textile(object):
             footref = m.group('id')
         footref = generate_tag('sup', footref, fn_att)
         return '{0}{1}'.format(footref, m.group('space'))
-
 
     def glyphs(self, text):
         """
