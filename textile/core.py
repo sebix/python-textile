@@ -985,10 +985,6 @@ class Textile(object):
         Fixed version of the following code fragment from Stack Overflow:
             http://stackoverflow.com/a/804380/72656
         """
-        # turn string into unicode
-        if not isinstance(url, six.text_type):
-            url = url.decode('utf8')
-
         # parse it
         parsed = urlsplit(url)
 
