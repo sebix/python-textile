@@ -11,10 +11,7 @@ def getimagesize(url):
     except ImportError:
         return ''
 
-    try:
-        from urllib.request import urlopen
-    except (ImportError):
-        from urllib2 import urlopen
+    from urllib.request import urlopen
 
     try:
         p = ImageFile.Parser()

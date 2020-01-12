@@ -1,22 +1,21 @@
 dist: xenial   # required for Python >= 3.7
 language: python
 env:
-  - REQUIREMENTS=true
-  - REQUIREMENTS=false
+  - IMAGESIZE=true
+  - IMAGESIZE=false
 python:
-  - "2.7"
-  - "3.4"
   - "3.5"
   - "3.6"
   - "3.7"
+  - "3.8"
   # PyPy versions
-  - "pypy3.5"
+  - "pypy3"
 # command to install dependencies
 install:
-  - if [[ $REQUIREMENTS == true ]] ; then pip install -r requirements.txt ; fi
-  - pip install -U coveralls pytest pytest-cov coverage codecov
-  - pip install -e .
-  - if [[ ! $TRAVIS_PYTHON_VERSION == 'pypy3.5' ]] ; then pip install regex; fi
+  - imagesize=''
+  - pip install -U coveralls pytest pytest-cov 'coverage<5' codecov
+  - if [[ $IMAGESIZE == true ]] ; then imagesize='[imagesize]' ; fi
+  - pip install -e ".${imagesize}"
 # command to run tests
 script: py.test
 after_success:

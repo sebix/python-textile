@@ -1,5 +1,9 @@
 h1. Textile Changelog
 
+h2. Version 4.0.0
+* Drop support for Python 2, hence the version bump. Update list of PY3K versions to currently-supported versions. If you need to use textile on Python 2.7 or Python 3.3 or 3.4, please use textile Version 3.0.4.
+* For use in PyPy environments, textile used to work well with the regex package. Lately, it's running into trouble. Please uninstall regex if this is the case for you.
+
 h2. Version 3.0.4
 * BUGFIX: Restricted mode strips out CSS attributes again.
 * Update travis to more current versions and test against current Pillow version.

@@ -1,14 +1,12 @@
 from __future__ import unicode_literals
-import six
 
 try:
     import regex as re
 except ImportError:
     import re
 
-from six.moves import urllib, html_parser
-urlparse = urllib.parse.urlparse
-HTMLParser = html_parser.HTMLParser
+from urllib.parse import urlparse
+import html
 
 from collections import OrderedDict
 
@@ -19,9 +17,8 @@ from textile.regex_strings import valign_re_s, halign_re_s
 
 def decode_high(text):
     """Decode encoded HTML entities."""
-    h = HTMLParser()
     text = '&#{0};'.format(text)
-    return h.unescape(text)
+    return html.unescape(text)
 
 def encode_high(text):
     """Encode the text so that it is an appropriate HTML entity."""
@@ -46,23 +43,23 @@ def generate_tag(tag, content, attributes=None):
     """Generate a complete html tag using the ElementTree module.  tag and
     content are strings, the attributes argument is a dictionary.  As
     a convenience, if the content is ' /', a self-closing tag is generated."""
-    content = six.text_type(content)
-    # In PY2, ElementTree tostringlist only works with bytes, not with
-    # unicode().
     enc = 'unicode'
-    if six.PY2:
-        enc = 'UTF-8'
     if not tag:
         return content
     element = ElementTree.Element(tag, attrib=attributes)
+    # Sort attributes for Python 3.8+, as suggested in
+    # https://docs.python.org/3/library/xml.etree.elementtree.html
+    if len(element.attrib) > 1:
+        # adjust attribute order, e.g. by sorting
+        attribs = sorted(element.attrib.items())
+        element.attrib.clear()
+        element.attrib.update(attribs)
     # FIXME: Kind of an ugly hack.  There *must* be a cleaner way.  I tried
     # adding text by assigning it to element_tag.text.  That results in
     # non-ascii text being html-entity encoded.  Not bad, but not entirely
     # matching php-textile either.
     element_tag = ElementTree.tostringlist(element, encoding=enc,
             method='html')
-    if six.PY2:
-        element_tag = [v.decode(enc) for v in element_tag]
     element_tag.insert(len(element_tag) - 1, content)
     element_text = ''.join(element_tag)
     return element_text

@@ -1,4 +1,4 @@
-	<p><a href="https://travis-ci.org/textile/python-textile"><img alt="" src="https://travis-ci.org/textile/python-textile.svg" /></a> <a href="https://coveralls.io/github/textile/python-textile?branch=master"><img alt="" src="https://coveralls.io/repos/github/textile/python-textile/badge.svg" /></a> <a href="https://codecov.io/github/textile/python-textile"><img alt="" src="https://codecov.io/github/textile/python-textile/coverage.svg" /></a></p>
+	<p><a href="https://travis-ci.org/textile/python-textile"><img alt="" src="https://travis-ci.org/textile/python-textile.svg" /></a> <a href="https://coveralls.io/github/textile/python-textile?branch=master"><img alt="" src="https://coveralls.io/repos/github/textile/python-textile/badge.svg" /></a> <a href="https://codecov.io/github/textile/python-textile"><img alt="" src="https://codecov.io/github/textile/python-textile/coverage.svg" /></a> <img alt="" src="https://img.shields.io/pypi/pyversions/textile" /> <img alt="" src="https://img.shields.io/pypi/wheel/textile" /></p>
 
 	<h1>python-textile</h1>
 
@@ -8,10 +8,15 @@
 
 	<p><code>pip install textile</code></p>
 
+	<p>Dependencies:
+	<ul>
+		<li><a href="https://pypi.org/project/html5lib/">html5lib</a></li>
+		<li><a href="https://pypi.org/project/regex/">regex</a> (The regex package causes problems with PyPy, and is not installed as a dependency in such environments. If you are upgrading a textile install on PyPy which had regex previously included, you may need to uninstall it.)</li>
+	</ul></p>
+
 	<p>Optional dependencies include:
 	<ul>
-		<li><a href="http://python-pillow.github.io/"><span class="caps">PIL</span>/Pillow</a> (for checking images size)</li>
-		<li><a href="https://pypi.python.org/pypi/regex">regex</a> (for faster unicode-aware string matching).</li>
+		<li><a href="http://python-pillow.github.io/"><span class="caps">PIL</span>/Pillow</a> (for checking image sizes). If needed, install via <code>pip install 'textile[imagesize]'</code></li>
 	</ul></p>
 
 	<h2>Usage</h2>
@@ -42,5 +47,5 @@
 	<h3>Notes:</h3>
 
 	<ul>
-		<li>Active development supports Python 2.7 or later (including Python 3.3+).</li>
+		<li>Active development supports Python 3.5 or later.</li>
 	</ul>

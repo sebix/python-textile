@@ -19,9 +19,7 @@ Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 """
 
 import uuid
-import six
-from six.moves.urllib_parse import (urlparse, urlsplit, urlunsplit, quote,
-        unquote)
+from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
 
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, pnct_re_s,
@@ -962,12 +960,12 @@ class Textile(object):
         text = self.glyphs(text)
         url = self.shelveURL(self.encode_url(urlunsplit(uri_parts)))
         attributes = parse_attributes(atts, restricted=self.restricted)
+        attributes['href'] = url
         if title:
             # if the title contains unicode data, it is annoying to get Python
             # 2.6 and all the latter versions working properly.  But shelving
             # the title is a quick and dirty solution.
             attributes['title'] = self.shelve(title)
-        attributes['href'] = url
         if self.rel:
             attributes['rel'] = self.rel
         a_text = generate_tag('a', text, attributes)
@@ -985,10 +983,6 @@ class Textile(object):
         Fixed version of the following code fragment from Stack Overflow:
             http://stackoverflow.com/a/804380/72656
         """
-        # turn string into unicode
-        if not isinstance(url, six.text_type):
-            url = url.decode('utf8')
-
         # parse it
         parsed = urlsplit(url)
 
@@ -1017,12 +1011,8 @@ class Textile(object):
         # slashes, and this is a way to clean that up. It branches for PY2/3
         # because the quote and unquote functions expects different input
         # types: unicode strings for PY2 and str for PY3.
-        if six.PY2:
-            path_parts = (quote(unquote(pce.encode('utf8')), b'') for pce in
-                    parsed.path.split('/'))
-        else:
-            path_parts = (quote(unquote(pce), b'') for pce in
-                    parsed.path.split('/'))
+        path_parts = (quote(unquote(pce), b'') for pce in
+                parsed.path.split('/'))
         path = '/'.join(path_parts)
 
         # put it back together
@@ -1128,14 +1118,14 @@ class Textile(object):
             atts.update(align=alignments[align])
         atts.update(alt=title)
         if size:
-            atts.update(height=six.text_type(size[1]))
+            atts.update(height="{0}".format(size[1]))
         atts.update(src=url)
         if attributes:
             atts.update(parse_attributes(attributes, restricted=self.restricted))
         if title:
             atts.update(title=title)
         if size:
-            atts.update(width=six.text_type(size[0]))
+            atts.update(width="{0}".format(size[0]))
         img = generate_tag('img', ' /', atts)
         if href:
             a_atts = OrderedDict(href=href)

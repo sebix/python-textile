@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import six
-
 try:
     # Use regex module for matching uppercase characters if installed,
     # otherwise fall back to finding all the uppercase chars in a loop.
@@ -21,8 +19,8 @@ try:
 except ImportError:
     from sys import maxunicode
     upper_re_s = "".join(
-            [six.unichr(c) for c in six.moves.range(maxunicode) if six.unichr(
-                c).isupper()])
+                [chr(c) for c in range(maxunicode) if chr(c).isupper()]
+            )
     regex_snippets = {
         'acr': r'{0}0-9'.format(upper_re_s),
         'abr': r'{0}'.format(upper_re_s),

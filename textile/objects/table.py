@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import six
 from xml.etree import ElementTree
 
 from textile.regex_strings import (align_re_s, cls_re_s, regex_snippets,
@@ -157,8 +156,6 @@ class Colgroup(object):
 
     def process(self):
         enc = 'unicode'
-        if six.PY2: # pragma: no branch
-            enc = 'UTF-8'
 
         group_atts = parse_attributes(self.attributes, 'col', restricted=self.restricted)
         colgroup = ElementTree.Element('colgroup', attrib=group_atts)
