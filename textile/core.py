@@ -40,7 +40,7 @@ class Textile(object):
     unrestricted_url_schemes = restricted_url_schemes + ('file', 'tel',
             'callto', 'sftp', 'data')
 
-    btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p', '###')
+    btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', r'fn\d+', 'p', '###')
     btag_lite = ('bq', 'bc', 'p')
 
     note_index = 1
@@ -344,8 +344,8 @@ class Textile(object):
                     except KeyError:
                         self.olstarts[tl] = 1
 
-            nm = re.match("^(?P<nextlistitem>[#\*;:]+)(_|[\d]+)?{0}"
-                    "[ .].*".format(cls_re_s), nextline)
+            nm = re.match(r"^(?P<nextlistitem>[#\*;:]+)(_|[\d]+)?{0}"
+                    r"[ .].*".format(cls_re_s), nextline)
             if nm:
                 nl = nm.group('nextlistitem')
 
@@ -829,7 +829,7 @@ class Textile(object):
         # "text":url?q[]=x][123]    will have "[123]" popped off the back, the
         # remaining closing square brackets will later be tested for balance
         if (counts[']']):
-            m = re.search('(?P<url>^.*\])(?P<tight>\[.*?)$', url, flags=re.U)
+            m = re.search(r'(?P<url>^.*\])(?P<tight>\[.*?)$', url, flags=re.U)
             if m:
                 url, tight = m.groups()
 
@@ -1247,8 +1247,8 @@ class Textile(object):
                 # sort o by key
                 o = OrderedDict(sorted(o.items(), key=lambda t: t[0]))
             self.notes = o
-        text_re = re.compile('<p>notelist({0})(?:\:([\w|{1}]))?([\^!]?)(\+?)'
-                '\.?[\s]*</p>'.format(cls_re_s, syms_re_s), re.U)
+        text_re = re.compile(r'<p>notelist({0})(?:\:([\w|{1}]))?([\^!]?)(\+?)'
+                r'\.?[\s]*</p>'.format(cls_re_s, syms_re_s), re.U)
         text = text_re.sub(self.fNoteLists, text)
         return text
 
