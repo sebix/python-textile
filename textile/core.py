@@ -17,9 +17,9 @@ Textile's procedural code into a class framework
 Additions and fixes Copyright (c) 2006 Alex Shiels http://thresholdstate.com/
 
 """
-
 import uuid
 from urllib.parse import urlparse, urlsplit, urlunsplit, quote, unquote
+from collections import OrderedDict
 
 from textile.tools import sanitizer, imagesize
 from textile.regex_strings import (align_re_s, cls_re_s, pnct_re_s,
@@ -28,10 +28,6 @@ from textile.utils import (decode_high, encode_high, encode_html, generate_tag,
         has_raw_text, is_rel_url, is_valid_url, list_type, normalize_newlines,
         parse_attributes, pba)
 from textile.objects import Block, Table
-
-
-from collections import OrderedDict
-
 
 try:
     import regex as re
@@ -44,7 +40,7 @@ class Textile(object):
     unrestricted_url_schemes = restricted_url_schemes + ('file', 'tel',
             'callto', 'sftp', 'data')
 
-    btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', 'fn\d+', 'p', '###')
+    btag = ('bq', 'bc', 'notextile', 'pre', 'h[1-6]', r'fn\d+', 'p', '###')
     btag_lite = ('bq', 'bc', 'p')
 
     note_index = 1
@@ -168,7 +164,6 @@ class Textile(object):
                     regex_snippets['space'], 'abr': regex_snippets['abr'],
                     'nab': regex_snippets['nab'], 'pnct': pnct_re_s}), re.U),
         ]
-
         # These are the changes that need to be made for characters that occur
         # at the beginning of the string.
         self.glyph_search_initial = list(self.glyph_search)
@@ -257,7 +252,6 @@ class Textile(object):
 
         if not self.lite:
             text = self.placeNoteLists(text)
-
         text = self.retrieve(text)
         text = text.replace('{0}:glyph:'.format(self.uid), '')
 
@@ -325,7 +319,7 @@ class Textile(object):
 
                 # does the first line of this ol have a start attribute
                 if len(tl) > len(pt):
-                    # no, set it to 1
+                    # no, set it to 1.
                     if start is None:
                         self.olstarts[tl] = 1
                     # yes, set it to the given number
@@ -350,8 +344,8 @@ class Textile(object):
                     except KeyError:
                         self.olstarts[tl] = 1
 
-            nm = re.match("^(?P<nextlistitem>[#\*;:]+)(_|[\d]+)?{0}"
-                    "[ .].*".format(cls_re_s), nextline)
+            nm = re.match(r"^(?P<nextlistitem>[#\*;:]+)(_|[\d]+)?{0}"
+                    r"[ .].*".format(cls_re_s), nextline)
             if nm:
                 nl = nm.group('nextlistitem')
 
@@ -363,10 +357,9 @@ class Textile(object):
 
             atts = pba(atts, restricted=self.restricted)
             tabs = '\t' * len(tl)
-            # If start is still None, set it to '', else leave the value
-            # that we've already formatted.
+            # If start is still None, set it to '', else leave the value that
+            # we've already formatted.
             start = start or ''
-
             # if this item tag isn't in the list, create a new list and
             # item, else just create the item
             if tl not in ls:
@@ -378,7 +371,6 @@ class Textile(object):
                 line = ("\t<{0}{1}>{2}".format(litem, atts, content) if
                         showitem else '')
             line = '{0}{1}'.format(tabs, line)
-
             if len(nl) <= len(tl):
                 if showitem:
                     line = "{0}</{1}>".format(line, litem)
@@ -391,14 +383,12 @@ class Textile(object):
                     if len(k) > 1 and v != 2:
                         line = "{0}</{1}>".format(line, litem)
                     del ls[k]
-
-            # Remember the current Textile tag
+            # Remember the current Textile tag:
             pt = tl
-
             # This else exists in the original php version.  I'm not sure how
             # to come up with a case where the line would not match.  I think
             # it may have been necessary due to the way php returns matches.
-            #else:
+            # else:
                 #line = "{0}\n".format(line)
             result.append(line)
         return self.doTagBr(litem, "\n".join(result))
@@ -422,13 +412,12 @@ class Textile(object):
             tre = '|'.join(self.btag)
         else:
             tre = '|'.join(self.btag_lite)
-
         # split the text by two or more newlines, retaining the newlines in the
         # split list
         text = re.split(r'(\n{2,})', text)
 
         # some blocks, when processed, will ask us to output nothing, if that's
-        # the case, we'd want to drop the whitespace which comes after it.
+        # the case, we'd want to drop the whitespace which follows it.
         eat_whitespace = False
 
         # check to see if previous block has already been escaped
@@ -496,7 +485,7 @@ class Textile(object):
             # no tag specified
             else:
                 # if we're inside an extended block, add the text from the
-                # previous line to the front
+                # previous line to the front.
                 if ext and out:
                     if block.tag == 'p':
                         line = generate_tag(block.tag, line, block.outer_atts)
@@ -533,7 +522,6 @@ class Textile(object):
                 multiline_para = True
             else:
                 line = self.doPBr(line)
-
             if not block.tag == 'p':
                 multiline_para = False
 
@@ -559,8 +547,8 @@ class Textile(object):
             if block.eat:
                 eat_whitespace = True
 
-        # at this point, we've gone through all the lines, and if there's still
-        # an extension in effect, we close it here.
+        # at this point, we've gone through all the lines. if there's still an
+        # extension in effect, we close it here
         if ext and out and not block.tag == 'p':
             block.content = out.pop()
             block.process()
@@ -725,7 +713,7 @@ class Textile(object):
                 linkparts = []
                 i = 0
 
-                while balanced is not 0 or i is 0: # pragma: no branch
+                while balanced != 0 or i == 0: # pragma: no branch
                     # Starting at the end, pop off the previous part of the
                     # slice's fragments.
 
@@ -748,7 +736,7 @@ class Textile(object):
                         # HAL!"":url...  In this case we count a zero length in
                         # the last position as a closing quote and others as
                         # opening quotes.
-                        if i is 0:
+                        if i == 0:
                             balanced = balanced + 1
                         else:
                             balanced = balanced - 1
@@ -763,7 +751,7 @@ class Textile(object):
                             break
                         # If the next possibility is empty or ends in a space
                         # we have a closing ".
-                        if (possibility is '' or possibility.endswith(' ')):
+                        if (possibility == '' or possibility.endswith(' ')):
                             # force search exit
                             balanced = 0;
 
@@ -841,7 +829,7 @@ class Textile(object):
         # "text":url?q[]=x][123]    will have "[123]" popped off the back, the
         # remaining closing square brackets will later be tested for balance
         if (counts[']']):
-            m = re.search('(?P<url>^.*\])(?P<tight>\[.*?)$', url, flags=re.U)
+            m = re.search(r'(?P<url>^.*\])(?P<tight>\[.*?)$', url, flags=re.U)
             if m:
                 url, tight = m.groups()
 
@@ -1259,8 +1247,8 @@ class Textile(object):
                 # sort o by key
                 o = OrderedDict(sorted(o.items(), key=lambda t: t[0]))
             self.notes = o
-        text_re = re.compile('<p>notelist({0})(?:\:([\w|{1}]))?([\^!]?)(\+?)'
-                '\.?[\s]*</p>'.format(cls_re_s, syms_re_s), re.U)
+        text_re = re.compile(r'<p>notelist({0})(?:\:([\w|{1}]))?([\^!]?)(\+?)'
+                r'\.?[\s]*</p>'.format(cls_re_s, syms_re_s), re.U)
         text = text_re.sub(self.fNoteLists, text)
         return text
 
@@ -1410,7 +1398,7 @@ class Textile(object):
 
     def retrieveURL(self, match):
         url = self.refCache.get(int(match.group('token')), '')
-        if url is '':
+        if url == '':
             return url
 
         if url in self.urlrefs:

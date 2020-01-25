@@ -1,5 +1,7 @@
 [run]
 branch = True
+source = textile
+parallel = True
 
 [report]
 show_missing = True
