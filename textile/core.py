@@ -713,7 +713,7 @@ class Textile(object):
                 linkparts = []
                 i = 0
 
-                while balanced is not 0 or i is 0: # pragma: no branch
+                while balanced != 0 or i == 0: # pragma: no branch
                     # Starting at the end, pop off the previous part of the
                     # slice's fragments.
 
@@ -736,7 +736,7 @@ class Textile(object):
                         # HAL!"":url...  In this case we count a zero length in
                         # the last position as a closing quote and others as
                         # opening quotes.
-                        if i is 0:
+                        if i == 0:
                             balanced = balanced + 1
                         else:
                             balanced = balanced - 1
@@ -751,7 +751,7 @@ class Textile(object):
                             break
                         # If the next possibility is empty or ends in a space
                         # we have a closing ".
-                        if (possibility is '' or possibility.endswith(' ')):
+                        if (possibility == '' or possibility.endswith(' ')):
                             # force search exit
                             balanced = 0;
 
@@ -1398,7 +1398,7 @@ class Textile(object):
 
     def retrieveURL(self, match):
         url = self.refCache.get(int(match.group('token')), '')
-        if url is '':
+        if url == '':
             return url
 
         if url in self.urlrefs:
